@@ -1,20 +1,14 @@
-import { StateCreator } from "zustand";
-import { GlobalState, AppState } from "../types";
+import { create } from "zustand";
+import { AppState } from "./types";
 
-/**
- * 应用状态切片
- */
-export const createAppSlice: StateCreator<
-  GlobalState,
-  [],
-  [],
-  {
-    app: AppState;
-    setLoading: (isLoading: boolean) => void;
-    toggleSidebar: () => void;
-    setIsMobile: (isMobile: boolean) => void;
-  }
-> = (set) => ({
+interface AppStore {
+  app: AppState;
+  setLoading: (isLoading: boolean) => void;
+  toggleSidebar: () => void;
+  setIsMobile: (isMobile: boolean) => void;
+}
+
+export const useAppStore = create<AppStore>((set) => ({
   // 应用状态初始状态
   app: {
     isLoading: false,
@@ -48,4 +42,4 @@ export const createAppSlice: StateCreator<
         isMobile,
       },
     })),
-});
+})); 

@@ -1,5 +1,4 @@
-import { StateCreator } from "zustand";
-import { GlobalState } from "../types";
+import { create } from "zustand";
 
 /**
  * 消息类型定义
@@ -11,10 +10,7 @@ export interface Message {
   duration?: number;
 }
 
-/**
- * 消息状态切片类型
- */
-export interface MessageSlice {
+interface MessageStore {
   // 系统消息
   messages: Message[];
 
@@ -24,39 +20,28 @@ export interface MessageSlice {
   clearMessages: () => void;
 }
 
-/**
- * 创建消息状态切片
- */
-export const createMessageSlice: StateCreator<
-  GlobalState,
-  [],
-  [],
-  MessageSlice
-> = (set) => ({
+export const useMessageStore = create<MessageStore>((set) => ({
   // 消息初始状态
   messages: [],
 
   // 添加消息
   addMessage: (message: Omit<Message, "id">) =>
-    set((state: GlobalState) => {
+    set((state) => {
       const id = Date.now().toString();
       return {
-        ...state,
         messages: [...state.messages, { id, ...message }]
       };
     }),
 
   // 移除消息
   removeMessage: (id) =>
-    set((state: GlobalState) => ({
-      ...state,
+    set((state) => ({
       messages: state.messages.filter((message) => message.id !== id)
     })),
 
   // 清空所有消息
   clearMessages: () =>
-    set((state: GlobalState) => ({
-      ...state,
+    set(() => ({
       messages: []
     })),
-});
+})); 

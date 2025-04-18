@@ -1,20 +1,14 @@
-import { StateCreator } from "zustand";
-import { GlobalState, SettingsState } from "../types";
+import { create } from "zustand";
+import { SettingsState } from "./types";
 
-/**
- * 设置状态切片
- */
-export const createSettingsSlice: StateCreator<
-  GlobalState,
-  [],
-  [],
-  {
-    settings: SettingsState;
-    updateSettings: (settings: Partial<SettingsState>) => void;
-    toggleTheme: () => void;
-    setLanguage: (language: SettingsState["language"]) => void;
-  }
-> = (set) => ({
+interface SettingsStore {
+  settings: SettingsState;
+  updateSettings: (settings: Partial<SettingsState>) => void;
+  toggleTheme: () => void;
+  setLanguage: (language: SettingsState["language"]) => void;
+}
+
+export const useSettingsStore = create<SettingsStore>((set) => ({
   // 应用设置初始状态
   settings: {
     theme: "system",
@@ -61,4 +55,4 @@ export const createSettingsSlice: StateCreator<
         language,
       },
     })),
-});
+})); 

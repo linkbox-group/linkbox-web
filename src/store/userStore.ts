@@ -1,19 +1,13 @@
-import { StateCreator } from "zustand";
-import { GlobalState, UserState } from "../types";
+import { create } from "zustand";
+import { UserState } from "./types";
 
-/**
- * 用户状态切片
- */
-export const createUserSlice: StateCreator<
-  GlobalState,
-  [],
-  [],
-  {
-    user: UserState;
-    setUser: (user: Partial<UserState>) => void;
-    logout: () => void;
-  }
-> = (set) => ({
+interface UserStore {
+  user: UserState;
+  setUser: (user: Partial<UserState>) => void;
+  logout: () => void;
+}
+
+export const useUserStore = create<UserStore>((set) => ({
   // 用户信息初始状态
   user: {
     id: "",
@@ -44,4 +38,4 @@ export const createUserSlice: StateCreator<
         isLoggedIn: false,
       },
     })),
-});
+})); 

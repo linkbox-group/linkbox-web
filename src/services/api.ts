@@ -11,17 +11,8 @@ import axios, {
 export interface ResponseData<T = any> {
   code: number;
   data: T;
-  message: string;
-  success: boolean;
+  msg: string;
 }
-
-// /**
-//  * 刷新令牌响应接口
-//  */
-// interface RefreshTokenResponse {
-//   accessToken: string;
-//   refreshToken: string;
-// }
 
 /**
  * Token管理器
@@ -155,7 +146,30 @@ class ApiService {
     // 响应拦截器
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => {
-        // 直接返回响应数据
+        const { code, msg, data } = response.data;
+        
+        // 处理业务状态码
+        if (code >= 20000 && code < 30000) {
+          // 成功状态码
+          return data;
+        } else if (code >= 30000 && code < 40000) {
+          // 用户相关错误
+          console.error(`用户错误: ${msg}`);
+          return Promise.reject(new Error(msg));
+        } else if (code >= 40000 && code < 50000) {
+          // 业务逻辑错误
+          console.error(`业务错误: ${msg}`);
+          return Promise.reject(new Error(msg));
+        } else if (code >= 50000) {
+          // 第三方服务错误
+          console.error(`第三方服务错误: ${msg}`);
+          return Promise.reject(new Error(msg));
+        } else if (code >= 10000 && code < 20000) {
+          // 系统级别错误
+          console.error(`系统错误: ${msg}`);
+          return Promise.reject(new Error(msg));
+        }
+        
         return response.data;
       },
       async (error: AxiosError<ResponseData>) => {
@@ -174,12 +188,8 @@ class ApiService {
 
         // 如果是401错误，直接清除令牌并跳转到登录页面
         if (status === 401) {
-          // 清除所有令牌
           TokenManager.clearTokens();
-
-          // 跳转到登录页面
           window.location.href = "/login";
-
           return Promise.reject(new Error("令牌已失效，请重新登录"));
         }
 

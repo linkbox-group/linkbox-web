@@ -2,69 +2,37 @@ import { create } from 'zustand';
 import { persist, createJSONStorage, devtools } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 
-import { GlobalState } from './types';
-import { createUserSlice } from './slices/userSlice';
-import { createSettingsSlice } from './slices/settingsSlice';
-import { createAppSlice } from './slices/appSlice';
-import { createMessageSlice } from './slices/messageSlice';
+import { useUserStore } from './userStore';
+import { useSettingsStore } from './settingsStore';
+import { useAppStore } from './appStore';
+import { useMessageStore } from './messageStore';
 
-/**
- * 创建全局状态仓库
- */
-const useStore = create<GlobalState>()(
-  devtools(
-    persist(
-      immer((...a) => ({
-        ...createUserSlice(...a),
-        ...createSettingsSlice(...a),
-        ...createAppSlice(...a),
-        ...createMessageSlice(...a),
-      })),
-      {
-        name: 'linkbox-store',
-        storage: createJSONStorage(() => localStorage),
-        partialize: (state) => ({
-          // 仅持久化用户偏好设置，不持久化用户敏感信息
-          settings: state.settings,
-        }),
-      }
-    )
-  )
-);
+// 导出所有store
+export { useUserStore } from './userStore';
+export { useSettingsStore } from './settingsStore';
+export { useAppStore } from './appStore';
+export { useMessageStore } from './messageStore';
 
-/**
- * 状态选择器
- */
-export const useUser = () => useStore((state) => state.user);
-export const useSettings = () => useStore((state) => state.settings);
-export const useApp = () => useStore((state) => state.app);
-export const useMessages = () => useStore((state) => state.messages);
-
-/**
- * 动作选择器
- */
+// 导出actions
 export const useUserActions = () => ({
-  setUser: useStore((state) => state.setUser),
-  logout: useStore((state) => state.logout),
+  setUser: useUserStore((state) => state.setUser),
+  logout: useUserStore((state) => state.logout),
 });
 
 export const useSettingsActions = () => ({
-  updateSettings: useStore((state) => state.updateSettings),
-  toggleTheme: useStore((state) => state.toggleTheme),
-  setLanguage: useStore((state) => state.setLanguage),
+  updateSettings: useSettingsStore((state) => state.updateSettings),
+  toggleTheme: useSettingsStore((state) => state.toggleTheme),
+  setLanguage: useSettingsStore((state) => state.setLanguage),
 });
 
 export const useAppActions = () => ({
-  setLoading: useStore((state) => state.setLoading),
-  toggleSidebar: useStore((state) => state.toggleSidebar),
-  setIsMobile: useStore((state) => state.setIsMobile),
+  setLoading: useAppStore((state) => state.setLoading),
+  toggleSidebar: useAppStore((state) => state.toggleSidebar),
+  setIsMobile: useAppStore((state) => state.setIsMobile),
 });
 
 export const useMessageActions = () => ({
-  addMessage: useStore((state) => state.addMessage),
-  removeMessage: useStore((state) => state.removeMessage),
-  clearMessages: useStore((state) => state.clearMessages),
+  addMessage: useMessageStore((state) => state.addMessage),
+  removeMessage: useMessageStore((state) => state.removeMessage),
+  clearMessages: useMessageStore((state) => state.clearMessages),
 });
-
-// 默认导出整个状态仓库
-export default useStore;

@@ -1,136 +1,51 @@
-# 状态管理 (Store)
+# 状态管理
 
-本目录包含应用程序的状态管理相关代码。
+本项目使用 Zustand 进行状态管理，采用分散式 store 模式，每个功能模块都有自己的 store。
 
-## 目录结构
+## Store 结构
 
 ```
-store/
-├── index.ts             # 状态管理入口和配置
-├── slices/              # 状态切片
-│   ├── authSlice.ts     # 认证状态
-│   ├── userSlice.ts     # 用户状态
-│   └── ...
-└── ...
+src/store/
+├── types.ts           # 类型定义
+├── index.ts          # store 导出
+├── userStore.ts      # 用户状态
+├── settingsStore.ts  # 设置状态
+├── appStore.ts       # 应用状态
+└── messageStore.ts   # 消息状态
 ```
 
-## 状态管理设计原则
+## 使用示例
 
-- 按功能域划分状态
-- 遵循不可变性原则
-- 实现状态的规范化
-- 避免状态冗余和重复
-- 使用TypeScript定义状态类型
+```typescript
+// 在组件中使用
+import { useUserStore } from '@/store/userStore';
+import { useSettingsStore } from '@/store/settingsStore';
+import { useAppStore } from '@/store/appStore';
+import { useMessageStore } from '@/store/messageStore';
 
-## 示例状态切片 (Redux Toolkit)
+const MyComponent = () => {
+  // 使用状态
+  const user = useUserStore(state => state.user);
+  const settings = useSettingsStore(state => state.settings);
+  const app = useAppStore(state => state.app);
+  const messages = useMessageStore(state => state.messages);
 
-```tsx
-// slices/authSlice.ts
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { loginUser, registerUser } from '@/services/auth';
+  // 使用动作
+  const { setUser, logout } = useUserStore();
+  const { updateSettings, toggleTheme } = useSettingsStore();
+  const { setLoading, toggleSidebar } = useAppStore();
+  const { addMessage, removeMessage } = useMessageStore();
 
-interface AuthState {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-}
-
-interface User {
-  id: string;
-  username: string;
-  email: string;
-}
-
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-const initialState: AuthState = {
-  user: null,
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
-  isLoading: false,
-  error: null
+  return (
+    // ...
+  );
 };
-
-// 异步登录action
-export const login = createAsyncThunk(
-  'auth/login',
-  async (credentials: LoginCredentials, { rejectWithValue }) => {
-    try {
-      const response = await loginUser(credentials);
-      localStorage.setItem('token', response.token);
-      return response;
-    } catch (error) {
-      return rejectWithValue(error.message || '登录失败');
-    }
-  }
-);
-
-// Auth切片定义
-const authSlice = createSlice({
-  name: 'auth',
-  initialState,
-  reducers: {
-    logout: (state) => {
-      localStorage.removeItem('token');
-      state.user = null;
-      state.token = null;
-      state.isAuthenticated = false;
-      state.error = null;
-    },
-    clearError: (state) => {
-      state.error = null;
-    }
-  },
-  extraReducers: (builder) => {
-    builder
-      .addCase(login.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(login.fulfilled, (state, action: PayloadAction<any>) => {
-        state.isLoading = false;
-        state.isAuthenticated = true;
-        state.user = action.payload.user;
-        state.token = action.payload.token;
-      })
-      .addCase(login.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      });
-  }
-});
-
-export const { logout, clearError } = authSlice.actions;
-export default authSlice.reducer;
 ```
 
-## 状态管理配置示例
+## 状态持久化
 
-```tsx
-// store/index.ts
-import { configureStore } from '@reduxjs/toolkit';
-import authReducer from './slices/authSlice';
-import userReducer from './slices/userSlice';
-// 导入其他reducer...
+设置状态会自动持久化到 localStorage，其他状态不会持久化。
 
-export const store = configureStore({
-  reducer: {
-    auth: authReducer,
-    user: userReducer,
-    // 其他reducer...
-  },
-  middleware: (getDefaultMiddleware) => 
-    getDefaultMiddleware({
-      serializableCheck: false
-    })
-});
+## 开发工具
 
-// 从store自身推断出RootState和AppDispatch类型
-export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
-``` 
+在开发环境中，可以使用 Redux DevTools 查看状态变化。 
