@@ -71,6 +71,18 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard }) => {
     setIsDragging(false);
   };
 
+  // 处理鼠标滚轮事件
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    if (e.deltaY > 0) {
+      // 向下滚动，显示下一张卡片
+      setCurrentIndex((prev) => (prev + 1) % CARD_DATA.length);
+    } else {
+      // 向上滚动，显示上一张卡片
+      setCurrentIndex((prev) => (prev - 1 + CARD_DATA.length) % CARD_DATA.length);
+    }
+  };
+
   const renderCard = (type: string) => {
     switch (type) {
       case "favorites":
@@ -95,6 +107,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard }) => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
       >
         {CARD_DATA.map((card, index) => {
           const screenHeight = window.innerHeight;

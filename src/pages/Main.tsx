@@ -12,7 +12,7 @@ import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
 import { SearchResultItem } from "@/services/search";
 import { searchService } from "@/services/search";
-import { Archive, Grid, ArrowUpDown } from "lucide-react";
+import { Archive, Grid, ArrowUpDown, List } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -22,6 +22,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 const Main: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mode, setMode] = useState<String>("all");
@@ -273,12 +281,25 @@ const Main: React.FC = () => {
               className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100" 
               onClick={handleModeChange}
             >
-              <Grid className="w-5 h-5" />
+              {mode === "all" ? (
+                <Grid className="w-5 h-5" />
+              ) : (
+                <List className="w-5 h-5" />
+              )}
               <span>模式</span>
             </div>
             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-              <ArrowUpDown className="w-5 h-5" />
-              <span>排序</span>
+              <Select>
+                <SelectTrigger className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border-0 bg-transparent p-0 h-auto cursor-pointer">
+                  <ArrowUpDown className="w-5 h-5" />
+                  <span>排序</span>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="time">时间排序</SelectItem>
+                  <SelectItem value="title">标题排序</SelectItem>
+                  <SelectItem value="folder">文件夹排序</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           {renderContent()}

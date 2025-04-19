@@ -20,21 +20,21 @@ const Line: React.FC<LineProps> = ({
   onDelete,
 }) => {
   return (
-    <div className="flex items-center py-2 px-4 hover:bg-gray-50 border-b border-gray-200">
+    <div className="flex items-center py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       {/* 标题 */}
       <div className="flex-1 min-w-[200px]">
         <a
           href={link}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:text-blue-800 hover:underline truncate block"
+          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline truncate block"
         >
           {title}
         </a>
       </div>
 
       {/* 收藏时间 */}
-      <div className="w-[180px] text-sm text-gray-500">
+      <div className="w-[180px] text-sm text-gray-500 dark:text-gray-400">
         {favoriteTime}
       </div>
 
@@ -43,7 +43,7 @@ const Line: React.FC<LineProps> = ({
         {tags.map((tag, index) => (
           <span
             key={index}
-            className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full"
+            className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full"
           >
             #{tag}
           </span>
@@ -51,7 +51,7 @@ const Line: React.FC<LineProps> = ({
       </div>
 
       {/* 文件夹位置 */}
-      <div className="w-[200px] text-sm text-gray-600 truncate">
+      <div className="w-[200px] text-sm text-gray-600 dark:text-gray-300 truncate">
         {folderPath}
       </div>
 
@@ -59,11 +59,11 @@ const Line: React.FC<LineProps> = ({
       <div className="flex gap-2 ml-4">
         <button
           onClick={onEdit}
-          className="p-1 hover:bg-gray-100 rounded-full"
+          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
           title="编辑"
         >
           <svg
-            className="w-4 h-4 text-gray-600"
+            className="w-4 h-4 text-gray-600 dark:text-gray-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -78,11 +78,11 @@ const Line: React.FC<LineProps> = ({
         </button>
         <button
           onClick={onDelete}
-          className="p-1 hover:bg-gray-100 rounded-full"
+          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
           title="删除"
         >
           <svg
-            className="w-4 h-4 text-gray-600"
+            className="w-4 h-4 text-gray-600 dark:text-gray-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
