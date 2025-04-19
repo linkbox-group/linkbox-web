@@ -1,37 +1,26 @@
-import React, { useState } from "react";
+import React from "react";
+import { Send } from "lucide-react";
 
 const AISuggestionCard: React.FC = () => {
-  const [inputValue, setInputValue] = useState("");
-
-  const handleSubmit = () => {
-    console.log("发送消息:", inputValue);
-    setInputValue("");
-  };
-
   return (
-    <div className="bg-gradient-to-b from-[#FFFFFF] to-[#B7DEFB] rounded-lg shadow-sm p-4 select-none h-96">
-      <div className="text-[#3C89C4] font-bold   font-serif mb-4">
-        AI Suggestion
-      </div>
-      <div className="flex h-full items-end pb-10 gap-2">
-        <div className="flex-1 bg-white rounded-lg flex items-center px-3">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="开启新的对话"
-            className="w-full text-sm h-10 bg-transparent focus:outline-none placeholder:text-[#3C89C4]"
-          />
-          <svg
-            fill="#3C89C4"
-            className="w-5 h-5 hover:cursor-pointer"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-          >
-            <title>send-variant-outline</title>
-            <path d="M3 20V4L22 12M5 17L16.85 12L5 7V10.5L11 12L5 13.5M5 17V7 13.5Z" />
-          </svg>
+    <div className="bg-gradient-to-b from-[#EEF4FF] via-[#CBD8ED] via-[#89A2CC] to-[#244F99] dark:from-[#1a1f2e] dark:via-[#1e2538] dark:via-[#2a3349] dark:to-[#1a365d] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex items-center gap-2">
+          <span className="text-gray-700 dark:text-blue-400 font-medium">AI 建议</span>
         </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          placeholder="输入你的问题..."
+          className="w-full h-10 px-4 rounded-lg bg-gray-100 dark:bg-[#2a3349] text-gray-700 dark:text-blue-400 placeholder:text-gray-500 dark:placeholder:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-300"
+        />
+        <Send className="w-5 h-5 text-gray-700 dark:text-blue-400" />
+      </div>
+      <div className="space-y-2 mt-4">
+        <div className="h-8 bg-gray-100 dark:bg-[#2a3349] rounded transition-colors duration-300"></div>
+        <div className="h-8 bg-gray-100 dark:bg-[#2a3349] rounded transition-colors duration-300"></div>
+        <div className="h-8 bg-gray-100 dark:bg-[#2a3349] rounded transition-colors duration-300"></div>
       </div>
     </div>
   );

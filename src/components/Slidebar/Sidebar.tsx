@@ -87,7 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard }) => {
   };
 
   return (
-    <div className="w-70 h-screen bg-white mt-6 p-4">
+    <div className={`w-70 h-screen bg-white dark:bg-gray-900 mt-6 p-4 transition-colors duration-300 ${collapsed ? 'hidden' : ''}`}>
       <div
         ref={containerRef}
         className="w-full h-[400px] relative"

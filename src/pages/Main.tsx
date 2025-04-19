@@ -12,6 +12,7 @@ import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
 import { SearchResultItem } from "@/services/search";
 import { searchService } from "@/services/search";
+import { Archive, Grid, ArrowUpDown } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -233,14 +234,14 @@ const Main: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
       <ContentDialog
         mode="add"
         open={addDialogOpen}
         setOpen={setAddDialogOpen}
         onSuccess={() => {
           setAddDialogOpen(false);
-          fetchItems(); // 添加完成后刷新列表
+          fetchItems();
         }}
       />
       <ContentDialog
@@ -250,7 +251,7 @@ const Main: React.FC = () => {
         setOpen={setEditDialogOpen}
         onSuccess={() => {
           setEditDialogOpen(false);
-          fetchItems(); // 编辑完成后刷新列表
+          fetchItems();
         }}
       />
       <AppBar
@@ -264,16 +265,19 @@ const Main: React.FC = () => {
         <Sidebar collapsed={sidebarCollapsed} onSelectedCard={setMode} />
         <div className="flex-1 p-4 overflow-auto">
           <div className="flex items-center justify-end gap-4 mb-4">
-            <div className="flex items-center gap-2">
-              <img src="/icons/archive.svg" alt="全部" className="w-5 h-5" />
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+              <Archive className="w-5 h-5" />
               <span>全部</span>
             </div>
-            <div className="flex items-center gap-2" onClick={handleModeChange}>
-              <img src="/icons/grid.svg" alt="模式" className="w-5 h-5" />
+            <div 
+              className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100" 
+              onClick={handleModeChange}
+            >
+              <Grid className="w-5 h-5" />
               <span>模式</span>
             </div>
-            <div className="flex items-center gap-2">
-              <img src="/icons/settings.svg" alt="排序" className="w-5 h-5" />
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+              <ArrowUpDown className="w-5 h-5" />
               <span>排序</span>
             </div>
           </div>
@@ -286,11 +290,11 @@ const Main: React.FC = () => {
                   <PaginationItem>
                     <PaginationPrevious
                       onClick={() => handlePageChange(currentPage - 1)}
-                      className={
+                      className={`${
                         currentPage === 1
                           ? "pointer-events-none opacity-50"
                           : ""
-                      }
+                      } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
                     >
                       上一页
                     </PaginationPrevious>
@@ -301,6 +305,7 @@ const Main: React.FC = () => {
                         <PaginationLink
                           onClick={() => handlePageChange(page)}
                           isActive={currentPage === page}
+                          className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
                         >
                           {page}
                         </PaginationLink>
@@ -310,11 +315,11 @@ const Main: React.FC = () => {
                   <PaginationItem>
                     <PaginationNext
                       onClick={() => handlePageChange(currentPage + 1)}
-                      className={
+                      className={`${
                         currentPage === totalPages
                           ? "pointer-events-none opacity-50"
                           : ""
-                      }
+                      } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
                     >
                       下一页
                     </PaginationNext>

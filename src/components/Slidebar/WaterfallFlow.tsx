@@ -55,7 +55,7 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({
   const defaultRenderItem = (item: WaterfallItem) => (
     <div
       key={item.id}
-      className="w-full mb-4 bg-gray-200 rounded-lg break-inside-avoid"
+      className="w-full mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg break-inside-avoid transition-colors duration-300"
       style={{ height: `${item.height}px` }}
     />
   );

@@ -20,9 +20,9 @@ const TagView: React.FC<TagViewProps> = ({ tag, items }) => {
     <div className="flex flex-col gap-4">
       {/* 标签显示区域 */}
       <div
-        className="inline-flex w-fit bg-[#F0F0F0] overflow-hidden rounded-[10px] m-2 p-2 outline outline-[#3D87C2]"
+        className="inline-flex w-fit bg-[#F0F0F0] dark:bg-[#2a3349] overflow-hidden rounded-[10px] m-2 p-2 outline outline-[#3D87C2] dark:outline-[#1e2538] transition-colors duration-300"
       >
-        <div className="text-[#3C89C4] text-base font-['Inter']">
+        <div className="text-[#3C89C4] dark:text-blue-400 text-base font-['Inter'] transition-colors duration-300">
           #{tag}
         </div>
       </div>
