@@ -6,21 +6,19 @@ import WaterfallFlow from "../components/Slidebar/WaterfallFlow";
 import TagView from "../components/TagView";
 import Line from "../components/Line";
 import ContentDialog from "../components/Dialogs/ContentDialog";
-import LoginDialog from "../components/Dialogs/LoginDialog";
 import { contentService, Content } from "@/services/content";
 import { useUserStore } from "@/store/userStore";
 import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
 
 const Main: React.FC = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mode, setMode] = useState<String>("all");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<Content | undefined>(
     undefined
   );
-  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // 使用appStore中的items和generateMockItems
@@ -103,12 +101,6 @@ const Main: React.FC = () => {
     }
   };
 
-  const handleUserClick = () => {
-    if (!user?.isLoggedIn) {
-      setLoginDialogOpen(true);
-    }
-  };
-
   // 根据模式渲染不同的组件
   const renderContent = () => {
     if (loading) {
@@ -185,15 +177,10 @@ const Main: React.FC = () => {
           fetchItems(); // 编辑完成后刷新列表
         }}
       />
-      <LoginDialog
-        open={loginDialogOpen}
-        onClose={() => setLoginDialogOpen(false)}
-      />
       <AppBar
         sidebarCollapsed={sidebarCollapsed}
         onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         onAdd={() => setAddDialogOpen(true)}
-        onUserClick={handleUserClick}
         username={user?.username || ""}
       />
       <div className="flex flex-1 overflow-hidden">

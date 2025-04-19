@@ -1,5 +1,19 @@
 import { api } from './api';
-import { ItemType, SortField, SortOrder } from './items';
+
+/**
+ * 项目类型
+ */
+export type ItemType = 'text' | 'image' | 'link';
+
+/**
+ * 排序字段
+ */
+export type SortField = 'createdAt' | 'updatedAt' | 'title';
+
+/**
+ * 排序顺序
+ */
+export type SortOrder = 'asc' | 'desc';
 
 /**
  * 搜索结果项

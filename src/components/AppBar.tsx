@@ -4,11 +4,10 @@ interface AppBarProps {
   sidebarCollapsed: boolean;
   onSidebarToggle: () => void;
   onAdd: () => void;
-  onUserClick: () => void;
   username?: string;
 }
 
-const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, onUserClick, username }) => {
+const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username }) => {
   return (
     <div
       className="w-full h-15 bg-white shadow-md flex items-center justify-between px-4"
@@ -42,7 +41,7 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, onUserClick, username
       {/* 右侧用户 */}
       <div className="flex gap-6 items-center h-full">
         <img src="/icons/plus.svg" alt="添加" className="w-6 h-6" onClick={onAdd} />
-        <div className="flex items-center gap-2 cursor-pointer" onClick={onUserClick}>
+        <div className="flex items-center gap-2">
           <img src="/icons/user.svg" alt="用户" className="w-6 h-6" />
           <span className="text-gray-600 text-base !mr-5 whitespace-nowrap">
             {username || "登录"}

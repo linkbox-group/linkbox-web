@@ -1,5 +1,14 @@
 import { api } from './api';
-import { SortField, SortOrder } from './items';
+
+/**
+ * 排序字段
+ */
+export type SortField = 'createdAt' | 'updatedAt' | 'title';
+
+/**
+ * 排序顺序
+ */
+export type SortOrder = 'asc' | 'desc';
 
 /**
  * 视图模式

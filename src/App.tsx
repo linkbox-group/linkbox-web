@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Main from './pages/Main';
-import Auth from './pages/auth';
+import Auth from './pages/Auth.tsx';
 import './App.css';
 import { Toaster } from "@/components/ui/sonner"
 
