@@ -79,9 +79,9 @@ const Auth: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-300">
+      <div className="w-[90%] sm:w-[400px] space-y-6 p-3 sm:p-8 bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-300">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+          <h2 className="mt-4 text-center text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
             {isLogin ? "登录 LinkBox" : "注册 LinkBox"}
           </h2>
         </div>

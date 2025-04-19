@@ -99,39 +99,45 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard }) => {
   };
 
   return (
-    <div className={`w-70 h-screen bg-white dark:bg-gray-900 mt-6 p-4 transition-colors duration-300 ${collapsed ? 'hidden' : ''}`}>
-      <div
-        ref={containerRef}
-        className="w-full h-[400px] relative"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onWheel={handleWheel}
-      >
-        {CARD_DATA.map((card, index) => {
-          const screenHeight = window.innerHeight;
-          const position = (index - currentIndex + CARD_DATA.length) % CARD_DATA.length;
-          const baseTranslateY = position * 130 * screenHeight / 1080;
-          const dragOffset = isDragging ? currentY - startY : 0;
-          const translateY = baseTranslateY + (position === 0 ? dragOffset : 0);
-          const scale = 1 - (position * 0.05);
+    <div
+      className={`h-full bg-white dark:bg-gray-900 transition-all duration-300 ease-in-out ${
+        collapsed ? "w-0 overflow-hidden" : "w-70"
+      }`}
+    >
+      <div className={`w-70 h-full bg-white dark:bg-gray-900 p-4 transition-all duration-300 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
+        <div
+          ref={containerRef}
+          className="w-full h-[400px] relative"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onWheel={handleWheel}
+        >
+          {CARD_DATA.map((card, index) => {
+            const screenHeight = window.innerHeight;
+            const position = (index - currentIndex + CARD_DATA.length) % CARD_DATA.length;
+            const baseTranslateY = position * 130 * screenHeight / 1080;
+            const dragOffset = isDragging ? currentY - startY : 0;
+            const translateY = baseTranslateY + (position === 0 ? dragOffset : 0);
+            const scale = 1 - (position * 0.05);
 
-          return (
-            <div
-              key={card.id}
-              className={`absolute w-full transition-all duration-300 ${
-                isDragging ? "cursor-grabbing" : "cursor-grab"
-              }`}
-              style={{
-                transform: `translateY(${translateY}px) scale(${scale})`,
-                zIndex: CARD_DATA.length - position,
-              }}
-            >
-              {renderCard(card.type)}
-            </div>
-          );
-        })}
+            return (
+              <div
+                key={card.id}
+                className={`absolute w-full transition-all duration-300 ${
+                  isDragging ? "cursor-grabbing" : "cursor-grab"
+                }`}
+                style={{
+                  transform: `translateY(${translateY}px) scale(${scale})`,
+                  zIndex: CARD_DATA.length - position,
+                }}
+              >
+                {renderCard(card.type)}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

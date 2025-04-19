@@ -5,6 +5,12 @@ import { toast } from "sonner";
 import { useTheme } from "@/components/theme-provider";
 import { Sun, Moon, Menu, Search, Plus, User, Clock, X, Link, FileText, Image } from "lucide-react";
 
+interface User {
+  id: string;
+  username: string;
+  avatar?: string;
+}
+
 interface AppBarProps {
   sidebarCollapsed: boolean;
   onSidebarToggle: () => void;
@@ -24,11 +30,14 @@ const MAX_HISTORY_ITEMS = 10;
 
 const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch }) => {
   const { theme, setTheme } = useTheme();
-  const [searchValue, setSearchValue] = useState("");
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [searchExpanded, setSearchExpanded] = useState(false);
+  const [searchContent, setSearchContent] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // 搜索历史
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>(() => {
@@ -50,7 +59,11 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
-        setIsSearchFocused(false);
+        setSearchContent(""); // 清空搜索内容
+        // 在移动端时，同时收起搜索框
+        if (window.innerWidth < 768) {
+          setSearchExpanded(false);
+        }
       }
     };
 
@@ -69,14 +82,11 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
     }
 
     try {
-      setIsLoading(true);
       onSearch?.(keyword);
       addToHistory(keyword);
     } catch (error) {
       console.error("搜索失败:", error);
       toast.error("搜索失败，请重试");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -101,7 +111,7 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
   // 处理搜索输入
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setSearchValue(value);
+    setSearchContent(value);
     setShowSuggestions(true);
     debouncedSearch(value);
   };
@@ -109,28 +119,28 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      performSearch(searchValue);
+      performSearch(searchContent);
       setShowSuggestions(false);
     }
   };
 
   // 处理搜索历史点击
   const handleHistoryClick = (keyword: string) => {
-    setSearchValue(keyword);
+    setSearchContent(keyword);
     performSearch(keyword);
     setShowSuggestions(false);
   };
 
   // 处理搜索建议点击
   const handleSuggestionClick = (item: SearchResultItem) => {
-    setSearchValue(item.title);
+    setSearchContent(item.title);
     performSearch(item.title);
     setShowSuggestions(false);
   };
 
   // 处理标签点击
   const handleTagClick = (tagName: string) => {
-    setSearchValue(tagName);
+    setSearchContent(tagName);
     performSearch(tagName);
     setShowSuggestions(false);
   };
@@ -142,10 +152,15 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
     };
   }, [debouncedSearch]);
 
+  const handleSidebarToggle = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+    onSidebarToggle();
+  };
+
   return (
     <div className="w-full h-15 bg-white dark:bg-gray-900 shadow-md flex items-center justify-between px-4">
       {/* 左侧 Logo */}
-      <div className="flex items-center h-full" onClick={onSidebarToggle}>
+      <div className="hidden md:flex items-center h-full" onClick={handleSidebarToggle}>
         <img className="w-16 h-12 mx-5" src="/logo.png" alt="Logo" />
         <div
           className="flex items-center text-lg"
@@ -160,36 +175,74 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
         </div>
       </div>
 
+      {/* 左侧菜单按钮 */}
+      <button
+        onClick={handleSidebarToggle}
+        className="md:hidden p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
       {/* 中间搜索框 */}
-      <div ref={searchRef} className="relative sm:w-[600px] w-[200px]">
-        <div
-          className={`bg-[#F5F5F5] dark:bg-gray-800 rounded-md flex flex-row items-center h-10 ${
-            isSearchFocused ? "ring-2 ring-blue-500" : ""
-          }`}
-        >
-          {isLoading ? (
-            <div className="mx-3 w-5 h-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-500" />
+      <div ref={searchRef} className="relative flex-1 mx-4 flex items-center justify-center transition-all duration-300">
+        {/* 桌面端搜索框 */}
+        <div className="hidden md:block w-full max-w-[600px]">
+          <div
+            className={`bg-[#F5F5F5] dark:bg-gray-800 rounded-md flex flex-row items-center h-10 ${
+              searchExpanded ? "ring-2 ring-blue-500" : ""
+            }`}
+          >
+            <Search className="w-5 h-5 text-gray-500 dark:text-gray-400 mx-3" />
+            <input
+              type="text"
+              value={searchContent}
+              onChange={handleSearchChange}
+              onFocus={() => {
+                setSearchExpanded(true);
+                setShowSuggestions(true);
+              }}
+              placeholder="搜索 (按 tab 搜索标签)"
+              className="w-full h-full rounded-md text-base text-[#757575] dark:text-gray-300 focus:outline-none placeholder:text-[#757575] dark:placeholder:text-gray-400 bg-transparent"
+              onKeyDown={handleKeyDown}
+            />
+          </div>
+        </div>
+
+        {/* 移动端搜索 */}
+        <div className="md:hidden">
+          {searchExpanded ? (
+            <div className="bg-[#F5F5F5] dark:bg-gray-800 rounded-md flex flex-row items-center h-10 w-[200px]">
+              <Search className="w-5 h-5 text-gray-500 dark:text-gray-400 mx-3" />
+              <input
+                type="text"
+                value={searchContent}
+                onChange={handleSearchChange}
+                onFocus={() => {
+                  setSearchExpanded(true);
+                  setShowSuggestions(true);
+                }}
+                placeholder="搜索"
+                className="w-full h-full rounded-md text-base text-[#757575] dark:text-gray-300 focus:outline-none placeholder:text-[#757575] dark:placeholder:text-gray-400 bg-transparent"
+                onKeyDown={handleKeyDown}
+              />
+            </div>
           ) : (
-            <Search className="mx-3 w-5 h-5 text-gray-500" />
+            <button
+              onClick={() => {
+                setSearchExpanded(true);
+                setShowSuggestions(true);
+              }}
+              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              <Search className="w-5 h-5 text-gray-500" />
+            </button>
           )}
-          <input
-            type="text"
-            value={searchValue}
-            onChange={handleSearchChange}
-            onFocus={() => {
-              setIsSearchFocused(true);
-              setShowSuggestions(true);
-            }}
-            placeholder="搜索 (按 tab 搜索标签)"
-            className="w-full h-full rounded-md text-base text-[#757575] dark:text-gray-300 focus:outline-none placeholder:text-[#757575] dark:placeholder:text-gray-400 bg-transparent"
-            onKeyDown={handleKeyDown}
-          />
         </div>
 
         {/* 搜索建议面板 */}
         {showSuggestions && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-900 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
-            {searchValue ? (
+          <div className="absolute top-[40px] left-1/2 transform -translate-x-1/2 w-full max-w-[600px] mt-1 bg-white dark:bg-gray-900 rounded-md shadow-lg z-50 max-h-96 overflow-y-auto">
+            {searchContent ? (
               <div className="p-2">
                 {/* 搜索结果 */}
                 {searchResults.length > 0 && (
@@ -268,7 +321,7 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
       </div>
 
       {/* 右侧用户 */}
-      <div className="flex gap-6 items-center h-full">
+      <div className="flex gap-6 items-center h-full transition-all duration-300">
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"

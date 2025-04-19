@@ -12,7 +12,7 @@ import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
 import { SearchResultItem } from "@/services/search";
 import { searchService } from "@/services/search";
-import { Archive, Grid, ArrowUpDown, List } from "lucide-react";
+import { Archive, Grid, ArrowUpDown, List, Menu, Search, Plus } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select";
 
 const Main: React.FC = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(window.innerWidth < 768);
   const [mode, setMode] = useState<String>("all");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -44,6 +44,15 @@ const Main: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const pageSize = 10;
+
+  // 监听窗口大小变化
+  useEffect(() => {
+    const handleResize = () => {
+      setSidebarCollapsed(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // 使用appStore中的items和generateMockItems
   const { items, setItems, deleteItem, generateMockItems } = useAppStore();
@@ -223,7 +232,7 @@ const Main: React.FC = () => {
         return (
           <WaterfallFlow
             items={items}
-            columns={3}
+            columns={window.innerWidth < 768 ? 1 : 3}
             gap={16}
             renderItem={(item) => (
               <Card
@@ -242,7 +251,7 @@ const Main: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-900 overflow-x-hidden">
       <ContentDialog
         mode="add"
         open={addDialogOpen}
@@ -269,86 +278,90 @@ const Main: React.FC = () => {
         username={user?.username || ""}
         onSearch={handleSearch}
       />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar collapsed={sidebarCollapsed} onSelectedCard={setMode} />
-        <div className="flex-1 p-4 overflow-auto">
-          <div className="flex items-center justify-end gap-4 mb-4">
-            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-              <Archive className="w-5 h-5" />
-              <span>全部</span>
+      <div className="flex flex-1 min-h-0 overflow-x-hidden">
+        <div className={`flex-shrink-0 transition-all duration-300 ${sidebarCollapsed ? 'w-0' : 'w-70'}`}>
+          <Sidebar collapsed={sidebarCollapsed} onSelectedCard={setMode} />
+        </div>
+        <div className="flex-1 overflow-auto">
+          <div className="p-4">
+            <div className="flex items-center justify-end gap-4 mb-4">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                <Archive className="w-5 h-5" />
+                <span>全部</span>
+              </div>
+              <div 
+                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100" 
+                onClick={handleModeChange}
+              >
+                {mode === "all" ? (
+                  <Grid className="w-5 h-5" />
+                ) : (
+                  <List className="w-5 h-5" />
+                )}
+                <span>模式</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+                <Select>
+                  <SelectTrigger className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border-0 bg-transparent p-0 h-auto cursor-pointer">
+                    <ArrowUpDown className="w-5 h-5" />
+                    <span>排序</span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="time">时间排序</SelectItem>
+                    <SelectItem value="title">标题排序</SelectItem>
+                    <SelectItem value="folder">文件夹排序</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div 
-              className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100" 
-              onClick={handleModeChange}
-            >
-              {mode === "all" ? (
-                <Grid className="w-5 h-5" />
-              ) : (
-                <List className="w-5 h-5" />
-              )}
-              <span>模式</span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-              <Select>
-                <SelectTrigger className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border-0 bg-transparent p-0 h-auto cursor-pointer">
-                  <ArrowUpDown className="w-5 h-5" />
-                  <span>排序</span>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="time">时间排序</SelectItem>
-                  <SelectItem value="title">标题排序</SelectItem>
-                  <SelectItem value="folder">文件夹排序</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {renderContent()}
+            {/* 分页组件 */}
+            {items.length > 0 && (
+              <div className="mt-4 flex justify-center">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        className={`${
+                          currentPage === 1
+                            ? "pointer-events-none opacity-50"
+                            : ""
+                        } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
+                      >
+                        上一页
+                      </PaginationPrevious>
+                    </PaginationItem>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => handlePageChange(page)}
+                            isActive={currentPage === page}
+                            className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )
+                    )}
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        className={`${
+                          currentPage === totalPages
+                            ? "pointer-events-none opacity-50"
+                            : ""
+                        } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
+                      >
+                        下一页
+                      </PaginationNext>
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
           </div>
-          {renderContent()}
-          {/* 分页组件 */}
-          {items.length > 0 && (
-            <div className="mt-4 flex justify-center">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      className={`${
-                        currentPage === 1
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
-                    >
-                      上一页
-                    </PaginationPrevious>
-                  </PaginationItem>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                    (page) => (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          onClick={() => handlePageChange(page)}
-                          isActive={currentPage === page}
-                          className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    )
-                  )}
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      className={`${
-                        currentPage === totalPages
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
-                    >
-                      下一页
-                    </PaginationNext>
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
         </div>
       </div>
     </div>
