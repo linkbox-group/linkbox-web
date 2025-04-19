@@ -11,8 +11,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Main />} />
-          <Route path="/login" element={<Auth />} />
-          <Route path="/register" element={<Auth />} />
+          <Route path="/auth" element={<Auth />} />
         </Routes>
         <Toaster />
       </Router>
