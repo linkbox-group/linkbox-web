@@ -25,14 +25,4 @@ export interface AppState {
   isLoading: boolean;
   isMobile: boolean;
   sidebarCollapsed: boolean;
-}
-
-/**
- * 消息类型
- */
-export interface Message {
-  id: string;
-  type: 'success' | 'error' | 'info' | 'warning';
-  content: string;
-  duration?: number;
 } 

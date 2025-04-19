@@ -2,56 +2,58 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "../components/Slidebar/Sidebar";
 import AppBar from "../components/AppBar";
 import Card from "../components/Card";
-import WaterfallFlow, {
-  WaterfallItem,
-} from "../components/Slidebar/WaterfallFlow";
+import WaterfallFlow from "../components/Slidebar/WaterfallFlow";
 import TagView from "../components/TagView";
 import Line from "../components/Line";
-import AddDialog from "../components/Dialogs/AddDialog";
+import ContentDialog from "../components/Dialogs/ContentDialog";
 import LoginDialog from "../components/Dialogs/LoginDialog";
 import { contentService, Content } from "@/services/content";
-import { useMessageStore } from "@/store/messageStore";
 import { useUserStore } from "@/store/userStore";
-
-interface CardItem extends WaterfallItem {
-  // id已经在WaterfallItem中定义为number | string
-  title: string;
-  favoriteTime: string;
-  tags: string[];
-  folderPath: string;
-  link: string;
-}
+import { useAppStore } from "@/store/appStore";
+import { toast } from "sonner";
 
 const Main: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false);
   const [mode, setMode] = useState<String>("all");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedContent, setSelectedContent] = useState<Content | undefined>(
+    undefined
+  );
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
-  const [items, setItems] = useState<CardItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const { addMessage } = useMessageStore();
+
+  // 使用appStore中的items和generateMockItems
+  const { items, setItems, deleteItem, generateMockItems } = useAppStore();
   const { user } = useUserStore();
 
   // 获取收藏内容
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const response = await contentService.getRecentContents(user?.id || "", 20);
-      setItems(response.items.map((item: Content) => ({
-        id: item.id,
-        height: Math.floor(Math.random() * 200) + 300,
-        title: item.title,
-        favoriteTime: item.created_at,
-        tags: item.tags,
-        folderPath: item.collection_ids[0] || "未分类",
-        link: item.url
-      })));
+
+      // 如果用户已登录，尝试从API获取数据
+      if (user?.id) {
+        const response = await contentService.getRecentContents(user.id, 20);
+        const fetchedItems = response.items.map((item: Content) => ({
+          id: item.id,
+          height: Math.floor(Math.random() * 200) + 300,
+          title: item.title,
+          favoriteTime: item.created_at,
+          tags: item.tags,
+          folderPath: "未分类",
+          link: item.url,
+        }));
+        setItems(fetchedItems);
+      } else {
+        // 如果用户未登录，使用模拟数据
+        generateMockItems(20);
+      }
     } catch (error) {
-      addMessage({
-        type: "error",
-        content: "获取收藏内容失败",
-        duration: 3000
-      });
+      console.error("获取数据失败:", error);
+      toast.error("获取数据失败");
+      // 如果API请求失败，使用模拟数据
+      generateMockItems(20);
     } finally {
       setLoading(false);
     }
@@ -71,24 +73,33 @@ const Main: React.FC = () => {
   };
 
   const handleEdit = (id: string | number) => {
-    console.log("编辑项目:", id);
+    const cardItem = items.find((item) => item.id === id);
+    if (cardItem) {
+      // 将CardItem转换为Content类型
+      const content: Content = {
+        id: cardItem.id.toString(),
+        title: cardItem.title,
+        description: "",
+        url: cardItem.link,
+        image_url: "",
+        created_at: cardItem.favoriteTime,
+        updated_at: cardItem.favoriteTime,
+        user_id: user?.id || "",
+        tags: cardItem.tags,
+      };
+      setSelectedContent(content);
+      setEditDialogOpen(true);
+    }
   };
 
   const handleDelete = async (id: string | number) => {
     try {
       await contentService.deleteContent(id.toString(), user?.id || "");
-      setItems(items.filter(item => item.id !== id));
-      addMessage({
-        type: "success",
-        content: "删除成功",
-        duration: 3000
-      });
+      deleteItem(id);
+      toast.success("删除成功");
     } catch (error) {
-      addMessage({
-        type: "error",
-        content: "删除失败",
-        duration: 3000
-      });
+      console.error("删除失败:", error);
+      toast.error("删除失败");
     }
   };
 
@@ -101,7 +112,9 @@ const Main: React.FC = () => {
   // 根据模式渲染不同的组件
   const renderContent = () => {
     if (loading) {
-      return <div className="flex justify-center items-center h-full">加载中...</div>;
+      return (
+        <div className="flex justify-center items-center h-full">加载中...</div>
+      );
     }
 
     switch (mode) {
@@ -153,16 +166,35 @@ const Main: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <AddDialog open={addDialogOpen} setOpen={setAddDialogOpen} onAdd={() => {
-        setAddDialogOpen(false);
-        fetchItems(); // 添加完成后刷新列表
-      }} />
-      <LoginDialog open={loginDialogOpen} onClose={() => setLoginDialogOpen(false)} />
+      <ContentDialog
+        mode="add"
+        open={addDialogOpen}
+        setOpen={setAddDialogOpen}
+        onSuccess={() => {
+          setAddDialogOpen(false);
+          fetchItems(); // 添加完成后刷新列表
+        }}
+      />
+      <ContentDialog
+        mode="edit"
+        content={selectedContent}
+        open={editDialogOpen}
+        setOpen={setEditDialogOpen}
+        onSuccess={() => {
+          setEditDialogOpen(false);
+          fetchItems(); // 编辑完成后刷新列表
+        }}
+      />
+      <LoginDialog
+        open={loginDialogOpen}
+        onClose={() => setLoginDialogOpen(false)}
+      />
       <AppBar
         sidebarCollapsed={sidebarCollapsed}
         onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         onAdd={() => setAddDialogOpen(true)}
         onUserClick={handleUserClick}
+        username={user?.username || ""}
       />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar collapsed={sidebarCollapsed} onSelectedCard={setMode} />

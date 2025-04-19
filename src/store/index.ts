@@ -5,13 +5,11 @@ import { immer } from 'zustand/middleware/immer';
 import { useUserStore } from './userStore';
 import { useSettingsStore } from './settingsStore';
 import { useAppStore } from './appStore';
-import { useMessageStore } from './messageStore';
 
 // 导出所有store
 export { useUserStore } from './userStore';
 export { useSettingsStore } from './settingsStore';
 export { useAppStore } from './appStore';
-export { useMessageStore } from './messageStore';
 
 // 导出actions
 export const useUserActions = () => ({
@@ -29,10 +27,4 @@ export const useAppActions = () => ({
   setLoading: useAppStore((state) => state.setLoading),
   toggleSidebar: useAppStore((state) => state.toggleSidebar),
   setIsMobile: useAppStore((state) => state.setIsMobile),
-});
-
-export const useMessageActions = () => ({
-  addMessage: useMessageStore((state) => state.addMessage),
-  removeMessage: useMessageStore((state) => state.removeMessage),
-  clearMessages: useMessageStore((state) => state.clearMessages),
 });

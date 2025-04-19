@@ -16,37 +16,22 @@ export interface ContentMetadata {
 
 export interface Content {
   id: string;
-  user_id: string;
-  type: string;
-  url: string;
   title: string;
   description: string;
-  thumbnail_url: string;
-  tags: string[];
-  collection_ids: string[];
-  is_favorite: boolean;
-  is_archived: boolean;
-  is_private: boolean;
-  metadata: ContentMetadata;
+  url: string;
+  image_url: string;
   created_at: string;
   updated_at: string;
-  note: string;
-  read_count: number;
+  user_id: string;
+  tags: string[];
 }
 
 export interface CreateContentData {
-  user_id: string;
-  type: string;
-  url: string;
   title: string;
   description: string;
-  thumbnail_url: string;
-  metadata: ContentMetadata;
+  url: string;
+  image_url: string;
   tags: string[];
-  collection_ids: string[];
-  is_favorite: boolean;
-  is_private: boolean;
-  note: string;
 }
 
 export interface UpdateContentData {

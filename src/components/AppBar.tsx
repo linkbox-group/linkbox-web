@@ -5,9 +5,10 @@ interface AppBarProps {
   onSidebarToggle: () => void;
   onAdd: () => void;
   onUserClick: () => void;
+  username?: string;
 }
 
-const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, onUserClick }) => {
+const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, onUserClick, username }) => {
   return (
     <div
       className="w-full h-15 bg-white shadow-md flex items-center justify-between px-4"
@@ -43,7 +44,9 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, onUserClick }) => {
         <img src="/icons/plus.svg" alt="添加" className="w-6 h-6" onClick={onAdd} />
         <div className="flex items-center gap-2 cursor-pointer" onClick={onUserClick}>
           <img src="/icons/user.svg" alt="用户" className="w-6 h-6" />
-          <span className="text-gray-600 text-base !mr-5 whitespace-nowrap">用户名</span>
+          <span className="text-gray-600 text-base !mr-5 whitespace-nowrap">
+            {username || "登录"}
+          </span>
         </div>
       </div>
     </div>

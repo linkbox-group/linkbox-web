@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -9,47 +9,110 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { contentService, Content } from "@/services/content";
+import { useUserStore } from "@/store/userStore";
+import { toast } from "sonner"
+import { useNavigate } from "react-router-dom";
 
-interface AddDialogProps {
-  onAdd: (data: { link: string; title?: string; tags?: string[] }) => void;
+interface ContentDialogProps {
+  mode: "add" | "edit";
+  content?: Content;
   open: boolean;
   setOpen: (open: boolean) => void;
+  onSuccess: () => void;
 }
 
-const AddDialog: React.FC<AddDialogProps> = ({ onAdd,open,setOpen }) => {
+const ContentDialog: React.FC<ContentDialogProps> = ({
+  mode,
+  content,
+  open,
+  setOpen,
+  onSuccess,
+}) => {
   const [link, setLink] = useState("");
   const [title, setTitle] = useState("");
   const [tags, setTags] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { user } = useUserStore();
+  const navigate = useNavigate();
+  // 当对话框打开或内容变化时，更新表单
+  useEffect(() => {
+    if (mode === "edit" && content) {
+      setLink(content.url);
+      setTitle(content.title);
+      setTags(content.tags.join(", "));
+    } else {
+      // 添加模式，重置表单
+      setLink("");
+      setTitle("");
+      setTags("");
+    }
+  }, [mode, content, open]);
 
-  const handleSubmit = () => {
-    if (!link) return;
+  const handleSubmit = async () => {
+    if (!link) {
+      toast.error("请输入链接地址");
+      return;
+    }
 
-    onAdd({
-      link,
-      title: title || undefined,
-      tags: tags ? tags.split(",").map((tag) => tag.trim()) : undefined,
-    });
+    if (!user?.id) {
+      toast.error("请先登录");
+      navigate("/login");
+      return;
+    }
 
-    // 重置表单
-    setLink("");
-    setTitle("");
-    setTags("");
+    try {
+      setLoading(true);
+
+      if (mode === "add") {
+        // 从URL提取元数据
+        const metadata = await contentService.extractMetadata(link);
+
+        // 创建内容项
+        await contentService.createContent({
+          url: link,
+          title: title || metadata.title,
+          description: metadata.description,
+          image_url: metadata.thumbnail_url,
+          tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
+        });
+      } else if (mode === "edit" && content) {
+        // 编辑模式
+        await contentService.updateContent(content.id, {
+          user_id: user.id,
+          title: title,
+          tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
+        });
+      }
+
+      // 关闭对话框并刷新列表
+      setOpen(false);
+      onSuccess();
+    } catch (error) {
+      toast.error(mode === "add" ? "添加失败" : "更新失败");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <AlertDialog open={open}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>添加新链接</AlertDialogTitle>
+          <AlertDialogTitle>
+            {mode === "add" ? "添加新链接" : "编辑链接"}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            请输入链接信息，标题和标签为选填项
+            {mode === "add"
+              ? "请输入链接信息，标题和标签为选填项"
+              : "修改链接信息"}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <label htmlFor="link" className="text-sm font-medium">
-              链接地址 *
+              链接地址 {mode === "add" ? "*" : ""}
             </label>
             <input
               id="link"
@@ -58,7 +121,8 @@ const AddDialog: React.FC<AddDialogProps> = ({ onAdd,open,setOpen }) => {
                 setLink(e.target.value)
               }
               placeholder="请输入链接地址"
-              required
+              required={mode === "add"}
+              disabled={mode === "edit"}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
@@ -95,12 +159,16 @@ const AddDialog: React.FC<AddDialogProps> = ({ onAdd,open,setOpen }) => {
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setOpen(false)}>取消</AlertDialogCancel>
-          <AlertDialogAction onClick={handleSubmit}>添加</AlertDialogAction>
+          <AlertDialogCancel onClick={() => setOpen(false)} disabled={loading}>
+            取消
+          </AlertDialogCancel>
+          <AlertDialogAction onClick={handleSubmit} disabled={loading}>
+            {loading ? (mode === "add" ? "添加中..." : "更新中...") : mode === "add" ? "添加" : "更新"}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
 };
 
-export default AddDialog;
+export default ContentDialog; 
