@@ -57,7 +57,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
 
     if (!user?.id) {
       toast.error("请先登录");
-      navigate("/login");
+      navigate("/auth");
       return;
     }
 
@@ -97,12 +97,12 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
 
   return (
     <AlertDialog open={open}>
-      <AlertDialogContent>
+      <AlertDialogContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
         <AlertDialogHeader>
-          <AlertDialogTitle>
+          <AlertDialogTitle className="text-gray-900 dark:text-gray-100">
             {mode === "add" ? "添加新链接" : "编辑链接"}
           </AlertDialogTitle>
-          <AlertDialogDescription>
+          <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
             {mode === "add"
               ? "请输入链接信息，标题和标签为选填项"
               : "修改链接信息"}
@@ -111,7 +111,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <label htmlFor="link" className="text-sm font-medium">
+            <label htmlFor="link" className="text-sm font-medium text-gray-900 dark:text-gray-100">
               链接地址 {mode === "add" ? "*" : ""}
             </label>
             <input
@@ -123,12 +123,12 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
               placeholder="请输入链接地址"
               required={mode === "add"}
               disabled={mode === "edit"}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 
           <div className="grid gap-2">
-            <label htmlFor="title" className="text-sm font-medium">
+            <label htmlFor="title" className="text-sm font-medium text-gray-900 dark:text-gray-100">
               标题
             </label>
             <input
@@ -138,12 +138,12 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
                 setTitle(e.target.value)
               }
               placeholder="请输入标题（选填）"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 
           <div className="grid gap-2">
-            <label htmlFor="tags" className="text-sm font-medium">
+            <label htmlFor="tags" className="text-sm font-medium text-gray-900 dark:text-gray-100">
               标签
             </label>
             <input
@@ -153,16 +153,24 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
                 setTags(e.target.value)
               }
               placeholder="请输入标签，用逗号分隔（选填）"
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setOpen(false)} disabled={loading}>
+          <AlertDialogCancel 
+            onClick={() => setOpen(false)} 
+            disabled={loading}
+            className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600"
+          >
             取消
           </AlertDialogCancel>
-          <AlertDialogAction onClick={handleSubmit} disabled={loading}>
+          <AlertDialogAction 
+            onClick={handleSubmit} 
+            disabled={loading}
+            className="bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600"
+          >
             {loading ? (mode === "add" ? "添加中..." : "更新中...") : mode === "add" ? "添加" : "更新"}
           </AlertDialogAction>
         </AlertDialogFooter>
