@@ -10,7 +10,17 @@ import { contentService, Content } from "@/services/content";
 import { useUserStore } from "@/store/userStore";
 import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
-
+import { SearchResultItem } from "@/services/search";
+import { searchService } from "@/services/search";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 const Main: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mode, setMode] = useState<String>("all");
@@ -20,19 +30,29 @@ const Main: React.FC = () => {
     undefined
   );
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const pageSize = 10;
 
   // 使用appStore中的items和generateMockItems
   const { items, setItems, deleteItem, generateMockItems } = useAppStore();
   const { user } = useUserStore();
 
   // 获取收藏内容
-  const fetchItems = async () => {
+  const fetchItems = async (page: number = 1) => {
     try {
       setLoading(true);
+      setCurrentPage(page);
 
       // 如果用户已登录，尝试从API获取数据
       if (user?.id) {
-        const response = await contentService.getRecentContents(user.id, 20);
+        const response = await contentService.getRecentContents(
+          user.id,
+          pageSize,
+          (page - 1).toString()
+        );
         const fetchedItems = response.items.map((item: Content) => ({
           id: item.id,
           height: Math.floor(Math.random() * 200) + 300,
@@ -43,17 +63,73 @@ const Main: React.FC = () => {
           link: item.url,
         }));
         setItems(fetchedItems);
+        // 由于 API 没有返回总数，我们暂时使用固定值
+        setTotalPages(5);
       } else {
         // 如果用户未登录，使用模拟数据
-        generateMockItems(20);
+        generateMockItems(pageSize);
+        setTotalPages(5); // 模拟总页数
       }
     } catch (error) {
       console.error("获取数据失败:", error);
       toast.error("获取数据失败");
       // 如果API请求失败，使用模拟数据
-      generateMockItems(20);
+      generateMockItems(pageSize);
+      setTotalPages(5); // 模拟总页数
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 处理搜索
+  const handleSearch = async (keyword: string, page: number = 1) => {
+    try {
+      setIsSearching(true);
+      setSearchKeyword(keyword);
+      setCurrentPage(page);
+      const result = await searchService.globalSearch({
+        keyword,
+        page,
+        pageSize,
+      });
+
+      if (result.items.length > 0) {
+        // 将搜索结果转换为 items 格式
+        const searchItems = result.items.map((item: SearchResultItem) => ({
+          id: item.id.toString(),
+          height: Math.floor(Math.random() * 200) + 300,
+          title: item.title,
+          favoriteTime: item.createdAt,
+          tags: [], // 暂时使用空数组，因为 SearchResultItem 中没有 tags 字段
+          folderPath: item.collections[0]?.name || "未分类",
+          link: item.url || "",
+        }));
+        setItems(searchItems);
+        setTotalPages(
+          Math.ceil(result.pagination.totalItems / result.pagination.pageSize)
+        );
+      } else {
+        // 如果没有搜索结果，显示提示
+        toast.info("未找到相关结果");
+        setItems([]);
+        setTotalPages(1);
+      }
+    } catch (error) {
+      console.error("搜索失败:", error);
+      toast.error("搜索失败，请重试");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // 处理页码变化
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      if (isSearching) {
+        handleSearch(searchKeyword, page);
+      } else {
+        fetchItems(page);
+      }
     }
   };
 
@@ -182,6 +258,7 @@ const Main: React.FC = () => {
         onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
         onAdd={() => setAddDialogOpen(true)}
         username={user?.username || ""}
+        onSearch={handleSearch}
       />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar collapsed={sidebarCollapsed} onSelectedCard={setMode} />
@@ -201,6 +278,51 @@ const Main: React.FC = () => {
             </div>
           </div>
           {renderContent()}
+          {/* 分页组件 */}
+          {items.length > 0 && (
+            <div className="mt-4 flex justify-center">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      className={
+                        currentPage === 1
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
+                    >
+                      上一页
+                    </PaginationPrevious>
+                  </PaginationItem>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          onClick={() => handlePageChange(page)}
+                          isActive={currentPage === page}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    )
+                  )}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      className={
+                        currentPage === totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
+                    >
+                      下一页
+                    </PaginationNext>
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
         </div>
       </div>
     </div>
