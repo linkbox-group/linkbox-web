@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
-import { userService } from "@/services/user";
+import { userService, ApiResponse } from "@/services/user";
 import { Loader2 } from "lucide-react";
 
 const Auth: React.FC = () => {
@@ -11,22 +11,27 @@ const Auth: React.FC = () => {
   const { login } = useUserStore();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [sendingCode, setSendingCode] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const [formData, setFormData] = useState({
-    username: "",
-    password: "",
     email: "",
+    password: "",
+    confirm_password: "",
+    code: "",
   });
 
-  // 根据 URL 参数设置登录/注册状态
+  // 根据路由路径设置登录/注册状态
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const mode = searchParams.get('mode');
-    if (mode === 'register') {
-      setIsLogin(false);
-    } else {
-      setIsLogin(true);
+    setIsLogin(location.pathname === "/login");
+  }, [location.pathname]);
+
+  // 倒计时效果
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
     }
-  }, [location]);
+  }, [countdown]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,24 +41,33 @@ const Auth: React.FC = () => {
       if (isLogin) {
         // 使用 userService 进行登录
         const response = await userService.login({
-          account: formData.username,
-          password: formData.password,
-        });
-
-        // 更新用户状态
-        login(response);
-        toast.success("登录成功");
-        navigate("/");
-      } else {
-        // 使用 userService 进行注册
-        await userService.register({
-          username: formData.username,
           email: formData.email,
           password: formData.password,
         });
 
-        toast.success("注册成功");
-        setIsLogin(true);
+        if (response.code === 20000) {
+          // 更新用户状态
+          login(response.data);
+          toast.success("登录成功");
+          navigate("/");
+        } else {
+          toast.error(response.msg);
+        }
+      } else {
+        // 使用 userService 进行注册
+        const response = await userService.register({
+          email: formData.email,
+          password: formData.password,
+          confirm_password: formData.confirm_password,
+          code: formData.code,
+        });
+
+        if (response.code === 20000) {
+          toast.success("注册成功");
+          navigate("/login");
+        } else {
+          toast.error(response.msg);
+        }
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.msg || (isLogin ? "登录失败，服务器错误" : "注册失败，服务器错误"));
@@ -70,11 +84,30 @@ const Auth: React.FC = () => {
     }));
   };
 
+  const handleSendCode = async () => {
+    if (!formData.email) {
+      toast.error("请输入邮箱");
+      return;
+    }
+
+    try {
+      setSendingCode(true);
+      const response = await userService.sendCode({ email: formData.email });
+      if (response.code === 20000) {
+        toast.success("验证码已发送");
+        setCountdown(60); // 设置60秒倒计时
+      } else {
+        toast.error(response.msg);
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.msg || "发送验证码失败");
+    } finally {
+      setSendingCode(false);
+    }
+  };
+
   const toggleMode = () => {
-    const newMode = !isLogin;
-    setIsLogin(newMode);
-    // 更新 URL 参数
-    navigate(`/auth?mode=${newMode ? 'login' : 'register'}`, { replace: true });
+    navigate(isLogin ? "/register" : "/login");
   };
 
   return (
@@ -88,35 +121,51 @@ const Auth: React.FC = () => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
-              <label htmlFor="username" className="sr-only">
-                用户名
+              <label htmlFor="email" className="sr-only">
+                邮箱
               </label>
               <input
-                id="username"
-                name="username"
-                type="text"
+                id="email"
+                name="email"
+                type="email"
                 required
                 className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-white dark:bg-gray-700 transition-colors duration-300"
-                placeholder="用户名"
-                value={formData.username}
+                placeholder="邮箱"
+                value={formData.email}
                 onChange={handleChange}
               />
             </div>
             {!isLogin && (
-              <div>
-                <label htmlFor="email" className="sr-only">
-                  邮箱
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-white dark:bg-gray-700 transition-colors duration-300"
-                  placeholder="邮箱"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <label htmlFor="code" className="sr-only">
+                    验证码
+                  </label>
+                  <input
+                    id="code"
+                    name="code"
+                    type="text"
+                    required
+                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-white dark:bg-gray-700 transition-colors duration-300"
+                    placeholder="验证码"
+                    value={formData.code}
+                    onChange={handleChange}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSendCode}
+                  disabled={sendingCode || countdown > 0}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 transition-colors duration-300"
+                >
+                  {sendingCode ? (
+                    <Loader2 className="animate-spin h-5 w-5" />
+                  ) : countdown > 0 ? (
+                    `${countdown}秒后重试`
+                  ) : (
+                    "获取验证码"
+                  )}
+                </button>
               </div>
             )}
             <div>
@@ -134,6 +183,23 @@ const Auth: React.FC = () => {
                 onChange={handleChange}
               />
             </div>
+            {!isLogin && (
+              <div>
+                <label htmlFor="confirm_password" className="sr-only">
+                  确认密码
+                </label>
+                <input
+                  id="confirm_password"
+                  name="confirm_password"
+                  type="password"
+                  required
+                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-white dark:bg-gray-700 transition-colors duration-300"
+                  placeholder="确认密码"
+                  value={formData.confirm_password}
+                  onChange={handleChange}
+                />
+              </div>
+            )}
           </div>
 
           <div>

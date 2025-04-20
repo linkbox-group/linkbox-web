@@ -100,7 +100,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard }) => {
 
   return (
     <div
-      className={`h-full bg-white dark:bg-gray-900 transition-all duration-300 ease-in-out ${
+      className={`h-full bg-white dark:bg-gray-900 mt-16 transition-all duration-300 ease-in-out ${
         collapsed ? "w-0 overflow-hidden" : "w-70"
       }`}
     >
