@@ -19,7 +19,7 @@ export type SortOrder = 'asc' | 'desc';
  * 搜索结果项
  */
 export interface SearchResultItem {
-  id: number;
+  id: string;
   type: ItemType;
   title: string;
   content?: string;
@@ -27,7 +27,7 @@ export interface SearchResultItem {
   matchField: string;
   matchContent: string;
   thumbnailUrl?: string;
-  collections: Array<{ id: number; name: string }>;
+  collections: Array<{ id: string; name: string }>;
   createdAt: string;
 }
 
@@ -46,7 +46,7 @@ export interface Pagination {
  */
 export interface SearchMetadata {
   timeUsed: number;
-  suggestionTags: Array<{ id: number; name: string; count: number }>;
+  suggestionTags: Array<{ id: string; name: string; count: number }>;
 }
 
 /**
@@ -55,8 +55,8 @@ export interface SearchMetadata {
 export interface GlobalSearchRequest {
   keyword: string;
   type?: ItemType;
-  collectionId?: number;
-  tagIds?: number[];
+  collectionId?: string;
+  tagIds?: string[];
   sortBy?: SortField;
   sortOrder?: SortOrder;
   page?: number;
@@ -67,9 +67,13 @@ export interface GlobalSearchRequest {
  * 全局搜索响应
  */
 export interface GlobalSearchResponse {
-  items: SearchResultItem[];
-  pagination: Pagination;
-  searchMetadata: SearchMetadata;
+  msg: string;
+  code: number;
+  data: {
+    items: SearchResultItem[];
+    pagination: Pagination;
+    searchMetadata: SearchMetadata;
+  };
 }
 
 /**
@@ -88,14 +92,18 @@ export interface SuggestedTag {
   name: string;
   confidence: number;
   exists: boolean;
-  id?: number;
+  id?: string;
 }
 
 /**
  * AI 智能推荐标签响应
  */
 export interface SuggestTagsResponse {
-  suggestedTags: SuggestedTag[];
+  msg: string;
+  code: number;
+  data: {
+    suggestedTags: SuggestedTag[];
+  };
 }
 
 /**

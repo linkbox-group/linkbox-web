@@ -139,10 +139,10 @@ const Main: React.FC = () => {
         pageSize,
       });
 
-      if (result.items.length > 0) {
+      if (result.data.items.length > 0) {
         // 将搜索结果转换为 items 格式
-        const searchItems = result.items.map((item: SearchResultItem) => ({
-          id: item.id.toString(),
+        const searchItems = result.data.items.map((item: SearchResultItem) => ({
+          id: item.id,
           height: Math.floor(Math.random() * 200) + 300,
           title: item.title,
           favoriteTime: item.createdAt,
@@ -152,7 +152,7 @@ const Main: React.FC = () => {
         }));
         setItems(searchItems);
         setTotalPages(
-          Math.ceil(result.pagination.totalItems / result.pagination.pageSize)
+          Math.ceil(result.data.pagination.totalItems / result.data.pagination.pageSize)
         );
       } else {
         // 如果没有搜索结果，显示提示
