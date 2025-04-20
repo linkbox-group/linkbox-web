@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Slidebar/Sidebar";
 import AppBar from "../components/AppBar";
 import Card from "../components/Card";
@@ -6,13 +7,21 @@ import WaterfallFlow from "../components/Slidebar/WaterfallFlow";
 import TagView from "../components/TagView";
 import Line from "../components/Line";
 import ContentDialog from "../components/Dialogs/ContentDialog";
-import { contentService, Content } from "@/services/content";
+import { contentService, Content, ContentMetadata } from "@/services/content";
 import { useUserStore } from "@/store/userStore";
 import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
 import { SearchResultItem } from "@/services/search";
 import { searchService } from "@/services/search";
-import { Archive, Grid, ArrowUpDown, List, Menu, Search, Plus } from "lucide-react";
+import {
+  Archive,
+  Grid,
+  ArrowUpDown,
+  List,
+  Menu,
+  Search,
+  Plus,
+} from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -31,7 +40,10 @@ import {
 } from "@/components/ui/select";
 
 const Main: React.FC = () => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(window.innerWidth < 768);
+  const navigate = useNavigate();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    window.innerWidth < 768
+  );
   const [mode, setMode] = useState<String>("all");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -50,8 +62,8 @@ const Main: React.FC = () => {
     const handleResize = () => {
       setSidebarCollapsed(window.innerWidth < 768);
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // 使用appStore中的items和generateMockItems
@@ -65,35 +77,51 @@ const Main: React.FC = () => {
       setCurrentPage(page);
 
       // 如果用户已登录，尝试从API获取数据
-      if (user?.id) {
-        const response = await contentService.getRecentContents(
-          user.id,
-          pageSize,
-          (page - 1).toString()
-        );
-        const fetchedItems = response.items.map((item: Content) => ({
-          id: item.id,
-          height: Math.floor(Math.random() * 200) + 300,
-          title: item.title,
-          favoriteTime: item.created_at,
-          tags: item.tags,
-          folderPath: "未分类",
-          link: item.url,
-        }));
-        setItems(fetchedItems);
-        // 由于 API 没有返回总数，我们暂时使用固定值
-        setTotalPages(5);
+      if (user?.id || import.meta.env.MODE === "development") {
+        const response = await contentService.search({
+          user_id: user?.id || "84", // 开发模式下使用默认用户ID
+          query: "", // 空查询表示获取所有内容
+          page,
+          page_size: pageSize,
+        });
+
+        // 检查响应数据结构
+        if (response && response.data) {
+          // 如果返回的是单个内容项，将其转换为数组
+          const items = Array.isArray(response.data)
+            ? response.data
+            : [response.data];
+
+          const fetchedItems = items.map((item: Content) => ({
+            id: item.id,
+            height: Math.floor(Math.random() * 200) + 300,
+            title: item.title,
+            favoriteTime: item.created_at,
+            tags: item.tags,
+            folderPath:
+              item.collection_ids.length > 0
+                ? item.collection_ids[0]
+                : "未分类",
+            link: item.url,
+          }));
+          setItems(fetchedItems);
+          setTotalPages(1); // 由于API返回结构不同，暂时设置为1页
+        } else {
+          console.error("API返回数据格式不正确:", response);
+          toast.error("获取数据失败：数据格式不正确");
+          setItems([]);
+          setTotalPages(1);
+        }
       } else {
-        // 如果用户未登录，使用模拟数据
-        generateMockItems(pageSize);
-        setTotalPages(5); // 模拟总页数
+        // 如果用户未登录，跳转到登录页面
+        navigate("/auth");
+        return;
       }
     } catch (error) {
       console.error("获取数据失败:", error);
       toast.error("获取数据失败");
-      // 如果API请求失败，使用模拟数据
-      generateMockItems(pageSize);
-      setTotalPages(5); // 模拟总页数
+      setItems([]);
+      setTotalPages(1);
     } finally {
       setLoading(false);
     }
@@ -170,14 +198,33 @@ const Main: React.FC = () => {
       // 将CardItem转换为Content类型
       const content: Content = {
         id: cardItem.id.toString(),
+        user_id: user?.id || "",
+        type: "link",
         title: cardItem.title,
         description: "",
         url: cardItem.link,
-        image_url: "",
+        thumbnail_url: "",
+        metadata: {
+          title: cardItem.title,
+          description: "",
+          thumbnail_url: "",
+          author: "",
+          site_name: "",
+          favicon_url: "",
+          content_type: "",
+          keywords: [],
+          language: "",
+          is_article: false,
+        },
+        tags: cardItem.tags,
+        collection_ids: [],
+        is_favorite: false,
+        is_private: false,
+        is_archived: false,
+        note: "",
+        read_count: 0,
         created_at: cardItem.favoriteTime,
         updated_at: cardItem.favoriteTime,
-        user_id: user?.id || "",
-        tags: cardItem.tags,
       };
       setSelectedContent(content);
       setEditDialogOpen(true);
@@ -186,7 +233,7 @@ const Main: React.FC = () => {
 
   const handleDelete = async (id: string | number) => {
     try {
-      await contentService.deleteContent(id.toString(), user?.id || "");
+      await contentService.delete(id.toString(), user?.id || "");
       deleteItem(id);
       toast.success("删除成功");
     } catch (error) {
@@ -279,7 +326,11 @@ const Main: React.FC = () => {
         onSearch={handleSearch}
       />
       <div className="flex flex-1 min-h-0 overflow-x-hidden">
-        <div className={`flex-shrink-0 transition-all duration-300 ${sidebarCollapsed ? 'w-0' : 'w-70'}`}>
+        <div
+          className={`flex-shrink-0 transition-all duration-300 ${
+            sidebarCollapsed ? "w-0" : "w-70"
+          }`}
+        >
           <Sidebar collapsed={sidebarCollapsed} onSelectedCard={setMode} />
         </div>
         <div className="flex-1 overflow-auto">
@@ -289,8 +340,8 @@ const Main: React.FC = () => {
                 <Archive className="w-5 h-5" />
                 <span>全部</span>
               </div>
-              <div 
-                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100" 
+              <div
+                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100"
                 onClick={handleModeChange}
               >
                 {mode === "all" ? (

@@ -1,6 +1,26 @@
 import { api } from "./api";
 
-// 类型定义
+// 基础类型定义
+export interface Content {
+  id: string;
+  user_id: string;
+  type: string;
+  url: string;
+  title: string;
+  description: string;
+  thumbnail_url: string;
+  tags: string[];
+  collection_ids: string[];
+  is_favorite: boolean;
+  is_archived: boolean;
+  is_private: boolean;
+  metadata: ContentMetadata;
+  created_at: string;
+  updated_at: string;
+  note: string;
+  read_count: number;
+}
+
 export interface ContentMetadata {
   title: string;
   description: string;
@@ -14,24 +34,20 @@ export interface ContentMetadata {
   is_article: boolean;
 }
 
-export interface Content {
-  id: string;
-  title: string;
-  description: string;
-  url: string;
-  image_url: string;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-  tags: string[];
-}
-
+// 请求参数接口
 export interface CreateContentData {
+  user_id: string;
+  type: string;
+  url: string;
   title: string;
   description: string;
-  url: string;
-  image_url: string;
+  thumbnail_url: string;
+  metadata: ContentMetadata;
   tags: string[];
+  collection_ids: string[];
+  is_favorite: boolean;
+  is_private: boolean;
+  note: string;
 }
 
 export interface UpdateContentData {
@@ -57,11 +73,6 @@ export interface BatchUpdateData {
   remove_tags?: string[];
   add_to_collections?: string[];
   remove_from_collections?: string[];
-}
-
-export interface BatchDeleteData {
-  user_id: string;
-  ids: string[];
 }
 
 export interface ImportData {
@@ -92,6 +103,26 @@ export interface SearchParams {
   favorites_only?: boolean;
 }
 
+export interface GetByTagsParams {
+  user_id: string;
+  tags: string[];
+  page?: number;
+  page_size?: number;
+}
+
+export interface GetRecentParams {
+  user_id: string;
+  limit?: number;
+  type?: string;
+  exclude_archived?: boolean;
+}
+
+export interface NoteParams {
+  user_id: string;
+  note: string;
+}
+
+// 响应接口
 export interface PaginationResponse<T> {
   items: T[];
   pagination: {
@@ -102,12 +133,16 @@ export interface PaginationResponse<T> {
   };
 }
 
-export interface SearchResponse extends PaginationResponse<Content> {
-  suggested_terms: string[];
-  top_tags: Array<{
-    tag: string;
-    count: number;
-  }>;
+export interface SearchResponse {
+  msg: string;
+  code: number;
+  data: Content | Content[];
+}
+
+export interface NoteResponse {
+  item_id: string;
+  note: string;
+  updated_at: string;
 }
 
 // API 实现
@@ -115,164 +150,115 @@ export const contentService = {
   /**
    * 创建内容项
    */
-  createContent: async (data: CreateContentData) => {
-    return api.post<Content>("/api/contents", data);
+  create: (data: CreateContentData) => {
+    return api.post<Content>("/contents", data);
   },
 
   /**
-   * 获取内容项
+   * 获取内容项详情
    */
-  getContent: async (id: string, userId: string) => {
-    return api.get<Content>(`/api/contents/${id}`, { params: { user_id: userId } });
+  getDetail: (id: string, userId: string) => {
+    return api.get<Content>(`/contents/${id}`, { params: { user_id: userId } });
   },
 
   /**
    * 更新内容项
    */
-  updateContent: async (id: string, data: UpdateContentData) => {
-    return api.put<Content>(`/api/contents/${id}`, data);
+  update: (id: string, data: UpdateContentData) => {
+    return api.put<Content>(`/contents/${id}`, data);
   },
 
   /**
    * 删除内容项
    */
-  deleteContent: async (id: string, userId: string) => {
-    return api.delete<{ success: boolean }>(`/api/contents/${id}`, {
+  delete: (id: string, userId: string) => {
+    return api.delete<{ success: boolean }>(`/contents/${id}`, {
       params: { user_id: userId }
     });
   },
 
   /**
-   * 批量获取内容项
-   */
-  getContents: async (ids: string[], userId: string) => {
-    return api.get<{ items: Content[] }>("/api/contents", {
-      params: { user_id: userId, ids: ids.join(",") }
-    });
-  },
-
-  /**
-   * 批量删除内容项
-   */
-  batchDelete: async (data: BatchDeleteData) => {
-    return api.delete<{
-      success_count: number;
-      failure_count: number;
-      failed_ids: string[];
-    }>("/api/contents/batch", { data });
-  },
-
-  /**
    * 按标签获取内容项
    */
-  getContentsByTags: async (tags: string[], userId: string, page = 1, pageSize = 20) => {
-    return api.get<PaginationResponse<Content>>("/api/contents/tags", {
-      params: {
-        user_id: userId,
-        tags: tags.join(","),
-        page,
-        page_size: pageSize
-      }
-    });
+  getByTags: (params: GetByTagsParams) => {
+    return api.get<PaginationResponse<Content>>("/contents/tags", { params });
   },
 
   /**
    * 从URL提取元数据
    */
-  extractMetadata: async (url: string) => {
-    return api.post<ContentMetadata>("/api/contents/metadata", { url });
+  getMetadata: (url: string) => {
+    return api.post<ContentMetadata>("/contents/metadata", { url });
   },
 
   /**
    * 获取用户最近添加的内容项
    */
-  getRecentContents: async (
-    userId: string,
-    limit = 10,
-    type?: string,
-    excludeArchived = true
-  ) => {
-    return api.get<{ items: Content[] }>("/api/contents/recent", {
-      params: {
-        user_id: userId,
-        limit,
-        type,
-        exclude_archived: excludeArchived
-      }
-    });
+  getRecent: (params: GetRecentParams) => {
+    return api.get<{ items: Content[] }>("/contents/recent", { params });
   },
 
   /**
    * 批量更新内容项
    */
-  batchUpdate: async (data: BatchUpdateData) => {
+  batchUpdate: (data: BatchUpdateData) => {
     return api.put<{
       success_count: number;
       failure_count: number;
       failed_ids: string[];
-    }>("/api/contents/batch", data);
+    }>("/contents/batch", data);
   },
 
   /**
    * 从文件导入内容
    */
-  importContents: async (data: ImportData) => {
+  importContents: (data: ImportData) => {
     return api.post<{
       total_processed: number;
       success_count: number;
       failure_count: number;
       failed_urls: string[];
-    }>("/api/contents/import", data);
+    }>("/contents/import", data);
   },
 
   /**
    * 导出内容到文件
    */
-  exportContents: async (data: ExportData) => {
+  exportContents: (data: ExportData) => {
     return api.post<{
       file_content: string;
       file_name: string;
       mime_type: string;
       item_count: number;
-    }>("/api/contents/export", data);
+    }>("/contents/export", data);
   },
 
   /**
    * 内容项全文搜索
    */
-  searchContents: async (params: SearchParams) => {
-    return api.get<SearchResponse>("/api/contents/search", { params });
+  search: (params: SearchParams) => {
+    return api.get<SearchResponse>("/contents/search", { params });
   },
 
   /**
    * 添加内容备注
    */
-  addNote: async (itemId: string, userId: string, note: string) => {
-    return api.post<Content>(`/api/contents/${itemId}/notes`, {
-      user_id: userId,
-      note
-    });
+  addNote: (itemId: string, data: NoteParams) => {
+    return api.post<Content>(`/contents/${itemId}/notes`, data);
   },
 
   /**
    * 更新内容备注
    */
-  updateNote: async (itemId: string, userId: string, note: string) => {
-    return api.put<Content>(`/api/contents/${itemId}/notes`, {
-      user_id: userId,
-      note
-    });
+  updateNote: (itemId: string, data: NoteParams) => {
+    return api.put<Content>(`/contents/${itemId}/notes`, data);
   },
 
   /**
    * 获取内容备注
    */
-  getNote: async (itemId: string, userId: string) => {
-    return api.get<{
-      item_id: string;
-      note: string;
-      updated_at: string;
-    }>(`/api/contents/${itemId}/notes`, {
+  getNote: (itemId: string, userId: string) => {
+    return api.get<NoteResponse>(`/contents/${itemId}/notes`, {
       params: { user_id: userId }
     });
   }

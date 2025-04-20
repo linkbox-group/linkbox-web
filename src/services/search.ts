@@ -3,7 +3,7 @@ import { api } from './api';
 /**
  * 项目类型
  */
-export type ItemType = 'text' | 'image' | 'link';
+export type ItemType = 'text' | 'image' | 'link' | 'all';
 
 /**
  * 排序字段
@@ -54,7 +54,7 @@ export interface SearchMetadata {
  */
 export interface GlobalSearchRequest {
   keyword: string;
-  type?: ItemType | 'all';
+  type?: ItemType;
   collectionId?: number;
   tagIds?: number[];
   sortBy?: SortField;

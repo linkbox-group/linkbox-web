@@ -3,7 +3,7 @@ import { api } from './api';
 /**
  * 排序字段
  */
-export type SortField = 'createdAt' | 'updatedAt' | 'title';
+export type SortField = 'created_at' | 'updated_at' | 'title';
 
 /**
  * 排序顺序
