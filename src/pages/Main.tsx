@@ -116,7 +116,7 @@ const Main: React.FC = () => {
         setCurrentPage(response.data.page);
       } else {
         // 如果用户未登录，跳转到登录页面
-        navigate("/auth");
+        navigate("/login");
         return;
       }
     } catch (error) {
