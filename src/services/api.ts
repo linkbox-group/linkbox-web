@@ -3,7 +3,10 @@ import axios, {
   AxiosInstance,
   AxiosRequestConfig,
   AxiosResponse,
+  InternalAxiosRequestConfig,
+  AxiosHeaders,
 } from "axios";
+import { useUserStore } from "@/store/userStore";
 
 /**
  * 响应数据接口
@@ -15,61 +18,85 @@ export interface ResponseData<T = any> {
 }
 
 /**
+ * API响应数据接口
+ */
+export interface ApiResponse<T = any> {
+  code: number;
+  data: T;
+  msg: string;
+}
+
+/**
  * Token管理器
  */
 class TokenManager {
-  private static ACCESS_TOKEN_KEY = "access_token";
-  private static REFRESH_TOKEN_KEY = "refresh_token";
-
   /**
    * 获取访问令牌
    */
   static getAccessToken(): string | null {
-    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
+    const store = useUserStore.getState();
+    return store.tokens?.accessToken || null;
   }
 
   /**
    * 设置访问令牌
    */
   static setAccessToken(token: string): void {
-    localStorage.setItem(this.ACCESS_TOKEN_KEY, token);
+    const store = useUserStore.getState();
+    store.setTokens({
+      accessToken: token,
+      refreshToken: token,
+      expiresIn: 3600,
+    });
   }
 
   /**
    * 获取刷新令牌
    */
   static getRefreshToken(): string | null {
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    const store = useUserStore.getState();
+    return store.tokens?.refreshToken || null;
   }
 
   /**
    * 设置刷新令牌
    */
   static setRefreshToken(token: string): void {
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, token);
+    const store = useUserStore.getState();
+    if (store.tokens) {
+      store.setTokens({
+        ...store.tokens,
+        refreshToken: token,
+      });
+    }
   }
 
   /**
    * 清除所有令牌
    */
   static clearTokens(): void {
-    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    const store = useUserStore.getState();
+    store.setTokens(null);
   }
 
   /**
    * 存储认证信息
    */
   static setAuthInfo(accessToken: string, refreshToken: string): void {
-    this.setAccessToken(accessToken);
-    this.setRefreshToken(refreshToken);
+    const store = useUserStore.getState();
+    store.setTokens({
+      accessToken,
+      refreshToken,
+      expiresIn: 3600,
+    });
   }
 
   /**
    * 检查是否已认证
    */
   static isAuthenticated(): boolean {
-    return !!this.getAccessToken();
+    const store = useUserStore.getState();
+    return !!store.tokens?.accessToken;
   }
 }
 
@@ -130,11 +157,15 @@ class ApiService {
   private setupInterceptors(): void {
     // 请求拦截器
     this.instance.interceptors.request.use(
-      (config: any) => {
+      (config: InternalAxiosRequestConfig) => {
+        // 确保 headers 存在
+        if (!config.headers) {
+          config.headers = new AxiosHeaders();
+        }
         // 添加令牌到请求头
         const token = TokenManager.getAccessToken();
-        if (token && config.headers) {
-          config.headers.Authorization = `Bearer ${token}`;
+        if (token) {
+          config.headers.set('Authorization', `Bearer ${token}`);
         }
         return config;
       },
@@ -151,7 +182,7 @@ class ApiService {
         // 处理业务状态码
         if (code >= 20000 && code < 30000) {
           // 成功状态码
-          return data;
+          return response.data;  // 返回完整的响应数据
         } else if (code >= 30000 && code < 40000) {
           // 用户相关错误
           console.error(`用户错误: ${msg}`);

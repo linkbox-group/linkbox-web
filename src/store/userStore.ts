@@ -1,14 +1,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { ApiResponse } from "@/services/api";
+import { TokenManager } from "@/services/api";
 
 export interface UserState {
   id: string;
   username: string;
   email: string;
-  displayName?: string;
-  avatarUrl?: string;
-  roles?: string[];
-  createdAt?: string;
+  avatar?: string;
+  bio?: string;
+  theme?: string;
   isLoggedIn: boolean;
 }
 
@@ -24,7 +25,18 @@ interface UserStore {
   setUser: (user: Partial<UserState>) => void;
   setTokens: (tokens: AuthTokens | null) => void;
   logout: () => void;
-  login: (response: any) => void;
+  login: (
+    response: ApiResponse<{
+      user_id: string;
+      username: string;
+      email: string;
+      avatar?: string;
+      bio?: string;
+      theme?: string;
+      access_token: string;
+      refresh_token: string;
+    }>
+  ) => void;
 }
 
 export const useUserStore = create<UserStore>()(
@@ -46,8 +58,7 @@ export const useUserStore = create<UserStore>()(
           tokens,
         })),
       logout: () => {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
+        TokenManager.clearTokens();
         set(() => ({
           user: {
             id: "",
@@ -59,27 +70,30 @@ export const useUserStore = create<UserStore>()(
         }));
       },
       login: (response) => {
-        const { access_token, refresh_token, expires_in, user } = response.data;
-        
-        // 保存 token 到 localStorage
-        localStorage.setItem("access_token", access_token);
-        localStorage.setItem("refresh_token", refresh_token);
-        
+        const { data } = response;
+        const {
+          user_id,
+          username,
+          email,
+          avatar,
+          bio,
+          theme,
+          access_token,
+          refresh_token,
+        } = data;
+
+        // 使用 TokenManager 设置 token
+        TokenManager.setAuthInfo(access_token, refresh_token);
+
         // 更新 store
         set(() => ({
-          tokens: {
-            accessToken: access_token,
-            refreshToken: refresh_token,
-            expiresIn: expires_in,
-          },
           user: {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-            displayName: user.display_name,
-            avatarUrl: user.avatar_url,
-            roles: user.roles,
-            createdAt: user.created_at,
+            id: user_id,
+            username,
+            email,
+            avatar,
+            bio,
+            theme,
             isLoggedIn: true,
           },
         }));
@@ -93,4 +107,4 @@ export const useUserStore = create<UserStore>()(
       }),
     }
   )
-); 
+);

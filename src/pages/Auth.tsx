@@ -44,10 +44,9 @@ const Auth: React.FC = () => {
           email: formData.email,
           password: formData.password,
         });
-
         if (response.code === 20000) {
           // 更新用户状态
-          login(response.data);
+          login(response);
           toast.success("登录成功");
           navigate("/");
         } else {
@@ -70,7 +69,10 @@ const Auth: React.FC = () => {
         }
       }
     } catch (error: any) {
-      toast.error(error?.response?.data?.msg || (isLogin ? "登录失败，服务器错误" : "注册失败，服务器错误"));
+      toast.error(
+        error?.response?.data?.msg ||
+          (isLogin ? "登录失败，服务器错误" : "注册失败，服务器错误")
+      );
     } finally {
       setLoading(false);
     }

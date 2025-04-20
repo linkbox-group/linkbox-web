@@ -7,36 +7,20 @@ const AllFavoritesCard: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Folder className="w-5 h-5 text-gray-700 dark:text-blue-400" />
-          <span className="text-gray-700 dark:text-blue-400 font-medium">所有收藏集</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-gray-500 dark:text-blue-400" />
-          <span className="text-gray-500 dark:text-blue-400 text-sm">默认</span>
+          <span className="text-gray-700 dark:text-blue-400 font-medium">
+            所有收藏集
+          </span>
         </div>
       </div>
-      <Plus className="w-5 h-5 text-gray-700 dark:text-blue-400" />
 
-      <div className="space-y-2">
-        <div className="h-8 bg-gray-100 dark:bg-[#2a3349] rounded transition-colors duration-300"></div>
-        <div className="h-8 bg-gray-100 dark:bg-[#2a3349] rounded transition-colors duration-300"></div>
-        <div className="h-8 bg-gray-100 dark:bg-[#2a3349] rounded transition-colors duration-300"></div>
-      </div>
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Tag className="w-5 h-5 text-gray-700 dark:text-blue-400" />
-          <span className="text-gray-700 dark:text-blue-400 font-medium">标签</span>
+          <span className="text-gray-700 dark:text-blue-400 font-medium">
+            标签
+          </span>
         </div>
-        <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-gray-500 dark:text-blue-400" />
-          <span className="text-gray-500 dark:text-blue-400 text-sm">默认</span>
-        </div>
-      </div>
-      <Plus className="w-5 h-5 text-gray-700 dark:text-blue-400" />
-
-      <div className="space-y-2">
-        <div className="h-8 bg-gray-100 dark:bg-[#2a3349] rounded transition-colors duration-300"></div>
-        <div className="h-8 bg-gray-100 dark:bg-[#2a3349] rounded transition-colors duration-300"></div>
-        <div className="h-8 bg-gray-100 dark:bg-[#2a3349] rounded transition-colors duration-300"></div>
+        <Plus className="w-5 h-5 text-gray-700 dark:text-blue-400" />
       </div>
     </div>
   );

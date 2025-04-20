@@ -9,14 +9,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { contentService, Content } from "@/services/content";
+import { itemService, Item } from "@/services/items";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom";
 
 interface ContentDialogProps {
   mode: "add" | "edit";
-  content?: Content;
+  content?: Item;
   open: boolean;
   setOpen: (open: boolean) => void;
   onSuccess: () => void;
@@ -65,23 +65,20 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
       setLoading(true);
 
       if (mode === "add") {
-        // 从URL提取元数据
-        const metadata = await contentService.extractMetadata(link);
-
         // 创建内容项
-        await contentService.createContent({
+        await itemService.create({
+          type: 1,
           url: link,
-          title: title || metadata.title,
-          description: metadata.description,
-          image_url: metadata.thumbnail_url,
-          tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
+          title: title || link,
+          description: "",
         });
       } else if (mode === "edit" && content) {
         // 编辑模式
-        await contentService.updateContent(content.id, {
-          user_id: user.id,
+        await itemService.update(content.id, {
+          type: 1,
+          url: content.url,
           title: title,
-          tags: tags ? tags.split(",").map((tag) => tag.trim()) : [],
+          description: content.description,
         });
       }
 

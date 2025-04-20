@@ -7,7 +7,7 @@ import WaterfallFlow from "../components/Slidebar/WaterfallFlow";
 import TagView from "../components/TagView";
 import Line from "../components/Line";
 import ContentDialog from "../components/Dialogs/ContentDialog";
-import { contentService, Content, ContentMetadata } from "@/services/content";
+import { itemService, Item } from "@/services/items";
 import { useUserStore } from "@/store/userStore";
 import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ import {
   Menu,
   Search,
   Plus,
+  Bookmark,
 } from "lucide-react";
 import {
   Pagination,
@@ -38,6 +39,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { organizationService } from "@/services/organization";
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
@@ -47,7 +49,7 @@ const Main: React.FC = () => {
   const [mode, setMode] = useState<String>("all");
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [selectedContent, setSelectedContent] = useState<Content | undefined>(
+  const [selectedContent, setSelectedContent] = useState<Item | undefined>(
     undefined
   );
   const [loading, setLoading] = useState(false);
@@ -77,41 +79,28 @@ const Main: React.FC = () => {
       setCurrentPage(page);
 
       // 如果用户已登录，尝试从API获取数据
-      if (user?.id || import.meta.env.MODE === "development") {
-        const response = await contentService.search({
-          user_id: user?.id || "84", // 开发模式下使用默认用户ID
-          query: "", // 空查询表示获取所有内容
+      if (user?.id) {
+        const response = await itemService.getByTags({
+          tags: [], // 空数组表示获取所有内容
           page,
           page_size: pageSize,
         });
 
-        // 检查响应数据结构
-        if (response && response.data) {
-          // 如果返回的是单个内容项，将其转换为数组
-          const items = Array.isArray(response.data)
-            ? response.data
-            : [response.data];
+        // 将 Item 类型转换为 CardItem 类型
+        const cardItems = response.data.items.map((item: Item) => ({
+          id: item.id,
+          height: Math.floor(Math.random() * 200) + 300,
+          title: item.title,
+          favoriteTime: item.created_at,
+          tags: item.tags,
+          folderPath: item.collection_ids.length > 0 ? item.collection_ids[0] : "未分类",
+          link: item.url,
+        }));
 
-          const fetchedItems = items.map((item: Content) => ({
-            id: item.id,
-            height: Math.floor(Math.random() * 200) + 300,
-            title: item.title,
-            favoriteTime: item.created_at,
-            tags: item.tags,
-            folderPath:
-              item.collection_ids.length > 0
-                ? item.collection_ids[0]
-                : "未分类",
-            link: item.url,
-          }));
-          setItems(fetchedItems);
-          setTotalPages(1); // 由于API返回结构不同，暂时设置为1页
-        } else {
-          console.error("API返回数据格式不正确:", response);
-          toast.error("获取数据失败：数据格式不正确");
-          setItems([]);
-          setTotalPages(1);
-        }
+        // 更新状态
+        setItems(cardItems);
+        setTotalPages(response.data.pagination.total);
+        setCurrentPage(response.data.pagination.page);
       } else {
         // 如果用户未登录，跳转到登录页面
         navigate("/auth");
@@ -179,9 +168,39 @@ const Main: React.FC = () => {
     }
   };
 
+  // 获取组织列表
+  const fetchOrganizations = async () => {
+    try {
+      if (user?.id) {
+        const response = await organizationService.getList(user.id);
+        console.log("组织列表:", response.data.organizations);
+        
+        // 如果组织列表为空，创建根目录
+        if (!response.data.organizations) {
+          await organizationService.create({
+            user_id: user.id,
+            name: "根目录",
+            code: "root",
+            parent_code: "",
+            description: "根目录",
+            is_default: true,
+            is_shared: false,
+            share_code: undefined,
+            share_expire_at: undefined,
+            sort_order: 0
+          });
+          console.log("已创建根目录");
+        }
+      }
+    } catch (error) {
+      console.error("获取组织列表失败:", error);
+    }
+  };
+
   // 组件加载时获取数据
   useEffect(() => {
     fetchItems();
+    fetchOrganizations();
   }, []);
 
   const handleModeChange = () => {
@@ -195,11 +214,11 @@ const Main: React.FC = () => {
   const handleEdit = (id: string | number) => {
     const cardItem = items.find((item) => item.id === id);
     if (cardItem) {
-      // 将CardItem转换为Content类型
-      const content: Content = {
+      // 将CardItem转换为Item类型
+      const item: Item = {
         id: cardItem.id.toString(),
-        user_id: user?.id || "",
-        type: "link",
+        user_id: user?.id?.toString() || "",
+        type: 1,
         title: cardItem.title,
         description: "",
         url: cardItem.link,
@@ -226,14 +245,14 @@ const Main: React.FC = () => {
         created_at: cardItem.favoriteTime,
         updated_at: cardItem.favoriteTime,
       };
-      setSelectedContent(content);
+      setSelectedContent(item);
       setEditDialogOpen(true);
     }
   };
 
   const handleDelete = async (id: string | number) => {
     try {
-      await contentService.delete(id.toString(), user?.id || "");
+      await itemService.delete(id.toString());
       deleteItem(id);
       toast.success("删除成功");
     } catch (error) {
@@ -247,6 +266,15 @@ const Main: React.FC = () => {
     if (loading) {
       return (
         <div className="flex justify-center items-center h-full">加载中...</div>
+      );
+    }
+
+    if (!items || items.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] text-gray-500 dark:text-gray-400">
+          <Bookmark className="w-16 h-16 mb-4" />
+          <p className="text-lg">还没有收藏哦</p>
+        </div>
       );
     }
 
