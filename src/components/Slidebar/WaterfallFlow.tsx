@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 export interface WaterfallItem {
   id: number | string;
-  height: number;
   [key: string]: any; // 允许其他属性
 }
 
@@ -21,56 +20,81 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({
   className = '',
   renderItem,
 }) => {
-  const [columnHeights, setColumnHeights] = useState<number[]>([]);
   const [columnItems, setColumnItems] = useState<WaterfallItem[][]>([]);
+  const columnRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const itemRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  // 初始化列高度和列项目
+  // 初始化列项目
   useEffect(() => {
-    const heights = Array(columns).fill(0);
     const cols: WaterfallItem[][] = Array(columns).fill(null).map(() => []);
-    setColumnHeights(heights);
     setColumnItems(cols);
+    columnRefs.current = Array(columns).fill(null);
+    itemRefs.current = {};
   }, [columns]);
 
   // 分配项目到列
   useEffect(() => {
     if (items.length === 0) return;
 
-    const heights = Array(columns).fill(0);
     const cols: WaterfallItem[][] = Array(columns).fill(null).map(() => []);
+    const heights: number[] = Array(columns).fill(0);
 
+    // 先按顺序分配项目
     items.forEach((item) => {
-      // 找到最短的列
       const minHeightIndex = heights.indexOf(Math.min(...heights));
-      // 将项目添加到该列
       cols[minHeightIndex].push(item);
-      heights[minHeightIndex] += item.height + gap;
+      // 使用估计的高度
+      heights[minHeightIndex] += 200; // 估计的卡片高度
     });
 
-    setColumnHeights(heights);
     setColumnItems(cols);
-  }, [items, columns, gap]);
+  }, [items, columns]);
 
-  // 默认渲染函数
-  const defaultRenderItem = (item: WaterfallItem) => (
-    <div
-      key={item.id}
-      className="w-full mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg break-inside-avoid transition-colors duration-300"
-      style={{ height: `${item.height}px` }}
-    />
-  );
+  // 更新实际高度
+  useEffect(() => {
+    const updateHeights = () => {
+      const heights: number[] = Array(columns).fill(0);
+      const cols: WaterfallItem[][] = Array(columns).fill(null).map(() => []);
+
+      items.forEach((item) => {
+        const itemElement = itemRefs.current[item.id];
+        if (itemElement) {
+          const minHeightIndex = heights.indexOf(Math.min(...heights));
+          cols[minHeightIndex].push(item);
+          heights[minHeightIndex] += itemElement.offsetHeight + gap;
+        }
+      });
+
+      setColumnItems(cols);
+    };
+
+    // 使用 requestAnimationFrame 确保在下一帧更新
+    requestAnimationFrame(updateHeights);
+  }, [items, columns, gap]);
 
   return (
     <div className={`flex ${className}`} style={{ gap: `${gap}px` }}>
       {columnItems.map((column, columnIndex) => (
         <div
           key={columnIndex}
+          ref={el => {
+            if (el) {
+              columnRefs.current[columnIndex] = el;
+            }
+          }}
           className="flex-1"
           style={{ display: 'flex', flexDirection: 'column', gap: `${gap}px` }}
         >
           {column.map((item) => (
-            <div key={item.id}>
-              {renderItem ? renderItem(item) : defaultRenderItem(item)}
+            <div 
+              key={item.id} 
+              ref={el => {
+                if (el) {
+                  itemRefs.current[item.id] = el;
+                }
+              }}
+            >
+              {renderItem ? renderItem(item) : null}
             </div>
           ))}
         </div>

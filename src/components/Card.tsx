@@ -21,11 +21,11 @@ const Card: React.FC<CardProps> = ({
   onDelete,
 }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow w-full max-w-[400px]">
       {/* 标题和操作按钮 */}
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{title}</h3>
-        <div className="flex gap-2">
+      <div className="flex justify-between items-start mb-2 w-full">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 break-words flex-1 min-h-0 h-auto whitespace-normal overflow-hidden max-w-[calc(100%-4rem)]">{title}</h3>
+        <div className="flex gap-2 flex-shrink-0 ml-2">
           <button
             onClick={onEdit}
             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
@@ -44,16 +44,16 @@ const Card: React.FC<CardProps> = ({
       </div>
 
       {/* 收藏时间 */}
-      <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
+      <div className="text-sm text-gray-500 dark:text-gray-400 mb-2 break-words w-full max-w-full">
         收藏时间：{favoriteTime}
       </div>
 
       {/* 标签 */}
-      <div className="flex flex-wrap gap-2 mb-2">
+      <div className="flex flex-wrap gap-2 mb-2 w-full">
         {tags.map((tag, index) => (
           <span
             key={index}
-            className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full"
+            className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full break-words max-w-[200px] truncate"
           >
             #{tag}
           </span>
@@ -61,7 +61,7 @@ const Card: React.FC<CardProps> = ({
       </div>
 
       {/* 文件夹位置 */}
-      <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+      <div className="text-sm text-gray-600 dark:text-gray-300 mb-2 break-words w-full max-w-full">
         位置：{folderPath}
       </div>
 
@@ -70,7 +70,7 @@ const Card: React.FC<CardProps> = ({
         href={link}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 truncate block"
+        className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 break-words block w-full max-w-full truncate"
       >
         {link}
       </a>

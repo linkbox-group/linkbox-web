@@ -57,12 +57,22 @@ const Main: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [columns, setColumns] = useState(
+    window.innerWidth < 640 ? 1 : 
+    window.innerWidth < 1024 ? 2 : 
+    window.innerWidth < 1280 ? 3 : 4
+  );
   const pageSize = 10;
 
   // 监听窗口大小变化
   useEffect(() => {
     const handleResize = () => {
       setSidebarCollapsed(window.innerWidth < 768);
+      setColumns(
+        window.innerWidth < 640 ? 1 : 
+        window.innerWidth < 1024 ? 2 : 
+        window.innerWidth < 1280 ? 3 : 4
+      );
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -82,8 +92,10 @@ const Main: React.FC = () => {
       if (user?.id) {
         const response = await itemService.getByTags({
           tags: [], // 空数组表示获取所有内容
-          page,
-          page_size: pageSize,
+          pagination: {
+            page,
+            page_size: pageSize,
+          },
         });
 
         // 将 Item 类型转换为 CardItem 类型
@@ -92,15 +104,16 @@ const Main: React.FC = () => {
           height: Math.floor(Math.random() * 200) + 300,
           title: item.title,
           favoriteTime: item.created_at,
-          tags: item.tags,
-          folderPath: item.collection_ids.length > 0 ? item.collection_ids[0] : "未分类",
+          tags: item.tags || [],
+          folderPath:
+            item.collection_ids?.length > 0 ? item.collection_ids[0] : "未分类",
           link: item.url,
         }));
 
         // 更新状态
         setItems(cardItems);
-        setTotalPages(response.data.pagination.total);
-        setCurrentPage(response.data.pagination.page);
+        setTotalPages(response.data.total_pages);
+        setCurrentPage(response.data.page);
       } else {
         // 如果用户未登录，跳转到登录页面
         navigate("/auth");
@@ -141,7 +154,9 @@ const Main: React.FC = () => {
         }));
         setItems(searchItems);
         setTotalPages(
-          Math.ceil(result.data.pagination.totalItems / result.data.pagination.pageSize)
+          Math.ceil(
+            result.data.pagination.totalItems / result.data.pagination.pageSize
+          )
         );
       } else {
         // 如果没有搜索结果，显示提示
@@ -174,7 +189,7 @@ const Main: React.FC = () => {
       if (user?.id) {
         const response = await organizationService.getList(user.id);
         console.log("组织列表:", response.data.organizations);
-        
+
         // 如果组织列表为空，创建根目录
         if (!response.data.organizations) {
           await organizationService.create({
@@ -187,7 +202,7 @@ const Main: React.FC = () => {
             is_shared: false,
             share_code: undefined,
             share_expire_at: undefined,
-            sort_order: 0
+            sort_order: 0,
           });
           console.log("已创建根目录");
         }
@@ -307,7 +322,7 @@ const Main: React.FC = () => {
         return (
           <WaterfallFlow
             items={items}
-            columns={window.innerWidth < 768 ? 1 : 3}
+            columns={columns}
             gap={16}
             renderItem={(item) => (
               <Card

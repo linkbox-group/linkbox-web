@@ -136,17 +136,17 @@ export const itemService = {
    */
   getByTags: async (data: {
     tags: string[];
-    page: number;
-    page_size: number;
+    pagination: {
+      page: number;
+      page_size: number;
+    };
   }) => {
     return api.post<ApiResponse<{
       items: Item[];
-      pagination: {
-        total: number;
-        page: number;
-        page_size: number;
-        total_pages: number;
-      };
+      total: number;
+      page: number;
+      page_size: number;
+      total_pages: number;
     }>>("/items/tags", data);
   },
 
