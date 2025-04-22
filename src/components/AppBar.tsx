@@ -1,4 +1,5 @@
 import { FC, useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { SearchResultItem } from "@/services/search";
 import debounce from "lodash/debounce";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ const MAX_HISTORY_ITEMS = 10;
 
 const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch }) => {
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [searchContent, setSearchContent] = useState("");
@@ -336,7 +338,7 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
         <button onClick={onAdd} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
           <Plus className="w-6 h-6" />
         </button>
-        <div className="flex items-center gap-2  hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full pl-2 py-1 transition-colors">
+        <div onClick={() => navigate("/user")} className="flex items-center gap-2  hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full pl-2 py-1 transition-colors">
           <User className="w-6 h-6" />
           <span className="text-gray-600 dark:text-gray-300 text-base !mr-5 whitespace-nowrap">
             {username || "登录"}

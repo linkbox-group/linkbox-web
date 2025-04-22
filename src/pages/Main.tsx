@@ -13,13 +13,7 @@ import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
 import { SearchResultItem } from "@/services/search";
 import { searchService } from "@/services/search";
-import {
-  Archive,
-  Grid,
-  ArrowUpDown,
-  List,
-  Bookmark,
-} from "lucide-react";
+import { Archive, Grid, ArrowUpDown, List, Bookmark } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -52,9 +46,13 @@ const Main: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [columns, setColumns] = useState(
-    window.innerWidth < 640 ? 1 : 
-    window.innerWidth < 1024 ? 2 : 
-    window.innerWidth < 1280 ? 3 : 4
+    window.innerWidth < 640
+      ? 1
+      : window.innerWidth < 1024
+      ? 2
+      : window.innerWidth < 1280
+      ? 3
+      : 4
   );
   const pageSize = 10;
 
@@ -63,9 +61,13 @@ const Main: React.FC = () => {
     const handleResize = () => {
       setSidebarCollapsed(window.innerWidth < 768);
       setColumns(
-        window.innerWidth < 640 ? 1 : 
-        window.innerWidth < 1024 ? 2 : 
-        window.innerWidth < 1280 ? 3 : 4
+        window.innerWidth < 640
+          ? 1
+          : window.innerWidth < 1024
+          ? 2
+          : window.innerWidth < 1280
+          ? 3
+          : 4
       );
     };
     window.addEventListener("resize", handleResize);
