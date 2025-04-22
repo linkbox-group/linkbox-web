@@ -6,13 +6,22 @@ import { dirname, resolve } from 'path'
 // https://vite.dev/config/
 
 const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const _dirname = dirname(__filename)
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src')
+      '@': resolve(_dirname, './src')
     }
+  },
+  server: {
+    proxy: mode === 'development' ? {
+      '/api': {
+        target: 'http://xyq777.com:40010',
+        changeOrigin: true,
+        rewrite: (path) => path
+      }
+    } : undefined
   }
-})
+}))

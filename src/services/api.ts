@@ -104,7 +104,7 @@ class TokenManager {
  * HTTP状态码对应处理器
  */
 interface StatusHandlers {
-  [key: number]: () => void;
+  [key: number]: (error?: AxiosError<ResponseData>) => Promise<boolean | void>;
 }
 
 /**
@@ -116,22 +116,52 @@ class ApiService {
 
   // 状态码处理器
   private statusHandlers: StatusHandlers = {
-    401: () => {
-      // 未授权时，如果不是刷新令牌请求，则尝试刷新令牌
-      // 这里不需要处理，因为令牌失效时会直接清除令牌并跳转到登录页面
+    40100: async () => {
+      const refreshToken = TokenManager.getRefreshToken();
+      if (refreshToken) {
+        try {
+          const response = await this.instance.post<
+            ApiResponse<{
+              access_token: string;
+              refresh_token: string;
+            }>
+          >("/auth/refresh", {
+            refresh_token: refreshToken,
+          });
+
+          if (response.data.code === 20000) {
+            TokenManager.setAuthInfo(
+              response.data.data.access_token,
+              response.data.data.refresh_token
+            );
+            return true;
+          }
+        } catch (error) {
+          console.error("刷新 token 失败:", error);
+        }
+      }
+      TokenManager.clearTokens();
+      window.location.href = "/login";
+      return false;
     },
-    403: () => {
+    40300: async (error?: AxiosError<ResponseData>) => {
+      if (!error) return false;
+      const response = error.response?.data;
+      if (response?.msg === "Token 验证错误") {
+        TokenManager.clearTokens();
+        window.location.href = "/login";
+        return true;
+      }
       console.error("没有权限访问该资源");
-      // 可以跳转到403页面
-      // window.location.href = '/403';
+      return false;
     },
-    404: () => {
+    40400: async () => {
       console.error("请求的资源不存在");
-      // 可以跳转到404页面
-      // window.location.href = '/404';
+      return false;
     },
-    500: () => {
+    50000: async () => {
       console.error("服务器错误，请稍后再试");
+      return false;
     },
   };
 
@@ -155,17 +185,14 @@ class ApiService {
    * 设置请求和响应拦截器
    */
   private setupInterceptors(): void {
-    // 请求拦截器
     this.instance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        // 确保 headers 存在
         if (!config.headers) {
           config.headers = new AxiosHeaders();
         }
-        // 添加令牌到请求头
         const token = TokenManager.getAccessToken();
         if (token) {
-          config.headers.set('Authorization', `Bearer ${token}`);
+          config.headers.set("Authorization", `Bearer ${token}`);
         }
         return config;
       },
@@ -174,54 +201,48 @@ class ApiService {
       }
     );
 
-    // 响应拦截器
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => {
-        const { code, msg, data } = response.data;
-        
+        const { code, msg } = response.data;
+
         // 处理业务状态码
         if (code >= 20000 && code < 30000) {
-          // 成功状态码
-          return response.data;  // 返回完整的响应数据
-        } else if (code >= 30000 && code < 40000) {
-          // 用户相关错误
-          console.error(`用户错误: ${msg}`);
-          return Promise.reject(new Error(msg));
-        } else if (code >= 40000 && code < 50000) {
-          // 业务逻辑错误
-          console.error(`业务错误: ${msg}`);
-          return Promise.reject(new Error(msg));
-        } else if (code >= 50000) {
-          // 第三方服务错误
-          console.error(`第三方服务错误: ${msg}`);
-          return Promise.reject(new Error(msg));
-        } else if (code >= 10000 && code < 20000) {
-          // 系统级别错误
-          console.error(`系统错误: ${msg}`);
-          return Promise.reject(new Error(msg));
+          return response.data;
         }
-        
-        return response.data;
+
+        // 查找对应的错误处理器
+        const handler = this.statusHandlers[code];
+        if (handler) {
+          return handler().then(() => Promise.reject(new Error(msg)));
+        }
+
+        // 其他错误
+        if (code >= 30000 && code < 40000) {
+          console.error(`用户错误: ${msg}`);
+        } else if (code >= 40000 && code < 50000) {
+          console.error(`业务错误: ${msg}`);
+        } else if (code >= 50000) {
+          console.error(`第三方服务错误: ${msg}`);
+        } else if (code >= 10000 && code < 20000) {
+          console.error(`系统错误: ${msg}`);
+        }
+
+        return Promise.reject(new Error(msg));
       },
       async (error: AxiosError<ResponseData>) => {
         if (!error.response) {
-          // 网络错误或请求被取消
           console.error("网络错误或请求被取消");
           return Promise.reject(error);
         }
 
-        const { status } = error.response;
-        const handler = this.statusHandlers[status];
+        const { code, msg } = error.response.data;
+        const handler = this.statusHandlers[code];
 
         if (handler) {
-          handler();
-        }
-
-        // 如果是401错误，直接清除令牌并跳转到登录页面
-        if (status === 401) {
-          TokenManager.clearTokens();
-          window.location.href = "/login";
-          return Promise.reject(new Error("令牌已失效，请重新登录"));
+          const isHandled = await handler(error);
+          if (isHandled) {
+            return Promise.reject(new Error(msg));
+          }
         }
 
         return Promise.reject(error);
@@ -253,7 +274,10 @@ class ApiService {
   /**
    * 设置状态处理器
    */
-  setStatusHandler(status: number, handler: () => void): void {
+  setStatusHandler(
+    status: number,
+    handler: (error?: AxiosError<ResponseData>) => Promise<boolean | void>
+  ): void {
     this.statusHandlers[status] = handler;
   }
 

@@ -18,15 +18,11 @@ import {
   Grid,
   ArrowUpDown,
   List,
-  Menu,
-  Search,
-  Plus,
   Bookmark,
 } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -37,9 +33,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
-import { organizationService } from "@/services/organization";
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
@@ -79,7 +73,7 @@ const Main: React.FC = () => {
   }, []);
 
   // 使用appStore中的items和generateMockItems
-  const { items, setItems, deleteItem, generateMockItems } = useAppStore();
+  const { items, setItems, deleteItem } = useAppStore();
   const { user } = useUserStore();
 
   // 获取收藏内容
@@ -183,39 +177,9 @@ const Main: React.FC = () => {
     }
   };
 
-  // 获取组织列表
-  const fetchOrganizations = async () => {
-    try {
-      if (user?.id) {
-        const response = await organizationService.getList(user.id);
-        console.log("组织列表:", response.data.organizations);
-
-        // 如果组织列表为空，创建根目录
-        if (!response.data.organizations) {
-          await organizationService.create({
-            user_id: user.id,
-            name: "根目录",
-            code: "root",
-            parent_code: "",
-            description: "根目录",
-            is_default: true,
-            is_shared: false,
-            share_code: undefined,
-            share_expire_at: undefined,
-            sort_order: 0,
-          });
-          console.log("已创建根目录");
-        }
-      }
-    } catch (error) {
-      console.error("获取组织列表失败:", error);
-    }
-  };
-
   // 组件加载时获取数据
   useEffect(() => {
     fetchItems();
-    fetchOrganizations();
   }, []);
 
   const handleModeChange = () => {

@@ -44,10 +44,18 @@ export interface Item {
  * 创建内容项请求参数
  */
 export interface CreateItemRequest {
-  type: number;
+  user_id: string;
+  type: string;
   url: string;
   title: string;
   description: string;
+  thumbnail_url: string;
+  metadata: ItemMetadata;
+  tags: string[];
+  collection_ids: string[];
+  is_favorite: boolean;
+  is_private: boolean;
+  note: string;
 }
 
 /**
@@ -71,8 +79,10 @@ export interface UpdateItemRequest {
  */
 export interface GetItemsByTagsRequest {
   tags: string[];
-  page: number;
-  page_size: number;
+  pagination: {
+    page: number;
+    page_size: number;
+  };
 }
 
 /**
@@ -84,6 +94,17 @@ export interface GetOrganizationItemsRequest {
   page_size: number;
   sort_field: string;
   sort_direction: "asc" | "desc";
+}
+
+/**
+ * 搜索内容项请求参数
+ */
+export interface SearchItemsRequest {
+  query: string;
+  pagination: {
+    page: number;
+    page_size: number;
+  };
 }
 
 /**
@@ -120,40 +141,61 @@ export const itemService = {
   /**
    * 更新内容项
    */
-  update: async (id: string, data: Partial<CreateItemRequest>) => {
+  update: async (id: string, data: UpdateItemRequest) => {
     return api.put<ApiResponse<Item>>(`/items/${id}`, data);
   },
 
   /**
    * 删除内容项
    */
-  delete: async (id: string) => {
-    return api.delete<ApiResponse<{}>>(`/items/${id}`);
+  delete: async (id: string, userId?: string) => {
+    return api.delete<ApiResponse<{ success: boolean }>>(`/items/${id}`, {
+      params: { user_id: userId },
+    });
   },
 
   /**
    * 按标签获取内容项
    */
-  getByTags: async (data: {
-    tags: string[];
-    pagination: {
-      page: number;
-      page_size: number;
-    };
-  }) => {
-    return api.post<ApiResponse<{
-      items: Item[];
-      total: number;
-      page: number;
-      page_size: number;
-      total_pages: number;
-    }>>("/items/tags", data);
+  getByTags: async (data: GetItemsByTagsRequest) => {
+    return api.post<
+      ApiResponse<{
+        items: Item[];
+        total: number;
+        page: number;
+        page_size: number;
+        total_pages: number;
+      }>
+    >("/items/tags", data);
   },
 
   /**
    * 获取组织内容项
    */
   getOrganizationItems: async (data: GetOrganizationItemsRequest) => {
-    return api.post<PaginationResponse<Item>>("/items/organization", data);
+    return api.post<
+      ApiResponse<{
+        items: Item[];
+        total: number;
+        page: number;
+        page_size: number;
+        total_pages: number;
+      }>
+    >("/items/organization", data);
+  },
+
+  /**
+   * 搜索内容项
+   */
+  search: async (data: SearchItemsRequest) => {
+    return api.post<
+      ApiResponse<{
+        items: Item[];
+        total: number;
+        page: number;
+        page_size: number;
+        total_pages: number;
+      }>
+    >("/items/search", data);
   },
 };
