@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Main from './pages/Main';
 import Auth from './pages/Auth';
+import User from './pages/User';
 import './App.css';
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -13,6 +14,7 @@ function App() {
           <Route path="/" element={<Main />} />
           <Route path="/login" element={<Auth />} />
           <Route path="/register" element={<Auth />} />
+          <Route path="/user" element={<User />} />
         </Routes>
         <Toaster />
       </Router>

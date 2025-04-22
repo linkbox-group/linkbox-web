@@ -50,11 +50,11 @@ export interface UserInfo {
   user_id: string;
   username: string;
   email: string;
-  avatar?: string;
-  bio?: string;
-  theme?: string;
-  access_token: string;
-  refresh_token: string;
+  avatar: string;
+  bio: string;
+  theme: string;
+  access_token?: string;
+  refresh_token?: string;
   chat_count?: number;
   memoir_count?: number;
   use_day: number;
