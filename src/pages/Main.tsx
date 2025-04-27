@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Slidebar/Sidebar";
 import AppBar from "../components/AppBar";
@@ -55,6 +55,7 @@ const Main: React.FC = () => {
       : 4
   );
   const pageSize = 10;
+  const fetchItemsRef = useRef(false);
 
   // 监听窗口大小变化
   useEffect(() => {
@@ -94,22 +95,31 @@ const Main: React.FC = () => {
           },
         });
 
-        // 将 Item 类型转换为 CardItem 类型
-        const cardItems = response.data.items.map((item: Item) => ({
-          id: item.id,
-          height: Math.floor(Math.random() * 200) + 300,
-          title: item.title,
-          favoriteTime: item.created_at,
-          tags: item.tags || [],
-          folderPath:
-            item.collection_ids?.length > 0 ? item.collection_ids[0] : "未分类",
-          link: item.url,
-        }));
+        // 检查 items 是否存在且不为空
+        if (response.data?.items && response.data.items.length > 0) {
+          // 将 Item 类型转换为 CardItem 类型
+          const cardItems = response.data.items.map((item: Item) => ({
+            id: item.id,
+            height: Math.floor(Math.random() * 200) + 300,
+            title: item.title,
+            favoriteTime: item.created_at,
+            tags: item.tags || [],
+            folderPath:
+              item.collection_ids?.length > 0 ? item.collection_ids[0] : "未分类",
+            link: item.url,
+          }));
 
-        // 更新状态
-        setItems(cardItems);
-        setTotalPages(response.data.total_pages);
-        setCurrentPage(response.data.page);
+          // 更新状态
+          setItems(cardItems);
+          setTotalPages(response.data.total_pages);
+          setCurrentPage(response.data.page);
+        } else {
+          // 如果 items 为空，显示空状态
+          setItems([]);
+          setTotalPages(1);
+          setCurrentPage(1);
+          toast.info("暂无收藏内容");
+        }
       } else {
         // 如果用户未登录，跳转到登录页面
         navigate("/login");
@@ -181,7 +191,11 @@ const Main: React.FC = () => {
 
   // 组件加载时获取数据
   useEffect(() => {
-    fetchItems();
+    if (!fetchItemsRef.current) {
+      fetchItems();
+      // fetchItemsRef 跟踪是否已经获取过数据
+      fetchItemsRef.current = true;
+    }
   }, []);
 
   const handleModeChange = () => {

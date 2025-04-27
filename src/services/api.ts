@@ -113,9 +113,21 @@ interface StatusHandlers {
 class ApiService {
   // Axios实例
   private instance: AxiosInstance;
+  // 最大重试次数
+  private maxRetries = 0;
+  // 重试延迟时间（毫秒）
+  private retryDelay = 1000;
 
   // 状态码处理器
   private statusHandlers: StatusHandlers = {
+    40001: async (error?: AxiosError<ResponseData>) => {
+      console.error("Token 验证错误，请重新登录");
+      TokenManager.clearTokens();
+      console.log("跳转到登录页");
+      // 跳转到登录页
+      window.location.href = "/login";
+      return true;
+    },
     40100: async () => {
       const refreshToken = TokenManager.getRefreshToken();
       if (refreshToken) {
@@ -159,8 +171,13 @@ class ApiService {
       console.error("请求的资源不存在");
       return false;
     },
-    50000: async () => {
-      console.error("服务器错误，请稍后再试");
+    50000: async (error?: AxiosError<ResponseData>) => {
+      console.error("服务器错误，请稍后再试", error?.response?.data);
+      // 显示错误提示
+      if (error?.response?.data?.msg) {
+        // 这里可以集成你的UI提示组件
+        console.error(error.response.data.msg);
+      }
       return false;
     },
   };
@@ -197,51 +214,32 @@ class ApiService {
         return config;
       },
       (error: AxiosError) => {
+        console.error("请求错误:", error.message);
         return Promise.reject(error);
       }
     );
 
     this.instance.interceptors.response.use(
       (response: AxiosResponse) => {
-        const { code, msg } = response.data;
-
-        // 处理业务状态码
-        if (code >= 20000 && code < 30000) {
-          return response.data;
-        }
-
-        // 查找对应的错误处理器
-        const handler = this.statusHandlers[code];
-        if (handler) {
-          return handler().then(() => Promise.reject(new Error(msg)));
-        }
-
-        // 其他错误
-        if (code >= 30000 && code < 40000) {
-          console.error(`用户错误: ${msg}`);
-        } else if (code >= 40000 && code < 50000) {
-          console.error(`业务错误: ${msg}`);
-        } else if (code >= 50000) {
-          console.error(`第三方服务错误: ${msg}`);
-        } else if (code >= 10000 && code < 20000) {
-          console.error(`系统错误: ${msg}`);
-        }
-
-        return Promise.reject(new Error(msg));
+        return response.data;
       },
       async (error: AxiosError<ResponseData>) => {
-        if (!error.response) {
-          console.error("网络错误或请求被取消");
-          return Promise.reject(error);
-        }
+        // 记录详细的错误信息
+        console.error("API请求错误:", {
+          url: error.config?.url,
+          method: error.config?.method,
+          status: error.response?.status,
+          data: error.response?.data,
+        });
 
-        const { code, msg } = error.response.data;
-        const handler = this.statusHandlers[code];
-
-        if (handler) {
-          const isHandled = await handler(error);
-          if (isHandled) {
-            return Promise.reject(new Error(msg));
+        // 处理业务错误码
+        if (error.response?.data?.code) {
+          const handler = this.statusHandlers[error.response.data.code];
+          if (handler) {
+            const isHandled = await handler(error);
+            if (isHandled) {
+              return Promise.reject(new Error(error.response.data.msg));
+            }
           }
         }
 
@@ -282,10 +280,29 @@ class ApiService {
   }
 
   /**
+   * 重试请求
+   */
+  private async retryRequest<T>(
+    request: () => Promise<T>,
+    retryCount = 0
+  ): Promise<T> {
+    try {
+      return await request();
+    } catch (error) {
+      if (retryCount < this.maxRetries) {
+        // 等待一段时间后重试
+        await new Promise((resolve) => setTimeout(resolve, this.retryDelay));
+        return this.retryRequest(request, retryCount + 1);
+      }
+      throw error;
+    }
+  }
+
+  /**
    * GET请求
    */
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
-    return this.instance.get<any, T>(url, config);
+    return this.retryRequest(() => this.instance.get<any, T>(url, config));
   }
 
   /**
@@ -296,7 +313,9 @@ class ApiService {
     data?: any,
     config?: AxiosRequestConfig
   ): Promise<T> {
-    return this.instance.post<any, T>(url, data, config);
+    return this.retryRequest(() =>
+      this.instance.post<any, T>(url, data, config)
+    );
   }
 
   /**
