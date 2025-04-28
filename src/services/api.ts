@@ -126,47 +126,88 @@ class ApiService {
       toast.error("请求的资源不存在");
       return true;
     },
-    40100: async () => {
+    40100: async (error?: AxiosError<ResponseData>) => {
+      const originalRequest = error?.config;
       const refreshToken = TokenManager.getRefreshToken();
-      if (refreshToken) {
-        try {
-          const response = await this.instance.post<
-            ApiResponse<{
-              access_token: string;
-              refresh_token: string;
-            }>
-          >("/auth/refresh", {
-            refresh_token: refreshToken,
-          });
 
-          if (response.data.code === 20000) {
-            TokenManager.setAuthInfo(
-              response.data.data.access_token,
-              response.data.data.refresh_token
-            );
-            return true;
-          }
-        } catch (error) {
-          console.error("刷新 token 失败:", error);
-          toast.error("登录已过期，请重新登录");
-          TokenManager.clearTokens();
-          window.location.href = "/login";
-        }
-      }
-      TokenManager.clearTokens();
-      window.location.href = "/login";
-      return false;
-    },
-    30000: async (error?: AxiosError<ResponseData>) => {
-      if (!error) return false;
-      const response = error.response?.data;
-      if (response?.msg === "Token 验证错误") {
+      if (!refreshToken) {
         TokenManager.clearTokens();
         window.location.href = "/login";
-        return true;
+        return false;
+      }
+
+      try {
+        // 阻止重复刷新
+        if (originalRequest?.url?.includes("/user/refresh-token")) {
+          TokenManager.clearTokens();
+          window.location.href = "/login";
+          return false;
+        }
+
+        const response = await this.instance.post<
+          string
+        >("/user/refresh-token", {
+          refresh_token: refreshToken,
+        });
+
+        if (response.data) {
+          TokenManager.setAccessToken(response.data);
+
+          if (originalRequest) {
+            originalRequest.headers.Authorization = `Bearer ${response.data}`;
+            return true;
+          }
+        }
+      } catch (refreshError) {
+        console.error("刷新 token 失败:", refreshError);
+        toast.error("登录已过期，请重新登录");
+        TokenManager.clearTokens();
+        window.location.href = "/login";
       }
       return false;
     },
+
+    30000: async (error?: AxiosError<ResponseData>) => {
+      // 类似40100的处理逻辑
+      const originalRequest = error?.config;
+      const refreshToken = TokenManager.getRefreshToken();
+
+      if (!refreshToken) {
+        TokenManager.clearTokens();
+        window.location.href = "/login";
+        return false;
+      }
+
+      try {
+        if (originalRequest?.url?.includes("/user/refresh-token")) {
+          TokenManager.clearTokens();
+          window.location.href = "/login";
+          return false;
+        }
+
+        const response = await this.instance.post<
+          string
+        >("/user/refresh-token", {
+          token: refreshToken
+        });
+        console.log(response);
+        if (response.data) {
+          TokenManager.setAccessToken(response.data);
+
+          if (originalRequest) {
+            originalRequest.headers.Authorization = `Bearer ${response.data}`;
+            return true;
+          }
+        }
+      } catch (refreshError) {
+        console.error("刷新 token 失败:", refreshError);
+        toast.error("登录已过期，请重新登录");
+        TokenManager.clearTokens();
+        window.location.href = "/login";
+      }
+      return false;
+    },
+
     40400: async () => {
       console.error("请求的资源不存在");
       return false;
@@ -222,25 +263,22 @@ class ApiService {
         return response.data;
       },
       async (error: AxiosError<ResponseData>) => {
-        // 记录详细的错误信息
-        console.error("API请求错误:", {
-          url: error.config?.url,
-          method: error.config?.method,
-          status: error.response?.status,
-          data: error.response?.data,
-        });
+        const originalRequest = error.config;
 
         // 处理业务错误码
         if (error.response?.data?.code) {
           const handler = this.statusHandlers[error.response.data.code];
           if (handler) {
-            const isHandled = await handler(error);
-            if (isHandled) {
-              return Promise.reject(new Error(error.response.data.msg));
+            const shouldRetry = await handler(error);
+
+            // 如果handler返回true且有原始请求，则重试请求
+            if (shouldRetry && originalRequest) {
+              return this.instance(originalRequest);
             }
           }
         }
 
+        // 其他错误处理
         return Promise.reject(error);
       }
     );
