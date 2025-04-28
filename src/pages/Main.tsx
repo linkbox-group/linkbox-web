@@ -56,6 +56,8 @@ const Main: React.FC = () => {
   );
   const pageSize = 10;
   const fetchItemsRef = useRef(false);
+  const [currentOrganizationId, setCurrentOrganizationId] = useState<string>("");
+  const [organizationItems, setOrganizationItems] = useState<Item[]>([]);
 
   // 监听窗口大小变化
   useEffect(() => {
@@ -79,59 +81,100 @@ const Main: React.FC = () => {
   const { items, setItems, deleteItem } = useAppStore();
   const { user } = useUserStore();
 
-  // 获取收藏内容
-  const fetchItems = async (page: number = 1) => {
+  // 获取组织内容
+  const fetchOrganizationItems = async (organizationId: string) => {
     try {
       setLoading(true);
-      setCurrentPage(page);
+      setCurrentOrganizationId(organizationId);
+      const response = await itemService.getOrganizationItems({
+        organization_id: organizationId,
+        page: 1,
+        page_size: pageSize,
+        sort_field: "created_at",
+        sort_direction: "desc",
+      });
 
-      // 如果用户已登录，尝试从API获取数据
-      if (user?.id) {
-        const response = await itemService.getByTags({
-          tags: [], // 空数组表示获取所有内容
-          pagination: {
-            page,
-            page_size: pageSize,
-          },
-        });
-
-        // 检查 items 是否存在且不为空
-        if (response.data?.items && response.data.items.length > 0) {
-          // 将 Item 类型转换为 CardItem 类型
-          const cardItems = response.data.items.map((item: Item) => ({
-            id: item.id,
-            height: Math.floor(Math.random() * 200) + 300,
-            title: item.title,
-            favoriteTime: item.created_at,
-            tags: item.tags || [],
-            folderPath:
-              item.collection_ids?.length > 0 ? item.collection_ids[0] : "未分类",
-            link: item.url,
-          }));
-
-          // 更新状态
-          setItems(cardItems);
-          setTotalPages(response.data.total_pages);
-          setCurrentPage(response.data.page);
-        } else {
-          // 如果 items 为空，显示空状态
-          setItems([]);
-          setTotalPages(1);
-          setCurrentPage(1);
-          toast.info("暂无收藏内容");
-        }
+      if (response.data?.items) {
+        const items = response.data.items.map((item: Item) => ({
+          id: item.id,
+          height: Math.floor(Math.random() * 200) + 300,
+          title: item.title,
+          favoriteTime: item.created_at,
+          tags: item.tags || [],
+          folderPath: item.collection_ids?.length > 0 ? item.collection_ids[0] : "未分类",
+          link: item.url,
+        }));
+        setItems(items);
+        setTotalPages(response.data.total_pages);
+        setCurrentPage(1);
       } else {
-        // 如果用户未登录，跳转到登录页面
-        navigate("/login");
-        return;
+        setItems([]);
+        setTotalPages(1);
+        setCurrentPage(1);
+        toast.info("该组织暂无内容");
       }
     } catch (error) {
-      console.error("获取数据失败:", error);
-      toast.error("获取数据失败");
+      console.error("获取组织内容失败:", error);
+      toast.error("获取组织内容失败");
       setItems([]);
       setTotalPages(1);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 修改 fetchItems 函数
+  const fetchItems = async (page: number = 1) => {
+    if (currentOrganizationId) {
+      // 如果当前有选中的组织，获取组织内容
+      await fetchOrganizationItems(currentOrganizationId);
+    } else {
+      // 否则获取所有内容
+      try {
+        setLoading(true);
+        setCurrentPage(page);
+
+        if (user?.id) {
+          const response = await itemService.getByTags({
+            tags: [],
+            pagination: {
+              page,
+              page_size: pageSize,
+            },
+          });
+
+          if (response.data?.items && response.data.items.length > 0) {
+            const cardItems = response.data.items.map((item: Item) => ({
+              id: item.id,
+              height: Math.floor(Math.random() * 200) + 300,
+              title: item.title,
+              favoriteTime: item.created_at,
+              tags: item.tags || [],
+              folderPath: item.collection_ids?.length > 0 ? item.collection_ids[0] : "未分类",
+              link: item.url,
+            }));
+
+            setItems(cardItems);
+            setTotalPages(response.data.total_pages);
+            setCurrentPage(response.data.page);
+          } else {
+            setItems([]);
+            setTotalPages(1);
+            setCurrentPage(1);
+            toast.info("暂无收藏内容");
+          }
+        } else {
+          navigate("/login");
+          return;
+        }
+      } catch (error) {
+        console.error("获取数据失败:", error);
+        toast.error("获取数据失败");
+        setItems([]);
+        setTotalPages(1);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -354,7 +397,11 @@ const Main: React.FC = () => {
             sidebarCollapsed ? "w-0" : "w-70"
           }`}
         >
-          <Sidebar collapsed={sidebarCollapsed} onSelectedCard={setMode} />
+          <Sidebar 
+            collapsed={sidebarCollapsed} 
+            onSelectedCard={setMode}
+            onOrganizationSelect={fetchOrganizationItems}
+          />
         </div>
         <div className="flex-1 overflow-auto">
           <div className="p-4">

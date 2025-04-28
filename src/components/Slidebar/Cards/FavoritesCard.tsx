@@ -1,8 +1,7 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Folder, Plus, ChevronRight, File, Ellipsis, Trash2 } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Folder, Plus, ChevronRight, Ellipsis, Trash2 } from "lucide-react";
 import { organizationService, Organization } from "@/services/organization";
 import { useUserStore } from "@/store/userStore";
-import { itemService, Item } from "@/services/items";
 import OrganizationDialog from "@/components/Dialogs/OrganizationDialog";
 import { cn } from "@/lib/utils";
 import {
@@ -20,31 +19,27 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import TreeView from "../TreeView";
-import ContentDialog from "@/components/Dialogs/ContentDialog";
+import TreeView, { TreeNode } from "../TreeView";
 
-interface FileTreeNode {
-  id: string;
-  name: string;
-  type: 'folder' | 'file';
-  children?: FileTreeNode[];
+interface FileTreeNode extends TreeNode {
+  type: 'folder';
   items_count?: number;
 }
 
-const FavoritesCard: React.FC = () => {
+interface FavoritesCardProps {
+  onOrganizationSelect?: (organizationId: string) => void;
+}
+
+const FavoritesCard: React.FC<FavoritesCardProps> = ({ onOrganizationSelect }) => {
   const { user } = useUserStore();
   const [organizations, setOrganizations] = useState<FileTreeNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-  const [selectedNodeCode, setSelectedNodeCode] = useState<string>("0");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [nodeToDelete, setNodeToDelete] = useState<FileTreeNode | null>(null);
   const [organizationDialogOpen, setOrganizationDialogOpen] = useState(false);
-  const [contentDialogOpen, setContentDialogOpen] = useState(false);
   const [parentCode, setParentCode] = useState<string>("0");
 
   const fetchOrganizations = async () => {
@@ -60,7 +55,7 @@ const FavoritesCard: React.FC = () => {
               .map(org => ({
                 id: org.id,
                 name: org.name,
-                type: "folder",
+                type: "folder" as const,
                 children: buildTree(orgs, org.code),
                 items_count: org.items_count || 0
               }));
@@ -82,64 +77,12 @@ const FavoritesCard: React.FC = () => {
     }
   };
 
-  const fetchOrganizationItems = async (nodeId: string) => {
-    try {
-      const itemsResponse = await itemService.getOrganizationItems({
-        organization_id: nodeId,
-        page: 1,
-        page_size: 100,
-        sort_field: "created_at",
-        sort_direction: "desc",
-      });
-      
-      if (itemsResponse.data?.items) {
-        return itemsResponse.data.items.map((item: Item) => ({
-          id: `item-${item.id}`,
-          name: item.title || item.url,
-          type: "file" as const,
-          url: item.url,
-        }));
-      }
-      return [];
-    } catch (error) {
-      console.error(`获取组织内容项失败:`, error);
-      toast.error("获取内容项失败");
-      return [{
-        id: `error-${nodeId}`,
-        name: "加载失败",
-        type: "file" as const,
-      }];
-    }
-  };
-
-  const toggleNode = async (id: string) => {
+  const toggleNode = (id: string) => {
     const newExpandedNodes = new Set(expandedNodes);
     if (newExpandedNodes.has(id)) {
       newExpandedNodes.delete(id);
     } else {
       newExpandedNodes.add(id);
-      if (id.startsWith('items-')) {
-        const orgId = id.replace('items-', '');
-        const items = await fetchOrganizationItems(orgId);
-        setOrganizations(prev => {
-          const updateNode = (node: FileTreeNode): FileTreeNode => {
-            if (node.id === orgId) {
-              return {
-                ...node,
-                children: items
-              };
-            }
-            if (node.children) {
-              return {
-                ...node,
-                children: node.children.map(updateNode)
-              };
-            }
-            return node;
-          };
-          return prev.map(updateNode);
-        });
-      }
     }
     setExpandedNodes(newExpandedNodes);
   };
@@ -152,8 +95,7 @@ const FavoritesCard: React.FC = () => {
     fetchOrganizations();
   };
 
-  const handleNodeClick = (node: FileTreeNode) => {
-    setSelectedNodeCode(node.id);
+  const handleNodeClick = (node: TreeNode) => {
     const newExpandedNodes = new Set(expandedNodes);
     if (newExpandedNodes.has(node.id)) {
       newExpandedNodes.delete(node.id);
@@ -167,8 +109,6 @@ const FavoritesCard: React.FC = () => {
     setParentCode(nodeCode);
     if (type === "organization") {
       setOrganizationDialogOpen(true);
-    } else {
-      setContentDialogOpen(true);
     }
   };
 
@@ -211,9 +151,6 @@ const FavoritesCard: React.FC = () => {
               />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleCreateClick("item")}>
-                添加收藏项目
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleCreateClick("organization")}>
                 添加收藏集
               </DropdownMenuItem>
@@ -235,46 +172,56 @@ const FavoritesCard: React.FC = () => {
           <TreeView
             data={organizations}
             onNodeClick={handleNodeClick}
-            renderNode={(node: FileTreeNode) => (
+            expandedNodes={expandedNodes}
+            onToggleNode={toggleNode}
+            renderNode={(node: TreeNode) => (
               <div className="flex items-center justify-between w-full group">
                 <div className="flex items-center gap-2 flex-1">
-                  {node.type === 'folder' ? (
+                  <ChevronRight 
+                    className={cn(
+                      "w-4 h-4 text-gray-500 cursor-pointer transition-transform",
+                      expandedNodes.has(node.id) && "transform rotate-90"
+                    )}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleNode(node.id);
+                    }}
+                  />
+                  <div 
+                    className="flex items-center gap-2 flex-1 cursor-pointer"
+                    onClick={() => {
+                      onOrganizationSelect?.(node.id);
+                    }}
+                  >
                     <Folder className="w-4 h-4 text-blue-500" />
-                  ) : (
-                    <File className="w-4 h-4 text-gray-500" />
-                  )}
-                  <span className="text-sm">{node.name}</span>
-                </div>
-                {node.type === 'folder' && (
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Plus
-                          className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer"
-                        />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleCreateClick("item", node.id)}>
-                          添加收藏项目
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleCreateClick("organization", node.id)}>
-                          添加收藏集
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Ellipsis className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={(e) => handleDeleteClick(e, node)}>
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          删除
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <span className="text-sm">{node.name}</span>
                   </div>
-                )}
+                </div>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Plus
+                        className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer"
+                      />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleCreateClick("organization", node.id)}>
+                        添加收藏集
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Ellipsis className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={(e) => handleDeleteClick(e, node as FileTreeNode)}>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        删除
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
             )}
             className="py-2"
@@ -287,13 +234,6 @@ const FavoritesCard: React.FC = () => {
         setOpen={setOrganizationDialogOpen}
         onSuccess={handleCreateSuccess}
         parentCode={parentCode}
-      />
-
-      <ContentDialog
-        mode="add"
-        open={contentDialogOpen}
-        setOpen={setContentDialogOpen}
-        onSuccess={handleCreateSuccess}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

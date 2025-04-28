@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ChevronRight, ChevronDown, Folder, File } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -7,6 +7,7 @@ export interface TreeNode {
   name: string;
   type: 'folder' | 'file';
   children?: TreeNode[];
+  items_count?: number;
 }
 
 interface TreeViewProps {
@@ -14,23 +15,18 @@ interface TreeViewProps {
   onNodeClick?: (node: TreeNode) => void;
   className?: string;
   renderNode?: (node: TreeNode) => React.ReactNode;
+  expandedNodes?: Set<string>;
+  onToggleNode?: (nodeId: string) => void;
 }
 
-const TreeView: React.FC<TreeViewProps> = ({ data, onNodeClick, className, renderNode }) => {
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-
-  const toggleNode = (nodeId: string) => {
-    setExpandedNodes((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(nodeId)) {
-        newSet.delete(nodeId);
-      } else {
-        newSet.add(nodeId);
-      }
-      return newSet;
-    });
-  };
-
+const TreeView: React.FC<TreeViewProps> = ({ 
+  data, 
+  onNodeClick, 
+  className, 
+  renderNode,
+  expandedNodes = new Set(),
+  onToggleNode
+}) => {
   const renderNodeContent = (node: TreeNode, level: number = 0) => {
     const isExpanded = expandedNodes.has(node.id);
     const hasChildren = node.children && node.children.length > 0;
@@ -45,23 +41,21 @@ const TreeView: React.FC<TreeViewProps> = ({ data, onNodeClick, className, rende
           style={{ paddingLeft: `${level * 16}px` }}
           onClick={() => {
             if (hasChildren) {
-              toggleNode(node.id);
+              onToggleNode?.(node.id);
             }
             onNodeClick?.(node);
           }}
         >
-          {hasChildren ? (
-            <ChevronRight
-              className={cn(
-                'w-4 h-4 transition-transform',
-                isExpanded && 'transform rotate-90'
-              )}
-            />
-          ) : (
-            <div className="w-4" />
-          )}
           {renderNode ? renderNode(node) : (
             <>
+              {node.type === 'folder' && (
+                <ChevronRight 
+                  className={cn(
+                    "w-4 h-4 text-gray-500 transition-transform",
+                    isExpanded && "transform rotate-90"
+                  )}
+                />
+              )}
               {node.type === 'folder' ? (
                 <Folder className="w-4 h-4 text-blue-500" />
               ) : (

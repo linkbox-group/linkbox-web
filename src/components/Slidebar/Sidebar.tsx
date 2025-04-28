@@ -25,10 +25,11 @@ const CARD_DATA = [
 
 interface SidebarProps {
   collapsed: boolean;
-  onSelectedCard: (mode: String) => void;
+  onSelectedCard: (mode: string) => void;
+  onOrganizationSelect?: (organizationId: string) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard }) => {
+const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard, onOrganizationSelect }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
@@ -86,7 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard }) => {
   const renderCard = (type: string) => {
     switch (type) {
       case "favorites":
-        return <FavoritesCard />;
+        return <FavoritesCard onOrganizationSelect={onOrganizationSelect} />;
       case "ai":
         return <AISuggestionCard />;
       case "recent":
