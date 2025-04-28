@@ -136,13 +136,6 @@ export const organizationService = {
     return api.get<OrganizationListResponse>('/organization');
   },
 
-  // 获取组织树
-  getTree: (user_id: string, root_code: string) => {
-    return api.get<{ data: OrganizationTree }>('/organization/tree', {
-      params: { user_id, root_code }
-    });
-  },
-
   // 获取组织子节点
   getChildren: (user_id: string, parent_code: string, recursive: boolean = false) => {
     return api.get<{ data: { children: Organization[] } }>('/organization/children', {

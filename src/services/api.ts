@@ -7,6 +7,7 @@ import axios, {
   AxiosHeaders,
 } from "axios";
 import { useUserStore } from "@/store/userStore";
+import { toast } from "sonner";
 
 /**
  * 响应数据接口
@@ -120,12 +121,9 @@ class ApiService {
 
   // 状态码处理器
   private statusHandlers: StatusHandlers = {
-    40001: async (error?: AxiosError<ResponseData>) => {
-      console.error("Token 验证错误，请重新登录");
-      TokenManager.clearTokens();
-      console.log("跳转到登录页");
-      // 跳转到登录页
-      window.location.href = "/login";
+    40001: async () => {
+      console.error("请求的资源不存在");
+      toast.error("请求的资源不存在");
       return true;
     },
     40100: async () => {
@@ -150,13 +148,16 @@ class ApiService {
           }
         } catch (error) {
           console.error("刷新 token 失败:", error);
+          toast.error("登录已过期，请重新登录");
+          TokenManager.clearTokens();
+          window.location.href = "/login";
         }
       }
       TokenManager.clearTokens();
       window.location.href = "/login";
       return false;
     },
-    40300: async (error?: AxiosError<ResponseData>) => {
+    30000: async (error?: AxiosError<ResponseData>) => {
       if (!error) return false;
       const response = error.response?.data;
       if (response?.msg === "Token 验证错误") {
@@ -164,7 +165,6 @@ class ApiService {
         window.location.href = "/login";
         return true;
       }
-      console.error("没有权限访问该资源");
       return false;
     },
     40400: async () => {
@@ -173,9 +173,7 @@ class ApiService {
     },
     50000: async (error?: AxiosError<ResponseData>) => {
       console.error("服务器错误，请稍后再试", error?.response?.data);
-      // 显示错误提示
       if (error?.response?.data?.msg) {
-        // 这里可以集成你的UI提示组件
         console.error(error.response.data.msg);
       }
       return false;
@@ -382,7 +380,9 @@ class ApiService {
 }
 
 // 从环境变量获取API配置
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "/api";
+const API_BASE_URL = import.meta.env.DEV
+  ? "http://linkbox.xyq777.com/api"
+  : "/api";
 const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT || 10000);
 
 // 创建API服务实例
