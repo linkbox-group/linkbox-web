@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import TreeView from "../TreeView";
+import ContentDialog from "@/components/Dialogs/ContentDialog";
 
 interface FileTreeNode {
   id: string;
@@ -43,6 +44,9 @@ const FavoritesCard: React.FC = () => {
   const [selectedNodeCode, setSelectedNodeCode] = useState<string>("0");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [nodeToDelete, setNodeToDelete] = useState<FileTreeNode | null>(null);
+  const [organizationDialogOpen, setOrganizationDialogOpen] = useState(false);
+  const [contentDialogOpen, setContentDialogOpen] = useState(false);
+  const [parentCode, setParentCode] = useState<string>("0");
 
   const fetchOrganizations = async () => {
     try {
@@ -160,10 +164,13 @@ const FavoritesCard: React.FC = () => {
     setExpandedNodes(newExpandedNodes);
   };
 
-  const handleCreateClick = (e: React.MouseEvent, nodeCode: string = "0") => {
-    e.stopPropagation();
-    setSelectedNodeCode(nodeCode);
-    setDialogOpen(true);
+  const handleCreateClick = (type: "item" | "organization", nodeCode: string = "0") => {
+    setParentCode(nodeCode);
+    if (type === "organization") {
+      setOrganizationDialogOpen(true);
+    } else {
+      setContentDialogOpen(true);
+    }
   };
 
   const handleDeleteClick = (e: React.MouseEvent, node: FileTreeNode) => {
@@ -198,10 +205,21 @@ const FavoritesCard: React.FC = () => {
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <Plus 
-            className="w-5 h-5 text-gray-700 dark:text-blue-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
-            onClick={(e) => handleCreateClick(e)}
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Plus 
+                className="w-5 h-5 text-gray-700 dark:text-blue-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
+              />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleCreateClick("item")}>
+                添加收藏项目
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleCreateClick("organization")}>
+                添加收藏集
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
@@ -230,10 +248,21 @@ const FavoritesCard: React.FC = () => {
                 </div>
                 {node.type === 'folder' && (
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Plus
-                      className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer"
-                      onClick={(e) => handleCreateClick(e, node.id)}
-                    />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Plus
+                          className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer"
+                        />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleCreateClick("item", node.id)}>
+                          添加收藏项目
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleCreateClick("organization", node.id)}>
+                          添加收藏集
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Ellipsis className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer" />
@@ -255,10 +284,17 @@ const FavoritesCard: React.FC = () => {
       </div>
 
       <OrganizationDialog
-        open={dialogOpen}
-        setOpen={setDialogOpen}
+        open={organizationDialogOpen}
+        setOpen={setOrganizationDialogOpen}
         onSuccess={handleCreateSuccess}
-        parentCode={selectedNodeCode}
+        parentCode={parentCode}
+      />
+
+      <ContentDialog
+        mode="add"
+        open={contentDialogOpen}
+        setOpen={setContentDialogOpen}
+        onSuccess={handleCreateSuccess}
       />
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
