@@ -7,7 +7,10 @@ import WaterfallFlow from "../components/Slidebar/WaterfallFlow";
 import TagView from "../components/TagView";
 import Line from "../components/Line";
 import ContentDialog from "../components/Dialogs/ContentDialog";
+import ConfirmDialog from "../components/Dialogs/ConfirmDialog";
+import OrganizationDialog from "../components/Dialogs/OrganizationDialog";
 import { itemService, Item } from "@/services/items";
+import { organizationService } from "@/services/organization";
 import { useUserStore } from "@/store/userStore";
 import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
@@ -56,6 +59,12 @@ const Main: React.FC = () => {
   );
   const pageSize = 10;
   const fetchItemsRef = useRef(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<Item | null>(null);
+  const [organizationDialogOpen, setOrganizationDialogOpen] = useState(false);
+  const [organizationToDelete, setOrganizationToDelete] = useState<any>(null);
+  const [deleteOrganizationDialogOpen, setDeleteOrganizationDialogOpen] = useState(false);
+  const [parentCode, setParentCode] = useState<string>("0");
 
   // 监听窗口大小变化
   useEffect(() => {
@@ -271,13 +280,68 @@ const Main: React.FC = () => {
   };
 
   const handleDelete = async (id: string | number) => {
+    const cardItem = items.find((item) => item.id === id);
+    if (cardItem) {
+      // 将 CardItem 转换为 Item 类型
+      const item: Item = {
+        id: cardItem.id.toString(),
+        user_id: user?.id?.toString() || "",
+        type: "1",
+        title: cardItem.title,
+        description: "",
+        url: cardItem.link,
+        thumbnail_url: "",
+        tags: cardItem.tags,
+        organization_ids: [],
+        note: "",
+        created_at: cardItem.favoriteTime,
+        updated_at: cardItem.favoriteTime,
+      };
+      setItemToDelete(item);
+      setDeleteDialogOpen(true);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!itemToDelete) return;
     try {
-      await itemService.delete(id.toString());
-      deleteItem(id);
+      await itemService.delete(itemToDelete.id.toString());
+      deleteItem(itemToDelete.id);
       toast.success("删除成功");
     } catch (error) {
       console.error("删除失败:", error);
       toast.error("删除失败");
+    }
+  };
+
+  const handleAddOrganization = (parentCode: string) => {
+    setParentCode(parentCode);
+    setOrganizationDialogOpen(true);
+  };
+
+  const handleDeleteOrganization = (organization: any) => {
+    setOrganizationToDelete(organization);
+    setDeleteOrganizationDialogOpen(true);
+  };
+
+  const handleDeleteOrganizationConfirm = async () => {
+    if (!organizationToDelete) return;
+
+    try {
+      await organizationService.delete(organizationToDelete.id);
+      toast.success("删除成功");
+      // 重新获取组织列表
+      const sidebar = document.querySelector('[data-testid="sidebar"]');
+      if (sidebar) {
+        const event = new CustomEvent('refreshOrganizations');
+        sidebar.dispatchEvent(event);
+      }
+    } catch (error) {
+      console.error("删除失败:", error);
+      toast.error("删除失败");
+    } finally {
+      setDeleteOrganizationDialogOpen(false);
+      setOrganizationToDelete(null);
     }
   };
 
@@ -346,7 +410,7 @@ const Main: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-gray-900 overflow-x-hidden">
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-900 overflow-x-hidden" aria-hidden="false">
       <ContentDialog
         mode="add"
         open={addDialogOpen}
@@ -366,6 +430,41 @@ const Main: React.FC = () => {
           fetchItems();
         }}
       />
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        setOpen={setDeleteDialogOpen}
+        title="确认删除"
+        description={`确定要删除 "${itemToDelete?.title}" 吗？此操作不可恢复。`}
+        confirmText="删除"
+        cancelText="取消"
+        onConfirm={handleDeleteConfirm}
+        variant="destructive"
+      />
+      <OrganizationDialog
+        mode="add"
+        open={organizationDialogOpen}
+        setOpen={setOrganizationDialogOpen}
+        onSuccess={() => {
+          setOrganizationDialogOpen(false);
+          // 重新获取组织列表
+          const sidebar = document.querySelector('[data-testid="sidebar"]');
+          if (sidebar) {
+            const event = new CustomEvent('refreshOrganizations');
+            sidebar.dispatchEvent(event);
+          }
+        }}
+        parentCode={parentCode}
+      />
+      <ConfirmDialog
+        open={deleteOrganizationDialogOpen}
+        setOpen={setDeleteOrganizationDialogOpen}
+        title="确认删除"
+        description={`确定要删除 "${organizationToDelete?.name}" 吗？此操作不可恢复。`}
+        confirmText="删除"
+        cancelText="取消"
+        onConfirm={handleDeleteOrganizationConfirm}
+        variant="destructive"
+      />
       <AppBar
         sidebarCollapsed={sidebarCollapsed}
         onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -383,6 +482,8 @@ const Main: React.FC = () => {
             collapsed={sidebarCollapsed} 
             onSelectedCard={setMode}
             onOrganizationSelect={fetchOrganizationItems}
+            onAddOrganization={handleAddOrganization}
+            onDeleteOrganization={handleDeleteOrganization}
           />
         </div>
         <div className="flex-1 overflow-auto">

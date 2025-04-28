@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { itemService, Item } from "@/services/items";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner"
@@ -97,18 +96,18 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
   };
 
   return (
-    <AlertDialog open={open}>
-      <AlertDialogContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="text-gray-900 dark:text-gray-100">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+        <DialogHeader>
+          <DialogTitle className="text-gray-900 dark:text-gray-100">
             {mode === "add" ? "添加新链接" : "编辑链接"}
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-gray-600 dark:text-gray-300">
+          </DialogTitle>
+          <DialogDescription className="text-gray-600 dark:text-gray-300">
             {mode === "add"
               ? "请输入链接信息，标题和标签为选填项"
               : "修改链接信息"}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -159,24 +158,26 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
           </div>
         </div>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel 
+        <DialogFooter>
+          <Button 
+            variant="outline"
             onClick={() => setOpen(false)} 
             disabled={loading}
             className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600"
           >
             取消
-          </AlertDialogCancel>
-          <AlertDialogAction 
+          </Button>
+          <Button 
+            variant="default"
             onClick={handleSubmit} 
             disabled={loading}
             className="bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600"
           >
             {loading ? (mode === "add" ? "添加中..." : "更新中...") : mode === "add" ? "添加" : "更新"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 

@@ -3,17 +3,17 @@ import { Folder, Plus, ChevronRight, Ellipsis, Trash2, Search, X } from "lucide-
 import { organizationService, Organization } from "@/services/organization";
 import { useUserStore } from "@/store/userStore";
 import OrganizationDialog from "@/components/Dialogs/OrganizationDialog";
+import ConfirmDialog from "@/components/Dialogs/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -30,10 +30,14 @@ interface FileTreeNode extends TreeNode {
 
 interface FavoritesCardProps {
   onOrganizationSelect?: (organizationId: string) => void;
+  onAddOrganization?: (parentCode: string) => void;
+  onDeleteOrganization?: (organization: FileTreeNode) => void;
 }
 
 const FavoritesCard: React.FC<FavoritesCardProps> = ({
   onOrganizationSelect,
+  onAddOrganization,
+  onDeleteOrganization
 }) => {
   const { user } = useUserStore();
   const [organizations, setOrganizations] = useState<FileTreeNode[]>([]);
@@ -299,31 +303,24 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
       </div>
 
       <OrganizationDialog
+        mode="add"
         open={organizationDialogOpen}
         setOpen={setOrganizationDialogOpen}
         onSuccess={handleCreateSuccess}
         parentCode={parentCode}
       />
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>确认删除</AlertDialogTitle>
-            <AlertDialogDescription>
-              确定要删除 "{nodeToDelete?.name}" 吗？此操作不可恢复。
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>取消</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              删除
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        setOpen={setDeleteDialogOpen}
+        title="确认删除"
+        description={`确定要删除 "${nodeToDelete?.name}" 吗？此操作不可恢复。`}
+        confirmText="删除"
+        cancelText="取消"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteDialogOpen(false)}
+        variant="destructive"
+      />
     </div>
   );
 };

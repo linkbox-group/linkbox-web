@@ -27,9 +27,11 @@ interface SidebarProps {
   collapsed: boolean;
   onSelectedCard: (mode: string) => void;
   onOrganizationSelect?: (organizationId: string) => void;
+  onAddOrganization?: (parentCode: string) => void;
+  onDeleteOrganization?: (organization: any) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard, onOrganizationSelect }) => {
+const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard, onOrganizationSelect, onAddOrganization, onDeleteOrganization }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
@@ -87,7 +89,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard, onOrganiza
   const renderCard = (type: string) => {
     switch (type) {
       case "favorites":
-        return <FavoritesCard onOrganizationSelect={onOrganizationSelect} />;
+        return <FavoritesCard 
+          onOrganizationSelect={onOrganizationSelect} 
+          onAddOrganization={onAddOrganization}
+          onDeleteOrganization={onDeleteOrganization}
+        />;
       case "ai":
         return <AISuggestionCard />;
       case "recent":
