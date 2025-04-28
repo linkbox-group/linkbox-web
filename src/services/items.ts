@@ -23,38 +23,27 @@ export interface ItemMetadata {
 export interface Item {
   id: string;
   user_id: string;
-  type: number;
-  url: string;
+  type: string;
   title: string;
+  url: string;
   description: string;
   thumbnail_url: string;
-  tags: string[];
-  collection_ids: string[];
-  is_favorite: boolean;
-  is_archived: boolean;
-  is_private: boolean;
-  metadata: ItemMetadata;
+  tags: string[] | null;
+  organization_ids: string[] | null;
+  note: string;
   created_at: string;
   updated_at: string;
-  note: string;
-  read_count: number;
 }
 
 /**
  * 创建内容项请求参数
  */
 export interface CreateItemRequest {
-  user_id: string;
-  type: string;
+  type: number;
   url: string;
+  organization_id: string;
   title: string;
   description: string;
-  thumbnail_url: string;
-  metadata: ItemMetadata;
-  tags: string[];
-  collection_ids: string[];
-  is_favorite: boolean;
-  is_private: boolean;
   note: string;
 }
 
@@ -66,12 +55,8 @@ export interface UpdateItemRequest {
   title: string;
   description: string;
   thumbnail_url: string;
-  metadata: ItemMetadata;
   tags: string[];
-  collection_ids: string[];
-  is_favorite: boolean;
-  is_archived: boolean;
-  is_private: boolean;
+  organization_ids: string[];
 }
 
 /**
@@ -101,6 +86,7 @@ export interface GetOrganizationItemsRequest {
  */
 export interface SearchItemsRequest {
   query: string;
+  item_type: "LINK" | "NOTE";
   pagination: {
     page: number;
     page_size: number;
@@ -112,12 +98,10 @@ export interface SearchItemsRequest {
  */
 export interface PaginationResponse<T> {
   items: T[];
-  pagination: {
-    total: number;
-    page: number;
-    page_size: number;
-    total_pages: number;
-  };
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
 }
 
 /**
@@ -148,54 +132,28 @@ export const itemService = {
   /**
    * 删除内容项
    */
-  delete: async (id: string, userId?: string) => {
-    return api.delete<ApiResponse<{ success: boolean }>>(`/items/${id}`, {
-      params: { user_id: userId },
-    });
+  delete: async (id: string) => {
+    return api.delete<ApiResponse<{ success: boolean }>>(`/items/${id}`);
   },
 
   /**
    * 按标签获取内容项
    */
   getByTags: async (data: GetItemsByTagsRequest) => {
-    return api.post<
-      ApiResponse<{
-        items: Item[];
-        total: number;
-        page: number;
-        page_size: number;
-        total_pages: number;
-      }>
-    >("/items/tags", data);
+    return api.post<ApiResponse<PaginationResponse<Item>>>("/items/tags", data);
   },
 
   /**
    * 获取组织内容项
    */
   getOrganizationItems: async (data: GetOrganizationItemsRequest) => {
-    return api.post<
-      ApiResponse<{
-        items: Item[];
-        total: number;
-        page: number;
-        page_size: number;
-        total_pages: number;
-      }>
-    >("/items/organization", data);
+    return api.post<ApiResponse<PaginationResponse<Item>>>("/items/organization", data);
   },
 
   /**
    * 搜索内容项
    */
   search: async (data: SearchItemsRequest) => {
-    return api.post<
-      ApiResponse<{
-        items: Item[];
-        total: number;
-        page: number;
-        page_size: number;
-        total_pages: number;
-      }>
-    >("/items/search", data);
+    return api.post<ApiResponse<PaginationResponse<Item>>>("/items/search", data);
   },
 };

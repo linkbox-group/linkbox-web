@@ -59,6 +59,7 @@ const generateItems = (count: number): CardItem[] => {
 interface AppStore {
   app: AppState;
   items: CardItem[];
+  currentOrganizationId: string;
   setLoading: (isLoading: boolean) => void;
   toggleSidebar: () => void;
   setIsMobile: (isMobile: boolean) => void;
@@ -67,6 +68,7 @@ interface AppStore {
   updateItem: (id: string | number, item: CardItem) => void;
   deleteItem: (id: string | number) => void;
   generateMockItems: (count?: number) => void;
+  setCurrentOrganizationId: (id: string) => void;
 }
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -79,6 +81,9 @@ export const useAppStore = create<AppStore>((set) => ({
   
   // 内容项缓存
   items: [],
+
+  // 当前选中的组织ID
+  currentOrganizationId: "",
 
   // 设置加载状态
   setLoading: (isLoading) =>
@@ -134,5 +139,11 @@ export const useAppStore = create<AppStore>((set) => ({
   generateMockItems: (count = 20) => 
     set(() => ({ 
       items: generateItems(count) 
+    })),
+
+  // 设置当前组织ID
+  setCurrentOrganizationId: (id) => 
+    set(() => ({ 
+      currentOrganizationId: id 
     })),
 })); 

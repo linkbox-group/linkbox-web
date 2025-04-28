@@ -56,8 +56,6 @@ const Main: React.FC = () => {
   );
   const pageSize = 10;
   const fetchItemsRef = useRef(false);
-  const [currentOrganizationId, setCurrentOrganizationId] = useState<string>("");
-  const [organizationItems, setOrganizationItems] = useState<Item[]>([]);
 
   // 监听窗口大小变化
   useEffect(() => {
@@ -78,7 +76,7 @@ const Main: React.FC = () => {
   }, []);
 
   // 使用appStore中的items和generateMockItems
-  const { items, setItems, deleteItem } = useAppStore();
+  const { items, setItems, deleteItem, currentOrganizationId, setCurrentOrganizationId } = useAppStore();
   const { user } = useUserStore();
 
   // 获取组织内容
@@ -101,7 +99,7 @@ const Main: React.FC = () => {
           title: item.title,
           favoriteTime: item.created_at,
           tags: item.tags || [],
-          folderPath: item.collection_ids?.length > 0 ? item.collection_ids[0] : "未分类",
+          folderPath: item.organization_ids?.[0] || "未分类",
           link: item.url,
         }));
         setItems(items);
@@ -150,7 +148,7 @@ const Main: React.FC = () => {
               title: item.title,
               favoriteTime: item.created_at,
               tags: item.tags || [],
-              folderPath: item.collection_ids?.length > 0 ? item.collection_ids[0] : "未分类",
+              folderPath: item.organization_ids?.[0] || "未分类",
               link: item.url,
             }));
 
@@ -256,30 +254,14 @@ const Main: React.FC = () => {
       const item: Item = {
         id: cardItem.id.toString(),
         user_id: user?.id?.toString() || "",
-        type: 1,
+        type: "1",
         title: cardItem.title,
         description: "",
         url: cardItem.link,
         thumbnail_url: "",
-        metadata: {
-          title: cardItem.title,
-          description: "",
-          thumbnail_url: "",
-          author: "",
-          site_name: "",
-          favicon_url: "",
-          content_type: "",
-          keywords: [],
-          language: "",
-          is_article: false,
-        },
         tags: cardItem.tags,
-        collection_ids: [],
-        is_favorite: false,
-        is_private: false,
-        is_archived: false,
+        organization_ids: [],
         note: "",
-        read_count: 0,
         created_at: cardItem.favoriteTime,
         updated_at: cardItem.favoriteTime,
       };

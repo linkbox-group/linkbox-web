@@ -7,3 +7,12 @@ export interface CardItem extends WaterfallItem {
   folderPath: string;
   link: string;
 }
+
+export interface CreateItemRequest {
+  type: number;
+  url: string;
+  organization_id: string;
+  title: string;
+  description: string;
+  note: string;
+}

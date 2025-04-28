@@ -40,7 +40,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
     if (mode === "edit" && content) {
       setLink(content.url);
       setTitle(content.title);
-      setTags(content.tags.join(", "));
+      setTags(content.tags?.join(", ") || "");
     } else {
       // 添加模式，重置表单
       setLink("");
@@ -71,14 +71,18 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
           url: link,
           title: title || link,
           description: "",
+          organization_id: user?.id || "",
+          note: "",
         });
       } else if (mode === "edit" && content) {
         // 编辑模式
         await itemService.update(content.id, {
-          type: 1,
-          url: content.url,
+          user_id: user?.id || "",
           title: title,
           description: content.description,
+          thumbnail_url: content.thumbnail_url,
+          tags: content.tags || [],
+          organization_ids: content.organization_ids || [],
         });
       }
 
