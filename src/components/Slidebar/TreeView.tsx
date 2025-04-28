@@ -1,11 +1,11 @@
-import React from 'react';
-import { ChevronRight, ChevronDown, Folder, File } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import React from "react";
+import { ChevronRight, ChevronDown, Folder, File } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface TreeNode {
   id: string;
   name: string;
-  type: 'folder' | 'file';
+  type: "folder" | "file";
   children?: TreeNode[];
   items_count?: number;
 }
@@ -19,13 +19,13 @@ interface TreeViewProps {
   onToggleNode?: (nodeId: string) => void;
 }
 
-const TreeView: React.FC<TreeViewProps> = ({ 
-  data, 
-  onNodeClick, 
-  className, 
+const TreeView: React.FC<TreeViewProps> = ({
+  data,
+  onNodeClick,
+  className,
   renderNode,
   expandedNodes = new Set(),
-  onToggleNode
+  onToggleNode,
 }) => {
   const renderNodeContent = (node: TreeNode, level: number = 0) => {
     const isExpanded = expandedNodes.has(node.id);
@@ -35,7 +35,7 @@ const TreeView: React.FC<TreeViewProps> = ({
       <div key={node.id} className="select-none">
         <div
           className={cn(
-            'flex items-center gap-2 py-1 px-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer',
+            "flex items-center gap-2 py-1 px-2 rounded-md hover:bg-blue-200 dark:hover:bg-gray-800 transition-colors duration-300 cursor-pointer",
             className
           )}
           style={{ paddingLeft: `${level * 16}px` }}
@@ -46,17 +46,19 @@ const TreeView: React.FC<TreeViewProps> = ({
             onNodeClick?.(node);
           }}
         >
-          {renderNode ? renderNode(node) : (
+          {renderNode ? (
+            renderNode(node)
+          ) : (
             <>
-              {node.type === 'folder' && (
-                <ChevronRight 
+              {node.type === "folder" && (
+                <ChevronRight
                   className={cn(
                     "w-4 h-4 text-gray-500 transition-transform",
                     isExpanded && "transform rotate-90"
                   )}
                 />
               )}
-              {node.type === 'folder' ? (
+              {node.type === "folder" ? (
                 <Folder className="w-4 h-4 text-blue-500" />
               ) : (
                 <File className="w-4 h-4 text-gray-500" />
@@ -74,7 +76,9 @@ const TreeView: React.FC<TreeViewProps> = ({
     );
   };
 
-  return <div className="py-2">{data.map((node) => renderNodeContent(node))}</div>;
+  return (
+    <div className="py-2">{data.map((node) => renderNodeContent(node))}</div>
+  );
 };
 
-export default TreeView; 
+export default TreeView;

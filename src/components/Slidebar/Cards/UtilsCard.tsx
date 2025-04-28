@@ -1,5 +1,4 @@
 import React from 'react';
-import { Grid } from "lucide-react";
 
 const UtilsCard: React.FC = () => {
   return (

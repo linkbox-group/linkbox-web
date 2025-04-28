@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Folder, Plus, ChevronRight, Ellipsis, Trash2 } from "lucide-react";
+import { Folder, Plus, ChevronRight, Ellipsis, Trash2, Search, X } from "lucide-react";
 import { organizationService, Organization } from "@/services/organization";
 import { useUserStore } from "@/store/userStore";
 import OrganizationDialog from "@/components/Dialogs/OrganizationDialog";
@@ -24,7 +24,7 @@ import {
 import TreeView, { TreeNode } from "../TreeView";
 
 interface FileTreeNode extends TreeNode {
-  type: 'folder';
+  type: "folder";
   items_count?: number;
 }
 
@@ -32,15 +32,20 @@ interface FavoritesCardProps {
   onOrganizationSelect?: (organizationId: string) => void;
 }
 
-const FavoritesCard: React.FC<FavoritesCardProps> = ({ onOrganizationSelect }) => {
+const FavoritesCard: React.FC<FavoritesCardProps> = ({
+  onOrganizationSelect,
+}) => {
   const { user } = useUserStore();
   const [organizations, setOrganizations] = useState<FileTreeNode[]>([]);
+  const [filteredOrganizations, setFilteredOrganizations] = useState<FileTreeNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [nodeToDelete, setNodeToDelete] = useState<FileTreeNode | null>(null);
   const [organizationDialogOpen, setOrganizationDialogOpen] = useState(false);
   const [parentCode, setParentCode] = useState<string>("0");
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchOrganizations = async () => {
     try {
@@ -49,15 +54,18 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({ onOrganizationSelect }) =
         console.log("组织列表数据:", response);
         if (response.data?.organizations) {
           // 构建树形结构
-          const buildTree = (orgs: Organization[], parentCode: string = "0"): FileTreeNode[] => {
+          const buildTree = (
+            orgs: Organization[],
+            parentCode: string = "0"
+          ): FileTreeNode[] => {
             return orgs
-              .filter(org => org.parent_code === parentCode)
-              .map(org => ({
+              .filter((org) => org.parent_code === parentCode)
+              .map((org) => ({
                 id: org.id,
                 name: org.name,
                 type: "folder" as const,
                 children: buildTree(orgs, org.code),
-                items_count: org.items_count || 0
+                items_count: org.items_count || 0,
               }));
           };
 
@@ -87,9 +95,43 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({ onOrganizationSelect }) =
     setExpandedNodes(newExpandedNodes);
   };
 
+  const filterOrganizations = (query: string) => {
+    if (!query.trim()) {
+      setFilteredOrganizations(organizations);
+      return;
+    }
+
+    const filterNode = (node: TreeNode): TreeNode | null => {
+      if (node.name.toLowerCase().includes(query.toLowerCase())) {
+        return node;
+      }
+      if (node.children) {
+        const filteredChildren = node.children
+          .map(filterNode)
+          .filter((child): child is TreeNode => child !== null);
+        if (filteredChildren.length > 0) {
+          return {
+            ...node,
+            children: filteredChildren,
+          };
+        }
+      }
+      return null;
+    };
+
+    const filtered = organizations
+      .map(filterNode)
+      .filter((node): node is TreeNode => node !== null);
+    setFilteredOrganizations(filtered as FileTreeNode[]);
+  };
+
   useEffect(() => {
     fetchOrganizations();
   }, [user?.id]);
+
+  useEffect(() => {
+    filterOrganizations(searchQuery);
+  }, [searchQuery, organizations]);
 
   const handleCreateSuccess = () => {
     fetchOrganizations();
@@ -105,7 +147,10 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({ onOrganizationSelect }) =
     setExpandedNodes(newExpandedNodes);
   };
 
-  const handleCreateClick = (type: "item" | "organization", nodeCode: string = "0") => {
+  const handleCreateClick = (
+    type: "item" | "organization",
+    nodeCode: string = "0"
+  ) => {
     setParentCode(nodeCode);
     if (type === "organization") {
       setOrganizationDialogOpen(true);
@@ -136,26 +181,51 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({ onOrganizationSelect }) =
 
   return (
     <div className="bg-gradient-to-b from-[#EEF4FF] to-[#244F99] dark:bg-gradient-to-b dark:from-[#1a1f2e] dark:to-[#1a365d] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300">
-      <div className="flex justify-between items-center mb-4">
+      <div className={cn(
+        "flex justify-between items-center mb-4 transition-all duration-300",
+        isSearching && "opacity-0 h-0 mb-0 pointer-events-none"
+      )}>
         <div className="flex items-center gap-2">
           <Folder className="w-5 h-5 text-gray-700 dark:text-blue-400" />
-          <span className="text-gray-700 dark:text-blue-400 font-medium">
+          <span className="text-gray-700 dark:text-blue-400 font-bold">
             我的收藏集
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Plus 
-                className="w-5 h-5 text-gray-700 dark:text-blue-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
-              />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleCreateClick("organization")}>
-                添加收藏集
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Search
+            className="w-5 h-5 text-gray-700 dark:text-blue-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
+            onClick={() => setIsSearching(true)}
+          />
+          <Plus 
+            className="w-5 h-5 text-gray-700 dark:text-blue-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
+            onClick={() => {
+              setParentCode("0");
+              setOrganizationDialogOpen(true);
+            }}
+          />
+        </div>
+      </div>
+
+      <div className={cn(
+        "flex justify-end items-center mb-4 transition-all duration-300",
+        !isSearching && "opacity-0 h-0 mb-0 pointer-events-none"
+      )}>
+        <div className="flex items-center gap-2 w-full">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="flex-1 px-2 py-1 text-sm bg-white/10 dark:bg-black/10 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="搜索收藏集..."
+            autoFocus
+          />
+          <X
+            className="w-4 h-4 text-gray-500 cursor-pointer hover:text-blue-500"
+            onClick={() => {
+              setIsSearching(false);
+              setSearchQuery("");
+            }}
+          />
         </div>
       </div>
 
@@ -164,20 +234,20 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({ onOrganizationSelect }) =
           <div className="text-center text-gray-500 dark:text-gray-400">
             加载中...
           </div>
-        ) : organizations.length === 0 ? (
+        ) : filteredOrganizations.length === 0 ? (
           <div className="text-center text-gray-500 dark:text-gray-400">
-            暂无收藏集
+            {searchQuery ? "未找到匹配的收藏集" : "暂无收藏集"}
           </div>
         ) : (
           <TreeView
-            data={organizations}
+            data={filteredOrganizations}
             onNodeClick={handleNodeClick}
             expandedNodes={expandedNodes}
             onToggleNode={toggleNode}
             renderNode={(node: TreeNode) => (
               <div className="flex items-center justify-between w-full group">
                 <div className="flex items-center gap-2 flex-1">
-                  <ChevronRight 
+                  <ChevronRight
                     className={cn(
                       "w-4 h-4 text-gray-500 cursor-pointer transition-transform",
                       expandedNodes.has(node.id) && "transform rotate-90"
@@ -187,7 +257,7 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({ onOrganizationSelect }) =
                       toggleNode(node.id);
                     }}
                   />
-                  <div 
+                  <div
                     className="flex items-center gap-2 flex-1 cursor-pointer"
                     onClick={() => {
                       onOrganizationSelect?.(node.id);
@@ -198,24 +268,23 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({ onOrganizationSelect }) =
                   </div>
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Plus
-                        className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer"
-                      />
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleCreateClick("organization", node.id)}>
-                        添加收藏集
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Plus 
+                    className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCreateClick("organization", node.id);
+                    }}
+                  />
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Ellipsis className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={(e) => handleDeleteClick(e, node as FileTreeNode)}>
+                      <DropdownMenuItem
+                        onClick={(e) =>
+                          handleDeleteClick(e, node as FileTreeNode)
+                        }
+                      >
                         <Trash2 className="w-4 h-4 mr-2" />
                         删除
                       </DropdownMenuItem>
