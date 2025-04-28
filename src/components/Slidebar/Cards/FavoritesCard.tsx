@@ -135,7 +135,7 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({ onOrganizationSelect }) =
   };
 
   return (
-    <div className="bg-gradient-to-b from-[#EEF4FF] light:via-[#CBD8ED] light:via-[#89A2CC] light:to-[#244F99] dark:from-[#1a1f2e] dark:to-[#1a365d] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300">
+    <div className="bg-gradient-to-b from-[#EEF4FF] to-[#244F99] dark:bg-gradient-to-b dark:from-[#1a1f2e] dark:to-[#1a365d] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Folder className="w-5 h-5 text-gray-700 dark:text-blue-400" />
