@@ -21,7 +21,7 @@ const Card: React.FC<CardProps> = ({
   onDelete,
 }) => {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow w-full max-w-[400px]">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow w-full max-w-[20rem]">
       {/* 标题和操作按钮 */}
       <div className="flex justify-between items-start mb-2 w-full">
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 break-words flex-1 min-h-0 h-auto whitespace-normal overflow-hidden max-w-[calc(100%-4rem)]">{title}</h3>

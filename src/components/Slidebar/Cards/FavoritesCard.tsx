@@ -187,14 +187,20 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
   };
 
   return (
-    <div className="bg-gradient-to-b from-[#EEF4FF] to-[#244F99] dark:bg-gradient-to-b dark:from-[#1a1f2e] dark:to-[#1a365d] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300">
+    <div className="bg-gradient-to-b from-[#EEF4FF] to-[#D7EEFF] dark:bg-gradient-to-b dark:from-[#1E2333] dark:to-[#27446F] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300">
       <div className={cn(
         "flex justify-between items-center mb-4 transition-all duration-300",
         isSearching && "opacity-0 h-0 mb-0 pointer-events-none"
       )}>
         <div className="flex items-center gap-2">
           <Folder className="w-5 h-5 text-gray-700 dark:text-blue-400" />
-          <span className="text-gray-700 dark:text-blue-400 font-bold">
+          <span 
+            className="text-gray-700 dark:text-blue-400 font-bold cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
+            onClick={() => {
+              setCurrentOrganizationId("0");
+              onOrganizationSelect?.("0");
+            }}
+          >
             我的收藏集
           </span>
         </div>

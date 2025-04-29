@@ -58,32 +58,56 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [currentIndex, onSelectedCard]);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleStart = (clientY: number) => {
     setIsDragging(true);
-    setStartY(e.clientY);
-    setCurrentY(e.clientY);
+    setStartY(clientY);
+    setCurrentY(clientY);
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handleMove = (clientY: number) => {
     if (!isDragging) return;
-    setCurrentY(e.clientY);
+    setCurrentY(clientY);
   };
 
-  const handleMouseUp = () => {
+  const handleEnd = () => {
     if (!isDragging) return;
 
     const dragDistance = currentY - startY;
     if (Math.abs(dragDistance) > 50) {
       if (dragDistance > 0) {
-        setCurrentIndex(
-          (prev) => (prev - 1 + CARD_DATA.length) % CARD_DATA.length
-        );
+        setCurrentIndex((prev) => (prev - 1 + CARD_DATA.length) % CARD_DATA.length);
       } else {
         setCurrentIndex((prev) => (prev + 1) % CARD_DATA.length);
       }
     }
 
     setIsDragging(false);
+  };
+
+  // 鼠标事件处理
+  const handleMouseDown = (e: React.MouseEvent) => {
+    handleStart(e.clientY);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    handleMove(e.clientY);
+  };
+
+  const handleMouseUp = () => {
+    handleEnd();
+  };
+
+  // 触摸事件处理
+  const handleTouchStart = (e: React.TouchEvent) => {
+    handleStart(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    handleMove(e.touches[0].clientY);
+  };
+
+  const handleTouchEnd = () => {
+    handleEnd();
   };
 
   // 处理鼠标滚轮事件
@@ -94,9 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       setCurrentIndex((prev) => (prev + 1) % CARD_DATA.length);
     } else {
       // 向上滚动，显示上一张卡片
-      setCurrentIndex(
-        (prev) => (prev - 1 + CARD_DATA.length) % CARD_DATA.length
-      );
+      setCurrentIndex((prev) => (prev - 1 + CARD_DATA.length) % CARD_DATA.length);
     }
   };
 
@@ -136,12 +158,15 @@ const Sidebar: React.FC<SidebarProps> = ({
       >
         <div
           ref={containerRef}
-          className="w-full h-[400px] relative"
+          className="w-full h-[400px] relative touch-none"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
           onWheel={handleWheel}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           {CARD_DATA.map((card, index) => {
             const screenHeight = window.innerHeight;

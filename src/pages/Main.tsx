@@ -69,20 +69,21 @@ const Main: React.FC = () => {
   // 监听窗口大小变化
   useEffect(() => {
     const handleResize = () => {
+      console.log(window.innerWidth);
       setSidebarCollapsed(window.innerWidth < 768);
       setColumns(
         window.innerWidth < 640
           ? 1
           : window.innerWidth < 1024
           ? 2
-          : window.innerWidth < 1280
+          : window.innerWidth < 1920
           ? 3
           : 4
       );
     };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [window.innerWidth]);
 
   // 使用appStore中的items和generateMockItems
   const { items, setItems, deleteItem, currentOrganizationId, setCurrentOrganizationId } = useAppStore();
@@ -160,7 +161,7 @@ const Main: React.FC = () => {
               folderPath: item.organization_ids?.[0] || "未分类",
               link: item.url,
             }));
-
+            console.log(response);
             setItems(cardItems);
             setTotalPages(response.data.total_pages);
             setCurrentPage(response.data.page);
