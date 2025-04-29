@@ -409,7 +409,7 @@ const Main: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-gray-900 overflow-x-hidden" aria-hidden="false">
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-900 overflow-hidden">
       <ContentDialog
         mode="add"
         open={addDialogOpen}
@@ -471,7 +471,7 @@ const Main: React.FC = () => {
         username={user?.username || ""}
         onSearch={handleSearch}
       />
-      <div className="flex flex-1 min-h-0 overflow-x-hidden">
+      <div className="flex flex-1 min-h-0">
         <div
           className={`flex-shrink-0 transition-all duration-300 ${
             sidebarCollapsed ? "w-0" : "w-70"
@@ -568,6 +568,19 @@ const Main: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
+      {/* 备案信息 */}
+      <div className="h-12 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800">
+        <span>
+          <a 
+            href="http://beian.miit.gov.cn/" 
+            target="_blank" 
+            rel="nofollow noopener"
+            className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+          >
+            赣ICP备2022001931号
+          </a>
+        </span>
       </div>
     </div>
   );
