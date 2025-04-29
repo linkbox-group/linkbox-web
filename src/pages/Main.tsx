@@ -14,8 +14,6 @@ import { organizationService } from "@/services/organization";
 import { useUserStore } from "@/store/userStore";
 import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
-import { SearchResultItem } from "@/services/search";
-import { searchService } from "@/services/search";
 import { Archive, Grid, ArrowUpDown, List, Bookmark } from "lucide-react";
 import {
   Pagination,
@@ -192,29 +190,28 @@ const Main: React.FC = () => {
       setIsSearching(true);
       setSearchKeyword(keyword);
       setCurrentPage(page);
-      const result = await searchService.globalSearch({
-        keyword,
-        page,
-        pageSize,
+      const result = await itemService.search({
+        query: keyword,
+        item_type: "LINK",
+        pagination: {
+          page,
+          page_size: pageSize,
+        },
       });
 
       if (result.data.items.length > 0) {
         // 将搜索结果转换为 items 格式
-        const searchItems = result.data.items.map((item: SearchResultItem) => ({
+        const searchItems = result.data.items.map((item: Item) => ({
           id: item.id,
           height: Math.floor(Math.random() * 200) + 300,
           title: item.title,
-          favoriteTime: item.createdAt,
-          tags: [], // 暂时使用空数组，因为 SearchResultItem 中没有 tags 字段
-          folderPath: item.collections[0]?.name || "未分类",
-          link: item.url || "",
+          favoriteTime: item.created_at,
+          tags: item.tags || [],
+          folderPath: item.organization_ids?.[0] || "未分类",
+          link: item.url,
         }));
         setItems(searchItems);
-        setTotalPages(
-          Math.ceil(
-            result.data.pagination.totalItems / result.data.pagination.pageSize
-          )
-        );
+        setTotalPages(result.data.total_pages);
       } else {
         // 如果没有搜索结果，显示提示
         toast.info("未找到相关结果");
