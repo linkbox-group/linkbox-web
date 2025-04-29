@@ -6,7 +6,7 @@ const AISuggestionCard: React.FC = () => {
     <div className="bg-gradient-to-b from-[#FFFFFF] to-[#B7DEFB] dark:from-[#2A3958] dark:to-[#3C567A] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
-          <span className="text-gray-700 dark:text-blue-400 font-medium">AI 建议</span>
+          <span className="text-gray-700 dark:text-blue-400 font-medium">AI Suggestions</span>
         </div>
       </div>
       <div className="flex items-center gap-2">
