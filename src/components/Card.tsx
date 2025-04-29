@@ -5,6 +5,7 @@ interface CardProps {
   title: string;
   favoriteTime: string;
   tags: string[];
+  tag_names: string[];
   folderPath: string;
   link: string;
   onEdit?: () => void;
@@ -15,6 +16,7 @@ const Card: React.FC<CardProps> = ({
   title,
   favoriteTime,
   tags,
+  tag_names,
   folderPath,
   link,
   onEdit,
@@ -55,7 +57,7 @@ const Card: React.FC<CardProps> = ({
             key={index}
             className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full break-words max-w-[200px] truncate"
           >
-            #{tag}
+            #{tag_names[index] || tag}
           </span>
         ))}
       </div>

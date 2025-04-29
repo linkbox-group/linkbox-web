@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import FavoritesCard from "./Cards/FavoritesCard";
 import AISuggestionCard from "./Cards/AISuggestionCard";
 import UtilsCard from "./Cards/UtilsCard";
-import AllFavoritesCard from "./Cards/AllFavoritesCard";
+import AllFavoritesCard from "./Cards/TagsCard";
 
 const CARD_DATA = [
   {

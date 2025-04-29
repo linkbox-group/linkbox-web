@@ -12,6 +12,7 @@ import { itemService, Item } from "@/services/items";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom";
+import { useAppStore } from "@/store";
 
 interface ContentDialogProps {
   mode: "add" | "edit";
@@ -33,13 +34,14 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
   const [tags, setTags] = useState("");
   const [loading, setLoading] = useState(false);
   const { user } = useUserStore();
+  const { currentOrganizationId } = useAppStore();
   const navigate = useNavigate();
   // 当对话框打开或内容变化时，更新表单
   useEffect(() => {
     if (mode === "edit" && content) {
       setLink(content.url);
       setTitle(content.title);
-      setTags(content.tags?.join(", ") || "");
+      setTags(content.tags?.map(tag => tag.trim().replace(/[,，]/g, "")).filter(Boolean).join("，") || "");
     } else {
       // 添加模式，重置表单
       setLink("");
@@ -70,7 +72,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
           url: link,
           title: title || link,
           description: "",
-          organization_id: user?.id || "0",
+          organization_id: currentOrganizationId || "0",
           note: "",
         });
       } else if (mode === "edit" && content) {

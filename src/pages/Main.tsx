@@ -396,6 +396,7 @@ const Main: React.FC = () => {
                 title={item.title}
                 favoriteTime={item.favoriteTime}
                 tags={item.tags}
+                tag_names={item.tags}
                 folderPath={item.folderPath}
                 link={item.link}
                 onEdit={() => handleEdit(item.id)}

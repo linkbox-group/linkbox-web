@@ -124,7 +124,7 @@ class ApiService {
     40001: async () => {
       console.error("请求的资源不存在");
       toast.error("请求的资源不存在");
-      return true;
+      return false;
     },
     40100: async (error?: AxiosError<ResponseData>) => {
       const originalRequest = error?.config;

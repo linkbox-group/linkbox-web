@@ -7,21 +7,30 @@ export interface Tag {
   id: string;
   user_id: string;
   name: string;
-  description?: string;
-  color?: string;
+  description: string;
+  color: string;
   item_count: number;
   created_at: string;
   updated_at: string;
 }
 
 /**
+ * API 响应基础结构
+ */
+export interface ApiResponse<T> {
+  msg: string;
+  code: number;
+  data: T;
+}
+
+/**
  * 分页信息
  */
 export interface Pagination {
+  total: number;
   page: number;
   page_size: number;
-  total: number;
-  pages: number;
+  total_pages: number;
 }
 
 /**
@@ -48,8 +57,8 @@ export interface GetTagsResponse {
 export interface CreateTagRequest {
   user_id: string;
   name: string;
-  description?: string;
-  color?: string;
+  description: string;
+  color: string;
 }
 
 /**
@@ -66,7 +75,6 @@ export interface UpdateTagRequest {
  * 标签操作请求参数
  */
 export interface TagOperationRequest {
-  user_id: string;
   tags: string[];
   item_ids: string[];
 }
@@ -77,7 +85,7 @@ export interface TagOperationRequest {
 export interface TagOperationResponse {
   success_count: number;
   failure_count: number;
-  failed_item_ids: string[];
+  failed_item_ids: null;
 }
 
 /**
@@ -170,11 +178,10 @@ export interface SuggestTagsResponse {
 export const tagService = {
   /**
    * 获取所有标签
-   * @param params 请求参数
    * @returns 标签列表
    */
-  getTags: async (params: GetTagsRequest): Promise<GetTagsResponse> => {
-    return api.get<GetTagsResponse>(`/users/${params.user_id}/tags`, { params });
+  getTags: async (): Promise<ApiResponse<GetTagsResponse>> => {
+    return api.get<ApiResponse<GetTagsResponse>>('/users/tags');
   },
 
   /**
@@ -192,8 +199,8 @@ export const tagService = {
    * @param data 标签信息
    * @returns 创建的标签
    */
-  createTag: async (data: CreateTagRequest): Promise<Tag> => {
-    return api.post<Tag>('/tags', data);
+  createTag: async (data: CreateTagRequest): Promise<ApiResponse<{ data: Tag }>> => {
+    return api.post<ApiResponse<{ data: Tag }>>('/tags', data);
   },
 
   /**
@@ -202,8 +209,8 @@ export const tagService = {
    * @param data 更新信息
    * @returns 更新后的标签
    */
-  updateTag: async (id: string, data: UpdateTagRequest): Promise<Tag> => {
-    return api.put<Tag>(`/tags/${id}`, data);
+  updateTag: async (id: string, data: UpdateTagRequest): Promise<ApiResponse<{ data: Tag }>> => {
+    return api.put<ApiResponse<{ data: Tag }>>(`/tags/${id}`, data);
   },
 
   /**
@@ -212,8 +219,8 @@ export const tagService = {
    * @param userId 用户ID
    * @returns 删除结果
    */
-  deleteTag: async (id: string, userId: string): Promise<{ success: boolean }> => {
-    return api.delete<{ success: boolean }>(`/tags/${id}`, { params: { user_id: userId } });
+  deleteTag: async (id: string, userId: string): Promise<ApiResponse<{ data: { success: boolean } }>> => {
+    return api.delete<ApiResponse<{ data: { success: boolean } }>>(`/tags/${id}`, { params: { user_id: userId } });
   },
 
   /**
@@ -221,8 +228,8 @@ export const tagService = {
    * @param data 操作信息
    * @returns 操作结果
    */
-  addTagsToItems: async (data: TagOperationRequest): Promise<TagOperationResponse> => {
-    return api.post<TagOperationResponse>('/tags/items', data);
+  addTagsToItems: async (data: TagOperationRequest): Promise<ApiResponse<{ data: TagOperationResponse }>> => {
+    return api.post<ApiResponse<{ data: TagOperationResponse }>>('/tags/items', data);
   },
 
   /**
