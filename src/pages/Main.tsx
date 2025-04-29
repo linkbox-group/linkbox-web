@@ -46,6 +46,8 @@ const Main: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [sortField, setSortField] = useState<"created_at" | "title">("created_at");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [columns, setColumns] = useState(
     window.innerWidth < 640
       ? 1
@@ -61,7 +63,8 @@ const Main: React.FC = () => {
   const [itemToDelete, setItemToDelete] = useState<Item | null>(null);
   const [organizationDialogOpen, setOrganizationDialogOpen] = useState(false);
   const [organizationToDelete, setOrganizationToDelete] = useState<any>(null);
-  const [deleteOrganizationDialogOpen, setDeleteOrganizationDialogOpen] = useState(false);
+  const [deleteOrganizationDialogOpen, setDeleteOrganizationDialogOpen] =
+    useState(false);
   const [parentCode, setParentCode] = useState<string>("0");
 
   // 监听窗口大小变化
@@ -84,7 +87,13 @@ const Main: React.FC = () => {
   }, [window.innerWidth]);
 
   // 使用appStore中的items和generateMockItems
-  const { items, setItems, deleteItem, currentOrganizationId, setCurrentOrganizationId } = useAppStore();
+  const {
+    items,
+    setItems,
+    deleteItem,
+    currentOrganizationId,
+    setCurrentOrganizationId,
+  } = useAppStore();
   const { user } = useUserStore();
 
   // 获取组织内容
@@ -130,58 +139,74 @@ const Main: React.FC = () => {
   };
 
   // 修改 fetchItems 函数
-  const fetchItems = async (page: number = 1) => {
-    if (currentOrganizationId) {
-      // 如果当前有选中的组织，获取组织内容
-      await fetchOrganizationItems(currentOrganizationId);
-    } else {
-      // 否则获取所有内容
-      try {
-        setLoading(true);
+  const fetchItems = async (
+    page: number = 1,
+    sortField: "created_at" | "title" = "created_at",
+    sortDirection: "asc" | "desc" = "desc"
+  ) => {
+    try {
+      setLoading(true);
+      const organizationId = currentOrganizationId || "0";
+      setCurrentOrganizationId(organizationId);
+      const response = await itemService.getOrganizationItems({
+        organization_id: organizationId,
+        page: page,
+        page_size: pageSize,
+        sort_field: sortField,
+        sort_direction: sortDirection,
+      });
+
+      if (response.data?.items) {
+        const items = response.data.items.map((item: Item) => ({
+          id: item.id,
+          height: Math.floor(Math.random() * 200) + 300,
+          title: item.title,
+          favoriteTime: item.created_at,
+          tags: item.tags || [],
+          folderPath: item.organization_ids?.[0] || "未分类",
+          link: item.url,
+        }));
+        setItems(items);
+        setTotalPages(response.data.total_pages);
         setCurrentPage(page);
-
-        if (user?.id) {
-          const response = await itemService.getByTags({
-            tags: [],
-            pagination: {
-              page,
-              page_size: pageSize,
-            },
-          });
-
-          if (response.data?.items && response.data.items.length > 0) {
-            const cardItems = response.data.items.map((item: Item) => ({
-              id: item.id,
-              height: Math.floor(Math.random() * 200) + 300,
-              title: item.title,
-              favoriteTime: item.created_at,
-              tags: item.tags || [],
-              folderPath: item.organization_ids?.[0] || "未分类",
-              link: item.url,
-            }));
-            console.log(response);
-            setItems(cardItems);
-            setTotalPages(response.data.total_pages);
-            setCurrentPage(response.data.page);
-          } else {
-            setItems([]);
-            setTotalPages(1);
-            setCurrentPage(1);
-            toast.info("暂无收藏内容");
-          }
-        } else {
-          navigate("/login");
-          return;
-        }
-      } catch (error) {
-        console.error("获取数据失败:", error);
-        toast.error("获取数据失败");
+      } else {
         setItems([]);
         setTotalPages(1);
-      } finally {
-        setLoading(false);
+        setCurrentPage(1);
+        toast.info("暂无内容");
       }
+    } catch (error) {
+      console.error("获取内容失败:", error);
+      toast.error("获取内容失败");
+      setItems([]);
+      setTotalPages(1);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  // 处理排序变化
+  const handleSortChange = (value: string) => {
+    let newSortField: "created_at" | "title" = "created_at";
+    let newSortDirection: "asc" | "desc" = "desc";
+
+    switch (value) {
+      case "time":
+        newSortField = "created_at";
+        newSortDirection = "desc";
+        break;
+      case "title":
+        newSortField = "title";
+        newSortDirection = "asc";
+        break;
+      default:
+        break;
+    }
+
+    setSortField(newSortField);
+    setSortDirection(newSortDirection);
+    setCurrentPage(1); // 重置页码
+    fetchItems(1, newSortField, newSortDirection);
   };
 
   // 处理搜索
@@ -331,7 +356,7 @@ const Main: React.FC = () => {
       // 重新获取组织列表
       const sidebar = document.querySelector('[data-testid="sidebar"]');
       if (sidebar) {
-        const event = new CustomEvent('refreshOrganizations');
+        const event = new CustomEvent("refreshOrganizations");
         sidebar.dispatchEvent(event);
       }
     } catch (error) {
@@ -448,7 +473,7 @@ const Main: React.FC = () => {
           // 重新获取组织列表
           const sidebar = document.querySelector('[data-testid="sidebar"]');
           if (sidebar) {
-            const event = new CustomEvent('refreshOrganizations');
+            const event = new CustomEvent("refreshOrganizations");
             sidebar.dispatchEvent(event);
           }
         }}
@@ -477,8 +502,8 @@ const Main: React.FC = () => {
             sidebarCollapsed ? "w-0" : "w-70"
           }`}
         >
-          <Sidebar 
-            collapsed={sidebarCollapsed} 
+          <Sidebar
+            collapsed={sidebarCollapsed}
             onSelectedCard={setMode}
             onOrganizationSelect={fetchOrganizationItems}
             onAddOrganization={handleAddOrganization}
@@ -506,7 +531,7 @@ const Main: React.FC = () => {
                 <span>模式</span>
               </div>
               <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-                <Select>
+                <Select onValueChange={handleSortChange}>
                   <SelectTrigger className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border-0 bg-transparent p-0 h-auto cursor-pointer">
                     <ArrowUpDown className="w-5 h-5" />
                     <span>排序</span>
@@ -514,7 +539,6 @@ const Main: React.FC = () => {
                   <SelectContent>
                     <SelectItem value="time">时间排序</SelectItem>
                     <SelectItem value="title">标题排序</SelectItem>
-                    <SelectItem value="folder">文件夹排序</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -572,9 +596,9 @@ const Main: React.FC = () => {
       {/* 备案信息 */}
       <div className="h-12 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800">
         <span>
-          <a 
-            href="http://beian.miit.gov.cn/" 
-            target="_blank" 
+          <a
+            href="http://beian.miit.gov.cn/"
+            target="_blank"
             rel="nofollow noopener"
             className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
           >
