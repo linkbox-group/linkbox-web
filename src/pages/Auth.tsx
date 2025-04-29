@@ -4,6 +4,7 @@ import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
 import { userService, ApiResponse } from "@/services/user";
 import { Loader2 } from "lucide-react";
+import { TokenManager } from "@/services/api";
 
 const Auth: React.FC = () => {
   const navigate = useNavigate();
@@ -44,9 +45,22 @@ const Auth: React.FC = () => {
           email: formData.email,
           password: formData.password,
         });
-        if (response.code === 20000) {
+        if (response.code === 20000 && response.data?.access_token) {
           // 更新用户状态
-          login(response);
+          login({
+            code: response.code,
+            msg: response.msg,
+            data: {
+              user_id: response.data.user_id || "",
+              username: response.data.username || "",
+              email: response.data.email || "",
+              avatar: response.data.avatar,
+              bio: response.data.bio,
+              theme: response.data.theme,
+              access_token: response.data.access_token,
+              refresh_token: response.data.refresh_token || ""
+            }
+          });
           toast.success("登录成功");
           navigate("/");
         } else {
@@ -63,7 +77,8 @@ const Auth: React.FC = () => {
 
         if (response.code === 20000) {
           toast.success("注册成功");
-          navigate("/login");
+          TokenManager.setAccessToken(response.data?.access_token || "");
+          navigate("/");
         } else {
           toast.error(response.msg);
         }

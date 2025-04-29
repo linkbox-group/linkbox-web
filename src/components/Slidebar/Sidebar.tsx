@@ -29,9 +29,19 @@ interface SidebarProps {
   onOrganizationSelect?: (organizationId: string) => void;
   onAddOrganization?: (parentCode: string) => void;
   onDeleteOrganization?: (organization: any) => void;
+  parentCode: string;
+  setCurrentOrganizationId: (code: string) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard, onOrganizationSelect, onAddOrganization, onDeleteOrganization }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  collapsed,
+  onSelectedCard,
+  onOrganizationSelect,
+  onAddOrganization,
+  onDeleteOrganization,
+  parentCode,
+  setCurrentOrganizationId,
+}) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
@@ -43,8 +53,8 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard, onOrganiza
     const topCard = CARD_DATA[currentIndex];
     if (topCard && topCard.type === "ai") {
       onSelectedCard("tag");
-    }else{
-      onSelectedCard("all")
+    } else {
+      onSelectedCard("all");
     }
   }, [currentIndex, onSelectedCard]);
 
@@ -65,7 +75,9 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard, onOrganiza
     const dragDistance = currentY - startY;
     if (Math.abs(dragDistance) > 50) {
       if (dragDistance > 0) {
-        setCurrentIndex((prev) => (prev - 1 + CARD_DATA.length) % CARD_DATA.length);
+        setCurrentIndex(
+          (prev) => (prev - 1 + CARD_DATA.length) % CARD_DATA.length
+        );
       } else {
         setCurrentIndex((prev) => (prev + 1) % CARD_DATA.length);
       }
@@ -82,18 +94,24 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard, onOrganiza
       setCurrentIndex((prev) => (prev + 1) % CARD_DATA.length);
     } else {
       // 向上滚动，显示上一张卡片
-      setCurrentIndex((prev) => (prev - 1 + CARD_DATA.length) % CARD_DATA.length);
+      setCurrentIndex(
+        (prev) => (prev - 1 + CARD_DATA.length) % CARD_DATA.length
+      );
     }
   };
 
   const renderCard = (type: string) => {
     switch (type) {
       case "favorites":
-        return <FavoritesCard 
-          onOrganizationSelect={onOrganizationSelect} 
-          onAddOrganization={onAddOrganization}
-          onDeleteOrganization={onDeleteOrganization}
-        />;
+        return (
+          <FavoritesCard
+            onOrganizationSelect={onOrganizationSelect}
+            onAddOrganization={onAddOrganization}
+            onDeleteOrganization={onDeleteOrganization}
+            parentCode={parentCode}
+            setCurrentOrganizationId={setCurrentOrganizationId}
+          />
+        );
       case "ai":
         return <AISuggestionCard />;
       case "recent":
@@ -111,7 +129,11 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard, onOrganiza
         collapsed ? "w-0 overflow-hidden" : "w-70"
       }`}
     >
-      <div className={`w-70 h-full bg-white dark:bg-gray-900 p-4 transition-all duration-300 ${collapsed ? 'opacity-0' : 'opacity-100'}`}>
+      <div
+        className={`w-70 h-full bg-white dark:bg-gray-900 p-4 transition-all duration-300 ${
+          collapsed ? "opacity-0" : "opacity-100"
+        }`}
+      >
         <div
           ref={containerRef}
           className="w-full h-[400px] relative"
@@ -123,11 +145,13 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, onSelectedCard, onOrganiza
         >
           {CARD_DATA.map((card, index) => {
             const screenHeight = window.innerHeight;
-            const position = (index - currentIndex + CARD_DATA.length) % CARD_DATA.length;
-            const baseTranslateY = position * 130 * screenHeight / 1080;
+            const position =
+              (index - currentIndex + CARD_DATA.length) % CARD_DATA.length;
+            const baseTranslateY = (position * 130 * screenHeight) / 1080;
             const dragOffset = isDragging ? currentY - startY : 0;
-            const translateY = baseTranslateY + (position === 0 ? dragOffset : 0);
-            const scale = 1 - (position * 0.05);
+            const translateY =
+              baseTranslateY + (position === 0 ? dragOffset : 0);
+            const scale = 1 - position * 0.05;
 
             return (
               <div

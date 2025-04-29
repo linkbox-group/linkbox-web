@@ -32,12 +32,16 @@ interface FavoritesCardProps {
   onOrganizationSelect?: (organizationId: string) => void;
   onAddOrganization?: (parentCode: string) => void;
   onDeleteOrganization?: (organization: FileTreeNode) => void;
+  parentCode: string;
+  setCurrentOrganizationId: (code: string) => void;
 }
 
 const FavoritesCard: React.FC<FavoritesCardProps> = ({
   onOrganizationSelect,
   onAddOrganization,
-  onDeleteOrganization
+  onDeleteOrganization,
+  parentCode,
+  setCurrentOrganizationId
 }) => {
   const { user } = useUserStore();
   const [organizations, setOrganizations] = useState<FileTreeNode[]>([]);
@@ -47,7 +51,6 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [nodeToDelete, setNodeToDelete] = useState<FileTreeNode | null>(null);
   const [organizationDialogOpen, setOrganizationDialogOpen] = useState(false);
-  const [parentCode, setParentCode] = useState<string>("0");
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -155,7 +158,7 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
     type: "item" | "organization",
     nodeCode: string = "0"
   ) => {
-    setParentCode(nodeCode);
+    setCurrentOrganizationId(nodeCode);
     if (type === "organization") {
       setOrganizationDialogOpen(true);
     }
@@ -203,7 +206,7 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
           <Plus 
             className="w-5 h-5 text-gray-700 dark:text-blue-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
             onClick={() => {
-              setParentCode("0");
+              setCurrentOrganizationId("0");
               setOrganizationDialogOpen(true);
             }}
           />

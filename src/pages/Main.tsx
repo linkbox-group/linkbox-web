@@ -314,8 +314,8 @@ const Main: React.FC = () => {
     }
   };
 
-  const handleAddOrganization = (parentCode: string) => {
-    setParentCode(parentCode);
+  const handleAddOrganization = (organizationId: string) => {
+    setCurrentOrganizationId(organizationId);
     setOrganizationDialogOpen(true);
   };
 
@@ -453,7 +453,7 @@ const Main: React.FC = () => {
             sidebar.dispatchEvent(event);
           }
         }}
-        parentCode={parentCode}
+        parentCode={currentOrganizationId}
       />
       <ConfirmDialog
         open={deleteOrganizationDialogOpen}
@@ -484,6 +484,8 @@ const Main: React.FC = () => {
             onOrganizationSelect={fetchOrganizationItems}
             onAddOrganization={handleAddOrganization}
             onDeleteOrganization={handleDeleteOrganization}
+            parentCode={currentOrganizationId}
+            setCurrentOrganizationId={setCurrentOrganizationId}
           />
         </div>
         <div className="flex-1 overflow-auto">

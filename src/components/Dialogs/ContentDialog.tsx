@@ -70,7 +70,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
           url: link,
           title: title || link,
           description: "",
-          organization_id: user?.id || "",
+          organization_id: user?.id || "0",
           note: "",
         });
       } else if (mode === "edit" && content) {

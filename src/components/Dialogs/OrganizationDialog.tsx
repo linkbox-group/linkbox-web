@@ -46,7 +46,7 @@ const OrganizationDialog: React.FC<OrganizationDialogProps> = ({
 
   const handleSubmit = async () => {
     if (!name) {
-      toast.error("请输入组织名称");
+      toast.error("请输入收藏集名称");
       return;
     }
 
@@ -88,19 +88,19 @@ const OrganizationDialog: React.FC<OrganizationDialogProps> = ({
       <DialogContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
         <DialogHeader>
           <DialogTitle className="text-gray-900 dark:text-gray-100">
-            {mode === "add" ? "创建新组织" : "编辑组织"}
+            {mode === "add" ? "创建新收藏集" : "编辑收藏集"}
           </DialogTitle>
           <DialogDescription className="text-gray-600 dark:text-gray-300">
             {mode === "add"
-              ? "请输入组织信息，描述为选填项"
-              : "修改组织信息"}
+              ? "请输入收藏集信息，描述为选填项"
+              : "修改收藏集信息"}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <label htmlFor="name" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              组织名称 *
+              收藏集名称 *
             </label>
             <input
               id="name"
@@ -108,7 +108,7 @@ const OrganizationDialog: React.FC<OrganizationDialogProps> = ({
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setName(e.target.value)
               }
-              placeholder="请输入组织名称"
+              placeholder="请输入收藏集名称"
               required
               className="flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
@@ -124,7 +124,7 @@ const OrganizationDialog: React.FC<OrganizationDialogProps> = ({
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setDescription(e.target.value)
               }
-              placeholder="请输入组织描述（选填）"
+              placeholder="请输入收藏集描述（选填）"
               className="flex min-h-[80px] w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
