@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { userService } from "@/services/user";
 import { useUserStore } from "@/store/userStore";
@@ -16,6 +16,10 @@ export default function User() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [showWechatPopup, setShowWechatPopup] = useState(false);
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const handleLogout = () => {
     logout();
@@ -110,6 +114,72 @@ export default function User() {
       setPasswordError("修改密码失败，请重试");
     }
   };
+
+  const handleWechatHover = useCallback(
+    (e: React.MouseEvent) => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+      }
+      
+      const rect = e.currentTarget.getBoundingClientRect();
+      setPopupPosition({
+        x: rect.left,
+        y: rect.bottom + 10,
+      });
+      
+      const timeout = setTimeout(() => {
+        setShowWechatPopup(true);
+      }, 100);
+      
+      setHoverTimeout(timeout);
+    },
+    [hoverTimeout]
+  );
+
+  const handleFeedbackHover = useCallback(
+    (e: React.MouseEvent) => {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+      }
+      
+      const rect = e.currentTarget.getBoundingClientRect();
+      setPopupPosition({
+        x: rect.left,
+        y: rect.bottom + 10,
+      });
+      
+      const timeout = setTimeout(() => {
+        setShowFeedbackPopup(true);
+      }, 100);
+      
+      setHoverTimeout(timeout);
+    },
+    [hoverTimeout]
+  );
+
+  const handleWechatLeave = useCallback(() => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      setShowWechatPopup(false);
+    }, 100);
+    
+    setHoverTimeout(timeout);
+  }, [hoverTimeout]);
+
+  const handleFeedbackLeave = useCallback(() => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
+    }
+    
+    const timeout = setTimeout(() => {
+      setShowFeedbackPopup(false);
+    }, 100);
+    
+    setHoverTimeout(timeout);
+  }, [hoverTimeout]);
 
   if (!user?.isLoggedIn) {
     return (
@@ -434,20 +504,69 @@ export default function User() {
             {/* 左侧：云笺信息组 */}
             <div className="flex flex-col items-start gap-4">
               <div className="flex items-center gap-4 sm:gap-8">
-                <img src="/logo2.png" alt="云笺" className="w-32 sm:w-44 h-auto" />
+                <img
+                  src="/logo2.png"
+                  alt="云笺"
+                  className="w-32 sm:w-44 h-auto"
+                />
                 <div className="flex flex-col">
-                  <div className="text-[#2A6ADF] text-2xl sm:text-4xl font-normal">云笺</div>
+                  <div className="text-[#2A6ADF] text-2xl sm:text-4xl font-normal">
+                    云笺
+                  </div>
                   <div className="text-[#6190EE] text-sm sm:text-base mt-1 sm:mt-2">
                     云汇万象 笺载万连
                   </div>
                 </div>
               </div>
               <div className="flex items-center ml-10 gap-4">
-                <div className="w-10 sm:w-[50px] h-10 sm:h-[50px] rounded-lg flex items-center justify-center">
-                  <img src="/wechat.svg" alt="微信" className="w-4 sm:w-15 h-4 sm:h-15" />
+                <div className="relative">
+                  <div
+                    className="w-10 sm:w-[50px] h-10 sm:h-[50px] rounded-lg flex items-center justify-center cursor-pointer"
+                    onMouseOver={handleWechatHover}
+                    onMouseOut={handleWechatLeave}
+                  >
+                    <img
+                      src="/wechat.svg"
+                      alt="微信"
+                      className="w-4 sm:w-15 h-4 sm:h-15"
+                    />
+                  </div>
+                  {/* 微信二维码弹出框 */}
+                  <div
+                    className={`absolute z-50 p-2 bg-white rounded-lg shadow-lg transition-all duration-300 ease-out transform ${
+                      showWechatPopup
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-4 pointer-events-none"
+                    }`}
+                    style={{
+                      left: "50%",
+                      bottom: "100%",
+                      transform: "translateX(-50%)",
+                    }}
+                  >
+                    <div className="relative">
+                      <img 
+                        src="/linkbox-helper.jpg" 
+                        alt="微信二维码" 
+                        className="max-w-none w-50 object-contain rounded-lg"
+                      />
+                      {/* 小三角形指示器 */}
+                      <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45"></div>
+                    </div>
+                  </div>
                 </div>
                 <div className="w-10 sm:w-[50px] h-10 sm:h-[50px] rounded-lg flex items-center justify-center">
-                  <img onClick={() => window.open("https://www.xiaohongshu.com/user/profile/666975330000000007007ba8", "_blank")} src="/xhs.svg" alt="小红书" className="w-4 sm:w-15 h-4 sm:h-15" />
+                  <img
+                    onClick={() =>
+                      window.open(
+                        "https://www.xiaohongshu.com/user/profile/666975330000000007007ba8",
+                        "_blank"
+                      )
+                    }
+                    src="/xhs.svg"
+                    alt="小红书"
+                    className="w-4 sm:w-15 h-4 sm:h-15"
+                  />
                 </div>
                 <div className="text-[#6190EE] text-sm sm:text-base cursor-pointer hover:text-[#2A6ADF] transition-colors">
                   跳转官号联系方式
@@ -461,8 +580,37 @@ export default function User() {
                 <div className="text-[#4F89FD] text-base sm:text-xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
                   服务协议
                 </div>
-                <div className="text-[#4F89FD] text-base sm:text-xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
-                  反馈中心
+                <div className="relative">
+                  <div 
+                    className="text-[#4F89FD] text-base sm:text-xl cursor-pointer hover:text-[#2A6ADF] transition-colors"
+                    onMouseOver={handleFeedbackHover}
+                    onMouseOut={handleFeedbackLeave}
+                  >
+                    反馈中心
+                  </div>
+                  {/* 反馈中心弹出框 */}
+                  <div
+                    className={`absolute z-50 p-2 bg-white rounded-lg shadow-lg transition-all duration-300 ease-out transform ${
+                      showFeedbackPopup
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-4 pointer-events-none"
+                    }`}
+                    style={{
+                      left: "50%",
+                      bottom: "100%",
+                      transform: "translateX(-50%)",
+                    }}
+                  >
+                    <div className="relative">
+                      <img 
+                        src="/group.jpg" 
+                        alt="反馈群二维码" 
+                        className="max-w-none w-50 object-contain rounded-lg"
+                      />
+                      {/* 小三角形指示器 */}
+                      <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45"></div>
+                    </div>
+                  </div>
                 </div>
                 <div className="text-[#4F89FD] text-base sm:text-xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
                   核心功能
@@ -472,9 +620,15 @@ export default function User() {
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <img src="/wxqr.png" alt="微信二维码" className="w-16 sm:w-24 h-16 sm:h-24" />
+                <img
+                  src="/wxqr.png"
+                  alt="微信二维码"
+                  className="w-16 sm:w-24 h-16 sm:h-24"
+                />
                 <div className="flex flex-col items-start">
-                  <div className="text-[#4F89FD] text-lg sm:text-2xl">微信扫码</div>
+                  <div className="text-[#4F89FD] text-lg sm:text-2xl">
+                    微信扫码
+                  </div>
                   <div className="text-[#81ABFF] text-xs sm:text-sm mt-1 sm:mt-2">
                     加入我们内测群，获得更多信息
                   </div>
