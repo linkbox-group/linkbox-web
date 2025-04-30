@@ -546,7 +546,7 @@ export default function User() {
                   >
                     <div className="relative">
                       <img 
-                        src="/linkbox-helper.jpg" 
+                        src="/linkbox-helper.png" 
                         alt="微信二维码" 
                         className="max-w-none w-50 object-contain rounded-lg"
                       />
@@ -603,7 +603,7 @@ export default function User() {
                   >
                     <div className="relative">
                       <img 
-                        src="/group.jpg" 
+                        src="/group.png" 
                         alt="反馈群二维码" 
                         className="max-w-none w-50 object-contain rounded-lg"
                       />
