@@ -144,11 +144,12 @@ class ApiService {
           return false;
         }
 
-        const response = await this.instance.post<
-          string
-        >("/user/refresh-token", {
-          refresh_token: refreshToken,
-        });
+        const response = await this.instance.post<string>(
+          "/user/refresh-token",
+          {
+            refresh_token: refreshToken,
+          }
+        );
 
         if (response.data) {
           TokenManager.setAccessToken(response.data);
@@ -185,11 +186,12 @@ class ApiService {
           return false;
         }
 
-        const response = await this.instance.post<
-          string
-        >("/user/refresh-token", {
-          token: refreshToken
-        });
+        const response = await this.instance.post<string>(
+          "/user/refresh-token",
+          {
+            token: refreshToken,
+          }
+        );
         console.log(response);
         if (response.data) {
           TokenManager.setAccessToken(response.data);
@@ -415,12 +417,130 @@ class ApiService {
         : undefined,
     });
   }
+
+  /**
+   * 创建 SSE 连接
+   * @param url 请求URL
+   * @param onMessage 消息回调函数
+   * @param onError 错误回调函数
+   * @param onComplete 完成回调函数
+   */
+  createSSEConnection(
+    url: string,
+    onMessage?: (data: any) => void,
+    onError?: (error: Error) => void,
+    onComplete?: () => void
+  ) {
+    const token = TokenManager.getAccessToken();
+    const urlObj = new URL(
+      this.instance.defaults.baseURL + url,
+      window.location.origin
+    );
+
+    const headers = new Headers();
+    if (token) {
+      headers.append("Authorization", `Bearer ${token}`);
+    }
+    headers.append("Accept", "text/event-stream");
+    headers.append("Cache-Control", "no-cache");
+    headers.append("Connection", "keep-alive");
+
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    fetch(urlObj.toString(), {
+      method: "GET",
+      headers,
+      credentials: "include",
+      signal,
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error("No reader available");
+        }
+
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        const processStream = async () => {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) {
+                onComplete?.();
+                break;
+              }
+
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() || "";
+
+              for (const line of lines) {
+                if (line.startsWith("data: ")) {
+                  try {
+                    const data = JSON.parse(line.slice(6));
+                    onMessage?.(data);
+                  } catch (error) {
+                    onError?.(error as Error);
+                  }
+                }
+              }
+            }
+          } catch (error: unknown) {
+            if (error instanceof Error && error.name === "AbortError") {
+              onComplete?.();
+            } else {
+              onError?.(error as Error);
+            }
+          }
+        };
+
+        processStream();
+      })
+      .catch((error: Error) => {
+        if (error.name === "AbortError") {
+          onComplete?.();
+        } else {
+          onError?.(error);
+        }
+      });
+
+    return {
+      close: () => {
+        controller.abort();
+        onComplete?.();
+      },
+    };
+  }
+
+  /**
+   * 发送 SSE 请求
+   * @param url 请求URL
+   * @param params 请求参数
+   * @param onMessage 消息回调函数
+   * @param onError 错误回调函数
+   * @param onComplete 完成回调函数
+   */
+  sendSSE(
+    url: string,
+    params: Record<string, string> = {},
+    onMessage?: (data: any) => void,
+    onError?: (error: Error) => void,
+    onComplete?: () => void
+  ) {
+    const queryString = new URLSearchParams(params).toString();
+    const fullUrl = queryString ? `${url}?${queryString}` : url;
+    return this.createSSEConnection(fullUrl, onMessage, onError, onComplete);
+  }
 }
 
 // 从环境变量获取API配置
-const API_BASE_URL = import.meta.env.DEV
-  ? "http://linkbox.xyq777.com/api"
-  : "/api";
+const API_BASE_URL = "/api";
 const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT || 10000);
 
 // 创建API服务实例

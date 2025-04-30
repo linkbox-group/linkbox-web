@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api } from "./api";
 
 /**
  * 通用响应类型
@@ -17,7 +17,7 @@ export interface ChatMessage {
   user_id: string;
   content: string;
   send_time: string;
-  sender_type: 'SENDER_USER' | 'SENDER_AI';
+  sender_type: "SENDER_USER" | "SENDER_AI";
 }
 
 /**
@@ -50,21 +50,45 @@ export interface GetTagSuggestionsRequest {
  */
 export const aiService = {
   /**
-   * 发送聊天消息
+   * 发送聊天消息（使用 SSE）
    * @param content 消息内容
    * @param item_id 关联的条目ID
+   * @param onMessage 消息回调函数
+   * @param onError 错误回调函数
+   * @param onComplete 完成回调函数
    */
-  sendMessage: async (content?: string, item_id?: string) => {
-    return api.get<ApiResponse<{}>>('/api/ai/chat', {
-      params: { content, item_id },
-    });
+  sendMessage: (
+    content: string,
+    item_id?: string,
+    onMessage?: (content: string) => void,
+    onError?: (error: Error) => void,
+    onComplete?: () => void
+  ) => {
+    const params: Record<string, string> = {
+      content
+    };
+    if (item_id) {
+      params.item_id = item_id;
+    }
+
+    return api.sendSSE(
+      "/ai/chat",
+      params,
+      (data) => {
+        if (data.content) {
+          onMessage?.(data.content);
+        }
+      },
+      onError,
+      onComplete
+    );
   },
 
   /**
    * 获取聊天消息列表
    */
   getChatList: async () => {
-    return api.get<ApiResponse<ChatListResponse>>('/api/ai/chat/list');
+    return api.get<ApiResponse<ChatListResponse>>("/ai/chat/list");
   },
 
   /**
@@ -72,7 +96,7 @@ export const aiService = {
    * @param ids 要删除的消息ID列表
    */
   deleteMessages: async (ids: string[]) => {
-    return api.delete<ApiResponse<boolean>>('/api/ai/chat', {
+    return api.delete<ApiResponse<boolean>>("/ai/chat", {
       data: { ids },
     });
   },
@@ -82,6 +106,6 @@ export const aiService = {
    * @param item_id 条目ID
    */
   getTagSuggestions: async (item_id: string) => {
-    return api.post<ApiResponse<string[]>>('/api/ai/tags', { item_id });
+    return api.post<ApiResponse<string[]>>("/ai/tags", { item_id });
   },
-}; 
+};

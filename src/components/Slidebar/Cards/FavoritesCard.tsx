@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Folder, Plus, ChevronRight, Ellipsis, Trash2, Search, X } from "lucide-react";
+import {
+  Folder,
+  Plus,
+  ChevronRight,
+  Ellipsis,
+  Trash2,
+  Search,
+  X,
+} from "lucide-react";
 import { organizationService, Organization } from "@/services/organization";
 import { useUserStore } from "@/store/userStore";
 import OrganizationDialog from "@/components/Dialogs/OrganizationDialog";
 import ConfirmDialog from "@/components/Dialogs/ConfirmDialog";
 import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -26,6 +25,10 @@ import TreeView, { TreeNode } from "../TreeView";
 interface FileTreeNode extends TreeNode {
   type: "folder";
   items_count?: number;
+  children: FileTreeNode[];
+  parent_code?: string;
+  sort_order?: number;
+  code: string;
 }
 
 interface FavoritesCardProps {
@@ -38,14 +41,14 @@ interface FavoritesCardProps {
 
 const FavoritesCard: React.FC<FavoritesCardProps> = ({
   onOrganizationSelect,
-  onAddOrganization,
-  onDeleteOrganization,
   parentCode,
-  setCurrentOrganizationId
+  setCurrentOrganizationId,
 }) => {
   const { user } = useUserStore();
   const [organizations, setOrganizations] = useState<FileTreeNode[]>([]);
-  const [filteredOrganizations, setFilteredOrganizations] = useState<FileTreeNode[]>([]);
+  const [filteredOrganizations, setFilteredOrganizations] = useState<
+    FileTreeNode[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -61,19 +64,60 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
         console.log("组织列表数据:", response);
         if (response.data?.organizations) {
           // 构建树形结构
-          const buildTree = (
-            orgs: Organization[],
-            parentCode: string = "0"
-          ): FileTreeNode[] => {
-            return orgs
-              .filter((org) => org.parent_code === parentCode)
-              .map((org) => ({
+          const buildTree = (orgs: Organization[]): FileTreeNode[] => {
+            // 创建一个映射，用于快速查找节点
+            const nodeMap = new Map<string, FileTreeNode>();
+            
+            // 首先创建所有节点
+            orgs.forEach((org) => {
+              nodeMap.set(org.code, {
                 id: org.id,
+                code: org.code,
                 name: org.name,
                 type: "folder" as const,
-                children: buildTree(orgs, org.code),
+                children: [],
                 items_count: org.items_count || 0,
-              }));
+                parent_code: org.parent_code,
+                sort_order: org.sort_order || 0,
+              });
+            });
+            
+            // 构建父子关系
+            const rootNodes: FileTreeNode[] = [];
+            
+            // 遍历所有节点，建立父子关系
+            orgs.forEach((org) => {
+              const node = nodeMap.get(org.code);
+              if (!node) return;
+
+              if (org.parent_code === "0" && org.code === "0") {
+                // 跳过根节点 "/"
+                return;
+              } else if (org.parent_code === "0") {
+                // 如果是根节点的直接子节点，添加到 rootNodes
+                rootNodes.push(node);
+              } else {
+                // 如果是其他子节点，找到父节点并添加到其 children 中
+                const parent = nodeMap.get(org.parent_code);
+                if (parent) {
+                  parent.children.push(node);
+                }
+              }
+            });
+
+            // 对每个层级的节点进行排序
+            const sortNodes = (nodes: FileTreeNode[]) => {
+              nodes.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+              nodes.forEach(node => {
+                if (node.children.length > 0) {
+                  sortNodes(node.children);
+                }
+              });
+            };
+
+            sortNodes(rootNodes);
+            
+            return rootNodes;
           };
 
           const tree = buildTree(response.data.organizations);
@@ -188,13 +232,15 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
 
   return (
     <div className="bg-gradient-to-b from-[#EEF4FF] to-[#D7EEFF] dark:bg-gradient-to-b dark:from-[#1E2333] dark:to-[#27446F] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300">
-      <div className={cn(
-        "flex justify-between items-center mb-4 transition-all duration-300",
-        isSearching && "opacity-0 h-0 mb-0 pointer-events-none"
-      )}>
+      <div
+        className={cn(
+          "flex justify-between items-center mb-4 transition-all duration-300",
+          isSearching && "opacity-0 h-0 mb-0 pointer-events-none"
+        )}
+      >
         <div className="flex items-center gap-2">
           <Folder className="w-5 h-5 text-gray-700 dark:text-blue-400" />
-          <span 
+          <span
             className="text-gray-700 dark:text-blue-400 font-bold cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
             onClick={() => {
               setCurrentOrganizationId("0");
@@ -209,7 +255,7 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
             className="w-5 h-5 text-gray-700 dark:text-blue-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
             onClick={() => setIsSearching(true)}
           />
-          <Plus 
+          <Plus
             className="w-5 h-5 text-gray-700 dark:text-blue-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
             onClick={() => {
               setCurrentOrganizationId("0");
@@ -219,10 +265,12 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
         </div>
       </div>
 
-      <div className={cn(
-        "flex justify-end items-center mb-4 transition-all duration-300",
-        !isSearching && "opacity-0 h-0 mb-0 pointer-events-none"
-      )}>
+      <div
+        className={cn(
+          "flex justify-end items-center mb-4 transition-all duration-300",
+          !isSearching && "opacity-0 h-0 mb-0 pointer-events-none"
+        )}
+      >
         <div className="flex items-center gap-2 w-full">
           <input
             type="text"
@@ -288,15 +336,30 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
                       handleCreateClick("organization", node.id);
                     }}
                   />
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
-                      <Ellipsis className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer" />
+                      <button
+                        className="p-0 w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer focus:outline-none flex items-center justify-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                        }}
+                      >
+                        <Ellipsis className="w-4 h-4" />
+                      </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent 
+                      align="end" 
+                      sideOffset={5}
+                      className="min-w-[120px]"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <DropdownMenuItem
-                        onClick={(e) =>
-                          handleDeleteClick(e, node as FileTreeNode)
-                        }
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteClick(e, node as FileTreeNode);
+                        }}
+                        className="text-red-600 focus:text-red-600"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
                         删除

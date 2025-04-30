@@ -224,7 +224,7 @@ const Main: React.FC = () => {
         },
       });
 
-      if (result.data.items.length > 0) {
+      if (result.data?.items) {
         // 将搜索结果转换为 items 格式
         const searchItems = result.data.items.map((item: Item) => ({
           id: item.id,
@@ -238,10 +238,9 @@ const Main: React.FC = () => {
         setItems(searchItems);
         setTotalPages(result.data.total_pages);
       } else {
-        // 如果没有搜索结果，显示提示
-        toast.info("未找到相关结果");
         setItems([]);
         setTotalPages(1);
+        toast.info("未找到结果");
       }
     } catch (error) {
       console.error("搜索失败:", error);

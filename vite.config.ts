@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     proxy: mode === 'development' ? {
       '/api': {
-        target: 'http://xyq777.com:40010',
+        target: 'http://linkbox.xyq777.com',
         changeOrigin: true,
         rewrite: (path) => path
       }

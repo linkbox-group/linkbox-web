@@ -1,10 +1,21 @@
 import { FC, useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { SearchResultItem } from "@/services/search";
 import debounce from "lodash/debounce";
 import { toast } from "sonner";
 import { useTheme } from "@/components/theme-provider";
-import { Sun, Moon, Menu, Search, Plus, User, Clock, X, Link, FileText, Image } from "lucide-react";
+import {
+  Sun,
+  Moon,
+  Menu,
+  Search,
+  Plus,
+  User,
+  Clock,
+  X,
+  Link,
+  FileText,
+  Image,
+} from "lucide-react";
 
 interface User {
   id: string;
@@ -26,20 +37,30 @@ interface SearchHistory {
   timestamp: number;
 }
 
+interface SearchResultItem {
+  id: string;
+  title: string;
+  type: 'link' | 'text' | 'image';
+  collections: Array<{ name: string }>;
+}
+
 const SEARCH_HISTORY_KEY = "search_history";
 const MAX_HISTORY_ITEMS = 10;
 
-const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch }) => {
+const AppBar: FC<AppBarProps> = ({
+  onSidebarToggle,
+  onAdd,
+  username,
+  onSearch,
+}) => {
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [searchContent, setSearchContent] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // 搜索历史
   const [searchHistory, setSearchHistory] = useState<SearchHistory[]>(() => {
@@ -48,8 +69,9 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
   });
 
   // 搜索建议
-  const [searchResults, setSearchResults] = useState<SearchResultItem[]>([]);
-  const [suggestedTags, setSuggestedTags] = useState<Array<{ id: number; name: string; count: number }>>([]);
+  const [suggestedTags, setSuggestedTags] = useState<
+    Array<{ id: number; name: string; count: number }>
+  >([]);
 
   // 保存搜索历史到 localStorage
   useEffect(() => {
@@ -59,7 +81,10 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
   // 点击外部关闭搜索建议
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
         setShowSuggestions(false);
         setSearchContent(""); // 清空搜索内容
         // 在移动端时，同时收起搜索框
@@ -119,7 +144,7 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       performSearch(searchContent);
       setShowSuggestions(false);
@@ -160,9 +185,12 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
   };
 
   return (
-    <div className="w-full h-15 bg-white dark:bg-gray-900 shadow-md flex items-center justify-between px-4">
+    <div className="w-full h-15 mt-3 bg-white dark:bg-gray-900 shadow-md flex items-center justify-between px-4">
       {/* 左侧 Logo */}
-      <div className="hidden md:flex items-center h-full" onClick={handleSidebarToggle}>
+      <div
+        className="hidden md:flex items-center h-full"
+        onClick={handleSidebarToggle}
+      >
         <img className="w-16 h-12 mx-5" src="/logo.png" alt="Logo" />
         <div
           className="flex items-center text-lg"
@@ -186,7 +214,10 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
       </button>
 
       {/* 中间搜索框 */}
-      <div ref={searchRef} className="relative flex-1 mx-4 flex items-center justify-center transition-all duration-300">
+      <div
+        ref={searchRef}
+        className="relative flex-1 mx-4 flex items-center justify-center transition-all duration-300"
+      >
         {/* 桌面端搜索框 */}
         <div className="hidden md:block w-full max-w-[600px]">
           <div
@@ -249,7 +280,9 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
                 {/* 搜索结果 */}
                 {searchResults.length > 0 && (
                   <div className="mb-4">
-                    <div className="text-sm text-gray-500 dark:text-gray-400 px-2 py-1">搜索结果</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 px-2 py-1">
+                      搜索结果
+                    </div>
                     {searchResults.map((item) => (
                       <div
                         key={item.id}
@@ -257,10 +290,18 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
                         className="flex items-center justify-between px-2 py-2 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer rounded-md"
                       >
                         <div className="flex items-center gap-2">
-                          {item.type === 'link' && <Link className="w-4 h-4 text-gray-500 dark:text-gray-400" />}
-                          {item.type === 'text' && <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400" />}
-                          {item.type === 'image' && <Image className="w-4 h-4 text-gray-500 dark:text-gray-400" />}
-                          <span className="text-gray-700 dark:text-gray-300">{item.title}</span>
+                          {item.type === "link" && (
+                            <Link className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                          )}
+                          {item.type === "text" && (
+                            <FileText className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                          )}
+                          {item.type === "image" && (
+                            <Image className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                          )}
+                          <span className="text-gray-700 dark:text-gray-300">
+                            {item.title}
+                          </span>
                         </div>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
                           {item.collections[0]?.name}
@@ -273,7 +314,9 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
                 {/* 相关标签 */}
                 {suggestedTags.length > 0 && (
                   <div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400 px-2 py-1">相关标签</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 px-2 py-1">
+                      相关标签
+                    </div>
                     <div className="flex flex-wrap gap-2 p-2">
                       {suggestedTags.map((tag) => (
                         <div
@@ -282,7 +325,9 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
                           className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer flex items-center gap-1"
                         >
                           <span>{tag.name}</span>
-                          <span className="text-xs text-gray-400 dark:text-gray-500">({tag.count})</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">
+                            ({tag.count})
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -293,7 +338,9 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
               // 搜索历史
               <div className="p-2">
                 <div className="flex justify-between items-center px-2 py-1">
-                  <div className="text-sm text-gray-500 dark:text-gray-400">搜索历史</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    搜索历史
+                  </div>
                   <button
                     onClick={clearHistory}
                     className="text-sm text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300"
@@ -309,7 +356,9 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
                   >
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                      <span className="text-gray-700 dark:text-gray-300">{history.keyword}</span>
+                      <span className="text-gray-700 dark:text-gray-300">
+                        {history.keyword}
+                      </span>
                     </div>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       {new Date(history.timestamp).toLocaleDateString()}
@@ -335,10 +384,16 @@ const AppBar: FC<AppBarProps> = ({ onSidebarToggle, onAdd, username, onSearch })
           )}
           <span className="sr-only">切换主题</span>
         </button>
-        <button onClick={onAdd} className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+        <button
+          onClick={onAdd}
+          className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
           <Plus className="w-6 h-6" />
         </button>
-        <div onClick={() => navigate("/user")} className="flex items-center gap-2  hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full pl-2 py-1 transition-colors">
+        <div
+          onClick={() => navigate("/user")}
+          className="flex items-center gap-2  hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full pl-2 py-1 transition-colors"
+        >
           <User className="w-6 h-6" />
           <span className="text-gray-600 dark:text-gray-300 text-base !mr-5 whitespace-nowrap">
             {username || "登录"}
