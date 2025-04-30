@@ -41,13 +41,13 @@ const Introduce = () => {
       {/* 主要内容区域 */}
       <div className="pt-12">
         {/* 标题部分 */}
-        <div className="max-w-4xl mx-auto px-4 py-20 text-center">
-          <h1 className="text-8xl font-serif text-blue-900 mb-4">云笺</h1>
+        <div className="max-w-4xl mx-auto px-4 py-20 text-center flex flex-col items-center justify-center">
           <p className="text-xl text-blue-900 mb-8">
             一站式链接收集与智能整理工具，让你的灵感、信息不再散落天涯
           </p>
           <p className="text-2xl text-blue-900 mb-4">云汇万象，笺载万连</p>
           <p className="text-xl text-blue-900">下一站</p>
+          <img src="/logo-write.svg" alt="next" className="w-50 mt-5" />
         </div>
 
         {/* AI 功能部分 */}
