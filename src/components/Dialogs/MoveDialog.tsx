@@ -1,77 +1,105 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Folder, ChevronRight } from "lucide-react";
 import { organizationService, Organization } from "@/services/organization";
-import { itemService } from "@/services/items";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
-import TreeView from "@/components/Slidebar/TreeView";
-import { Folder } from "lucide-react";
+import { cn } from "@/lib/utils";
+import TreeView, { TreeNode } from "@/components/Slidebar/TreeView";
+
+interface FileTreeNode extends TreeNode {
+  type: "folder";
+  items_count?: number;
+  children: FileTreeNode[];
+  parent_code?: string;
+  sort_order?: number;
+  code: string;
+}
 
 interface MoveDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  onSuccess?: () => void;
-  type: "organization" | "item";
+  onSuccess: (targetId: string) => void;
   currentId: string;
-  currentParentCode: string;
-}
-
-interface FileTreeNode {
-  id: string;
-  name: string;
-  type: 'folder' | 'file';
-  children?: FileTreeNode[];
 }
 
 const MoveDialog: React.FC<MoveDialogProps> = ({
   open,
   setOpen,
   onSuccess,
-  type,
   currentId,
-  currentParentCode,
 }) => {
   const { user } = useUserStore();
   const [organizations, setOrganizations] = useState<FileTreeNode[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedNodeId, setSelectedNodeId] = useState<string>("");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [selectedNode, setSelectedNode] = useState<FileTreeNode | null>(null);
 
   const fetchOrganizations = async () => {
     try {
       if (user?.id) {
         const response = await organizationService.getList();
         if (response.data?.organizations) {
-          const buildTree = (orgs: Organization[], parentCode: string = "0"): FileTreeNode[] => {
-            return orgs
-              .filter(org => org.parent_code === parentCode && org.id !== currentId) // 排除当前组织
-              .map(org => ({
+          const buildTree = (orgs: Organization[]): FileTreeNode[] => {
+            const nodeMap = new Map<string, FileTreeNode>();
+
+            orgs.forEach((org) => {
+              nodeMap.set(org.code, {
                 id: org.id,
+                code: org.code,
                 name: org.name,
-                type: "folder",
-                children: buildTree(orgs, org.code),
-              }));
+                type: "folder" as const,
+                children: [],
+                items_count: org.items_count || 0,
+                parent_code: org.parent_code,
+                sort_order: org.sort_order || 0,
+              });
+            });
+
+            const rootNodes: FileTreeNode[] = [];
+
+            orgs.forEach((org) => {
+              const node = nodeMap.get(org.code);
+              if (!node) return;
+
+              if (org.parent_code === "0" && org.code === "0") {
+                return;
+              } else if (org.parent_code === "0") {
+                rootNodes.push(node);
+              } else {
+                const parent = nodeMap.get(org.parent_code);
+                if (parent) {
+                  parent.children.push(node);
+                }
+              }
+            });
+
+            const sortNodes = (nodes: FileTreeNode[]) => {
+              nodes.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+              nodes.forEach((node) => {
+                if (node.children.length > 0) {
+                  sortNodes(node.children);
+                }
+              });
+            };
+
+            sortNodes(rootNodes);
+            return rootNodes;
           };
 
           const tree = buildTree(response.data.organizations);
           setOrganizations(tree);
-        } else {
-          setOrganizations([]);
         }
       }
     } catch (error) {
       console.error("获取组织列表失败:", error);
       toast.error("获取组织列表失败");
-      setOrganizations([]);
     } finally {
       setLoading(false);
     }
@@ -80,102 +108,90 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
   useEffect(() => {
     if (open) {
       fetchOrganizations();
-      setSelectedNodeId("");
-      setExpandedNodes(new Set());
     }
   }, [open]);
 
-  const handleNodeClick = (node: FileTreeNode) => {
-    setSelectedNodeId(node.id);
+  const toggleNode = (id: string) => {
+    const newExpandedNodes = new Set(expandedNodes);
+    if (newExpandedNodes.has(id)) {
+      newExpandedNodes.delete(id);
+    } else {
+      newExpandedNodes.add(id);
+    }
+    setExpandedNodes(newExpandedNodes);
   };
 
-  const handleMove = async () => {
-    if (!selectedNodeId) {
-      toast.error("请选择目标位置");
-      return;
-    }
+  const handleNodeClick = (node: TreeNode) => {
+    setSelectedNode(node as FileTreeNode);
+  };
 
-    try {
-      if (type === "organization") {
-        // 移动组织
-        await organizationService.move({
-          id: currentId,
-          new_parent_code: selectedNodeId,
-        });
-        toast.success("组织移动成功");
-      } else {
-        // 移动内容
-        // 1. 从原组织移除内容
-        await organizationService.removeItems({
-          organization_id: currentParentCode,
-          item_ids: [currentId],
-        });
-        
-        // 2. 添加到新组织
-        await organizationService.addItems({
-          organization_id: selectedNodeId,
-          item_ids: [currentId],
-        });
-        
-        toast.success("内容移动成功");
-      }
-      
+  const handleConfirm = () => {
+    if (selectedNode) {
+      onSuccess(selectedNode.id);
       setOpen(false);
-      onSuccess?.();
-    } catch (error) {
-      console.error("移动失败:", error);
-      toast.error("移动失败");
     }
   };
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogContent className="sm:max-w-[425px]">
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            {type === "organization" ? "移动组织" : "移动内容"}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            <div className="py-4">
-              {loading ? (
-                <div className="text-center text-gray-500 dark:text-gray-400">
-                  加载中...
-                </div>
-              ) : organizations.length === 0 ? (
-                <div className="text-center text-gray-500 dark:text-gray-400">
-                  暂无可用位置
-                </div>
-              ) : (
-                <div className="max-h-[300px] overflow-y-auto">
-                  <TreeView
-                    data={organizations}
-                    onNodeClick={handleNodeClick}
-                    renderNode={(node: FileTreeNode) => (
-                      <div className="flex items-center gap-2">
-                        <Folder className="w-4 h-4 text-blue-500" />
-                        <span className="text-sm">{node.name}</span>
-                      </div>
-                    )}
-                    className="py-2"
-                  />
-                </div>
-              )}
-            </div>
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={handleMove}
-            disabled={!selectedNodeId}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            移动
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>移动到</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="h-[300px] overflow-y-auto border rounded-md p-2">
+            {loading ? (
+              <div className="text-center text-gray-500">加载中...</div>
+            ) : organizations.length === 0 ? (
+              <div className="text-center text-gray-500">暂无收藏集</div>
+            ) : (
+              <TreeView
+                data={organizations}
+                onNodeClick={handleNodeClick}
+                expandedNodes={expandedNodes}
+                onToggleNode={toggleNode}
+                renderNode={(node: TreeNode) => (
+                  <div className="flex items-center gap-2 w-full group">
+                    <ChevronRight
+                      className={cn(
+                        "w-4 h-4 text-gray-500 cursor-pointer transition-transform",
+                        expandedNodes.has(node.id) && "transform rotate-90"
+                      )}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleNode(node.id);
+                      }}
+                    />
+                    <div
+                      className={cn(
+                        "flex items-center gap-2 flex-1 cursor-pointer p-1 rounded-md",
+                        selectedNode?.id === node.id &&
+                          "bg-blue-100 dark:bg-blue-900"
+                      )}
+                    >
+                      <Folder className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm">{node.name}</span>
+                    </div>
+                  </div>
+                )}
+              />
+            )}
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              取消
+            </Button>
+            <Button
+              onClick={handleConfirm}
+              disabled={!selectedNode || selectedNode.id === currentId}
+            >
+              确定
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export default MoveDialog; 
+export default MoveDialog;

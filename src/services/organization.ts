@@ -80,6 +80,14 @@ export interface MoveOrganizationParams {
   new_parent_code: string;
 }
 
+interface MoveOrganizationResponse {
+  msg: string;
+  code: number;
+  data: {
+    success: boolean;
+  };
+}
+
 export interface AddItemsParams {
   organization_id: string;
   item_ids: string[];
@@ -145,7 +153,7 @@ export const organizationService = {
 
   // 移动组织
   move: (params: MoveOrganizationParams) => {
-    return api.patch<{ msg: string; code: number }>('/organization/move', params);
+    return api.patch<MoveOrganizationResponse>('/organization/move', params);
   },
 
   // 添加内容项到组织

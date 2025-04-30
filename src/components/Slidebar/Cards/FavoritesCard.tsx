@@ -7,6 +7,7 @@ import {
   Trash2,
   Search,
   X,
+  Move,
 } from "lucide-react";
 import { organizationService, Organization } from "@/services/organization";
 import { useUserStore } from "@/store/userStore";
@@ -21,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import TreeView, { TreeNode } from "../TreeView";
+import MoveDialog from "@/components/Dialogs/MoveDialog";
 
 interface FileTreeNode extends TreeNode {
   type: "folder";
@@ -56,6 +58,8 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
   const [organizationDialogOpen, setOrganizationDialogOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+  const [nodeToMove, setNodeToMove] = useState<FileTreeNode | null>(null);
 
   const fetchOrganizations = async () => {
     try {
@@ -230,6 +234,31 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
     }
   };
 
+  const handleMoveClick = (e: React.MouseEvent, node: FileTreeNode) => {
+    e.stopPropagation();
+    setNodeToMove(node);
+    setMoveDialogOpen(true);
+  };
+
+  const handleMoveConfirm = async (targetId: string) => {
+    if (!nodeToMove) return;
+
+    try {
+      await organizationService.move({
+        id: nodeToMove.id,
+        new_parent_code: targetId,
+      });
+      toast.success("移动成功");
+      fetchOrganizations(); // 重新获取组织列表
+    } catch (error) {
+      console.error("移动失败:", error);
+      toast.error("移动失败");
+    } finally {
+      setMoveDialogOpen(false);
+      setNodeToMove(null);
+    }
+  };
+
   return (
     <div className="bg-gradient-to-b from-[#EEF4FF] to-[#D7EEFF] dark:bg-gradient-to-b dark:from-[#1E2333] dark:to-[#27446F] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300">
       <div
@@ -357,6 +386,15 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
+                          handleMoveClick(e, node as FileTreeNode);
+                        }}
+                      >
+                        <Move className="w-4 h-4 mr-2" />
+                        移动
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleDeleteClick(e, node as FileTreeNode);
                         }}
                         className="text-red-600 focus:text-red-600"
@@ -392,6 +430,13 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteDialogOpen(false)}
         variant="destructive"
+      />
+
+      <MoveDialog
+        open={moveDialogOpen}
+        setOpen={setMoveDialogOpen}
+        onSuccess={handleMoveConfirm}
+        currentId={nodeToMove?.id || ""}
       />
     </div>
   );

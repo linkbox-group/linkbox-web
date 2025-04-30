@@ -150,7 +150,9 @@ export default function User() {
                 {user.username}
               </h2>
             </div>
-            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">{user.email}</p>
+            <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+              {user.email}
+            </p>
           </div>
         </div>
       </div>
@@ -187,7 +189,7 @@ export default function User() {
                       autoFocus
                     />
                     <div className="flex gap-2 mt-2 sm:mt-0">
-                      <button 
+                      <button
                         onClick={handleSaveUsername}
                         className="relative transition-all duration-200 flex-shrink-0"
                         style={{
@@ -197,7 +199,8 @@ export default function User() {
                           position: "relative",
                           overflow: "hidden",
                           borderRadius: "144px",
-                          outline: "1px rgba(90.13, 123.29, 184.88, 0.70) solid",
+                          outline:
+                            "1px rgba(90.13, 123.29, 184.88, 0.70) solid",
                           outlineOffset: "-1px",
                           color: "#5A7BB9",
                           fontSize: "15px",
@@ -208,7 +211,7 @@ export default function User() {
                       >
                         保存
                       </button>
-                      <button 
+                      <button
                         onClick={handleCancelEdit}
                         className="relative transition-all duration-200 flex-shrink-0"
                         style={{
@@ -218,7 +221,8 @@ export default function User() {
                           position: "relative",
                           overflow: "hidden",
                           borderRadius: "144px",
-                          outline: "1px rgba(90.13, 123.29, 184.88, 0.70) solid",
+                          outline:
+                            "1px rgba(90.13, 123.29, 184.88, 0.70) solid",
                           outlineOffset: "-1px",
                           color: "#5A7BB9",
                           fontSize: "15px",
@@ -239,7 +243,7 @@ export default function User() {
                       className="w-full sm:w-[200px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5A7BB9]"
                       readOnly
                     />
-                    <button 
+                    <button
                       onClick={handleEditUsername}
                       className="relative transition-all duration-200 flex-shrink-0 mt-2 sm:mt-0"
                       style={{
@@ -274,7 +278,7 @@ export default function User() {
                   alt="用户头像"
                   className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-[#5A7BB9]"
                 />
-                <button 
+                <button
                   className="relative transition-all duration-200 flex-shrink-0"
                   style={{
                     minWidth: "81px",
@@ -317,7 +321,7 @@ export default function User() {
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <span className="text-[#78A7FF]">修改密码</span>
-              <button 
+              <button
                 onClick={() => setIsChangePasswordOpen(true)}
                 className="relative transition-all duration-200 flex-shrink-0"
                 style={{
@@ -341,7 +345,7 @@ export default function User() {
             </div>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <span className="text-[#78A7FF]">绑定邮箱</span>
-              <button 
+              <button
                 className="relative transition-all duration-200 flex-shrink-0"
                 style={{
                   minWidth: "81px",
@@ -419,24 +423,70 @@ export default function User() {
           退出登录
         </button>
       </div>
+      {/* 渐变分割线 */}
+      <div className="w-full h-px bg-gradient-to-r from-transparent via-[#568FFF] to-transparent my-8" />
 
       {/* 底部 Dock 栏 */}
-      <div 
-        className="w-full h-16 flex items-center justify-center mt-8"
-        style={{
-          backgroundColor: "#3C76C7A8",
-          backdropFilter: "blur(8px)",
-        }}
-      >
-        <div className="flex items-center gap-8">
-          <div className="text-gray-200">
-            LinkBox
+      <div className="w-full min-h-[16rem] mt-8 px-4 sm:px-8 md:px-16 py-4 sm:py-8">
+        <div className="h-[calc(100%-2rem)] flex flex-col">
+          {/* 主要内容区域 */}
+          <div className="flex-1 flex flex-col sm:flex-row justify-between items-around gap-8">
+            {/* 左侧：云笺信息组 */}
+            <div className="flex flex-col items-start gap-4">
+              <div className="flex items-center gap-4 sm:gap-8">
+                <img src="/logo2.png" alt="云笺" className="w-32 sm:w-44 h-auto" />
+                <div className="flex flex-col">
+                  <div className="text-[#2A6ADF] text-2xl sm:text-4xl font-normal">云笺</div>
+                  <div className="text-[#6190EE] text-sm sm:text-base mt-1 sm:mt-2">
+                    云汇万象 笺载万连
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center ml-10 gap-4">
+                <div className="w-10 sm:w-[50px] h-10 sm:h-[50px] rounded-lg flex items-center justify-center">
+                  <img src="/wechat.svg" alt="微信" className="w-4 sm:w-15 h-4 sm:h-15" />
+                </div>
+                <div className="w-10 sm:w-[50px] h-10 sm:h-[50px] rounded-lg flex items-center justify-center">
+                  <img onClick={() => window.open("https://www.xiaohongshu.com/user/profile/666975330000000007007ba8", "_blank")} src="/xhs.svg" alt="小红书" className="w-4 sm:w-15 h-4 sm:h-15" />
+                </div>
+                <div className="text-[#6190EE] text-sm sm:text-base cursor-pointer hover:text-[#2A6ADF] transition-colors">
+                  跳转官号联系方式
+                </div>
+              </div>
+            </div>
+
+            {/* 右侧：功能链接和二维码组 */}
+            <div className="flex flex-col items-start justify-between gap-4">
+              <div className="flex flex-wrap justify-end gap-4 sm:gap-10">
+                <div className="text-[#4F89FD] text-base sm:text-xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
+                  服务协议
+                </div>
+                <div className="text-[#4F89FD] text-base sm:text-xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
+                  反馈中心
+                </div>
+                <div className="text-[#4F89FD] text-base sm:text-xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
+                  核心功能
+                </div>
+                <div className="text-[#4F89FD] text-base sm:text-xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
+                  使用帮助
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <img src="/wxqr.png" alt="微信二维码" className="w-16 sm:w-24 h-16 sm:h-24" />
+                <div className="flex flex-col items-start">
+                  <div className="text-[#4F89FD] text-lg sm:text-2xl">微信扫码</div>
+                  <div className="text-[#81ABFF] text-xs sm:text-sm mt-1 sm:mt-2">
+                    加入我们内测群，获得更多信息
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 修改密码对话框 */}
-      <ChangePasswordDialog 
+      <ChangePasswordDialog
         open={isChangePasswordOpen}
         setOpen={setIsChangePasswordOpen}
       />
