@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import FavoritesCard from "./Cards/FavoritesCard";
 import AISuggestionCard from "./Cards/AISuggestionCard";
-import UtilsCard from "./Cards/UtilsCard";
+// import UtilsCard from "./Cards/UtilsCard";
 import AllFavoritesCard from "./Cards/TagsCard";
 
 const CARD_DATA = [
@@ -13,12 +13,12 @@ const CARD_DATA = [
     id: 2,
     type: "ai",
   },
+  // {
+  //   id: 3,
+  //   type: "recent",
+  // },
   {
     id: 3,
-    type: "recent",
-  },
-  {
-    id: 4,
     type: "tags",
   },
 ];
@@ -136,8 +136,8 @@ const Sidebar: React.FC<SidebarProps> = ({
         );
       case "ai":
         return <AISuggestionCard />;
-      case "recent":
-        return <UtilsCard />;
+      // case "recent":
+      //   return <UtilsCard />;
       case "tags":
         return <AllFavoritesCard />;
       default:
