@@ -46,6 +46,16 @@ export interface GetTagSuggestionsRequest {
 }
 
 /**
+ * SSE 消息接口
+ */
+interface SSEMessage {
+  message?: {
+    content: string;
+  };
+  content?: string;
+}
+
+/**
  * AI 服务
  */
 export const aiService = {
@@ -65,23 +75,31 @@ export const aiService = {
     onComplete?: () => void
   ) => {
     const params: Record<string, string> = {
-      content
+      content,
     };
     if (item_id) {
       params.item_id = item_id;
     }
 
-    return api.sendSSE(
-      "/ai/chat",
-      params,
-      (data) => {
-        if (data.content) {
-          onMessage?.(data.content);
+    const handleMessage = (data: string) => {
+      if (data === 'EOF') {
+        onComplete?.();
+        return;
+      }
+
+      try {
+        const sseMessage = JSON.parse(data) as SSEMessage;
+        if (sseMessage.message?.content) {
+          onMessage?.(sseMessage.message.content);
+        } else if (sseMessage.content) {
+          onMessage?.(sseMessage.content);
         }
-      },
-      onError,
-      onComplete
-    );
+      } catch (error) {
+        console.error('Failed to parse SSE message:', error, 'Raw data:', data);
+      }
+    };
+
+    return api.sendSSE("/ai/chat", params, handleMessage, onError, onComplete);
   },
 
   /**

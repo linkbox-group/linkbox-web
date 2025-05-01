@@ -1,12 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Send } from "lucide-react";
-import { aiService, ChatMessage, ApiResponse, ChatListResponse } from "@/services/ai";
+import {
+  aiService,
+  ChatMessage,
+  ApiResponse,
+  ChatListResponse,
+} from "@/services/ai";
 
 interface ExtendedChatMessage extends ChatMessage {
   id: string;
   user_id: string;
   send_time: string;
-  sender_type: 'SENDER_USER' | 'SENDER_AI';
+  sender_type: "SENDER_USER" | "SENDER_AI";
 }
 
 const AISuggestionCard: React.FC = () => {
@@ -17,19 +22,33 @@ const AISuggestionCard: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<{ close: () => void } | null>(null);
 
+  // 生成唯一 ID 的函数
+  const generateUniqueId = () => {
+    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  };
+
   // 获取历史消息
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         const response = await aiService.getChatList();
         if (response.code === 20000) {
-          setMessages(response.data.messages.map(msg => ({
-            content: msg.content,
-            id: Date.now().toString(),
-            user_id: "ai",
-            send_time: new Date().toISOString(),
-            sender_type: "SENDER_AI"
-          })));
+          // 按时间排序消息
+          const sortedMessages = response.data.messages
+            .map((msg) => ({
+              content: msg.content,
+              id: msg.id,
+              user_id: msg.user_id,
+              send_time: msg.send_time,
+              sender_type: msg.sender_type,
+            }))
+            .sort(
+              (a, b) =>
+                new Date(a.send_time).getTime() -
+                new Date(b.send_time).getTime()
+            );
+
+          setMessages(sortedMessages);
         }
       } catch (error) {
         console.error("获取消息失败:", error);
@@ -48,13 +67,19 @@ const AISuggestionCard: React.FC = () => {
 
     const userMessage: ExtendedChatMessage = {
       content: input,
-      id: Date.now().toString(),
+      id: generateUniqueId(),
       user_id: "current_user",
       send_time: new Date().toISOString(),
       sender_type: "SENDER_USER",
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    // 添加新消息并保持排序
+    setMessages((prev) =>
+      [...prev, userMessage].sort(
+        (a, b) =>
+          new Date(a.send_time).getTime() - new Date(b.send_time).getTime()
+      )
+    );
     setInput("");
     setIsLoading(true);
     setCurrentAiMessage("");
@@ -77,12 +102,19 @@ const AISuggestionCard: React.FC = () => {
         if (currentAiMessage) {
           const aiMessage: ExtendedChatMessage = {
             content: currentAiMessage,
-            id: Date.now().toString(),
+            id: generateUniqueId(),
             user_id: "ai",
             send_time: new Date().toISOString(),
             sender_type: "SENDER_AI",
           };
-          setMessages((prev) => [...prev, aiMessage]);
+          // 添加新消息并保持排序
+          setMessages((prev) =>
+            [...prev, aiMessage].sort(
+              (a, b) =>
+                new Date(a.send_time).getTime() -
+                new Date(b.send_time).getTime()
+            )
+          );
           setCurrentAiMessage("");
         }
         setIsLoading(false);
@@ -108,31 +140,45 @@ const AISuggestionCard: React.FC = () => {
     <div className="bg-gradient-to-b from-[#FFFFFF] to-[#B7DEFB] dark:from-[#2A3958] dark:to-[#3C567A] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300 flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
-          <span className="text-gray-700 dark:text-blue-400 font-medium">AI Suggestions</span>
+          <span className="text-gray-700 dark:text-blue-400 font-medium">
+            AI Suggestions
+          </span>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto mb-4 space-y-2">
+      <div className="flex-1 overflow-y-auto mb-4 space-y-4">
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`p-2 rounded-lg ${
+            className={`flex ${
               message.sender_type === "SENDER_USER"
-                ? "bg-blue-500 text-white ml-auto"
-                : "bg-gray-100 dark:bg-[#2a3349] text-gray-700 dark:text-blue-400"
-            } max-w-[80%]`}
+                ? "justify-end"
+                : "justify-start"
+            }`}
           >
-            {message.content}
+            <div
+              className={`max-w-[80%] p-3 rounded-lg ${
+                message.sender_type === "SENDER_USER"
+                  ? "bg-blue-500 text-white rounded-br-none shadow-md"
+                  : "bg-white dark:bg-[#2a3349] text-gray-700 dark:text-blue-400 rounded-bl-none border border-gray-200 dark:border-gray-700"
+              }`}
+            >
+              <div className="whitespace-pre-wrap">{message.content}</div>
+            </div>
           </div>
         ))}
         {currentAiMessage && (
-          <div className="bg-gray-100 dark:bg-[#2a3349] text-gray-700 dark:text-blue-400 p-2 rounded-lg max-w-[80%]">
-            {currentAiMessage}
+          <div className="flex justify-start">
+            <div className="max-w-[80%] p-3 rounded-lg bg-white dark:bg-[#2a3349] text-gray-700 dark:text-blue-400 rounded-bl-none border border-gray-200 dark:border-gray-700">
+              <div className="whitespace-pre-wrap">{currentAiMessage}</div>
+            </div>
           </div>
         )}
         {isLoading && !currentAiMessage && (
-          <div className="bg-gray-100 dark:bg-[#2a3349] text-gray-700 dark:text-blue-400 p-2 rounded-lg max-w-[80%]">
-            正在思考...
+          <div className="flex justify-start">
+            <div className="max-w-[80%] p-3 rounded-lg bg-white dark:bg-[#2a3349] text-gray-700 dark:text-blue-400 rounded-bl-none border border-gray-200 dark:border-gray-700">
+              <div className="whitespace-pre-wrap">正在思考...</div>
+            </div>
           </div>
         )}
         <div ref={messagesEndRef} />

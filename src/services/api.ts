@@ -480,14 +480,28 @@ class ApiService {
               const lines = buffer.split("\n");
               buffer = lines.pop() || "";
 
+              let currentEvent = "";
+              let currentData = "";
+
               for (const line of lines) {
-                if (line.startsWith("data: ")) {
-                  try {
-                    const data = JSON.parse(line.slice(6));
-                    onMessage?.(data);
-                  } catch (error) {
-                    onError?.(error as Error);
+                if (line.startsWith("event:")) {
+                  currentEvent = line.slice(6).trim();
+                } else if (line.startsWith("data:")) {
+                  currentData = line.slice(5).trim();
+                } else if (line === "") {
+                  // 空行表示消息结束
+                  if (currentData) {
+                    onMessage?.(currentData);
+
+                    // 如果收到 EOF，关闭连接
+                    if (currentData === "EOF") {
+                      controller.abort();
+                      onComplete?.();
+                      return;
+                    }
                   }
+                  currentEvent = "";
+                  currentData = "";
                 }
               }
             }

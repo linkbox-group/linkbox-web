@@ -65,13 +65,12 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
     try {
       if (user?.id) {
         const response = await organizationService.getList();
-        console.log("组织列表数据:", response);
         if (response.data?.organizations) {
           // 构建树形结构
           const buildTree = (orgs: Organization[]): FileTreeNode[] => {
             // 创建一个映射，用于快速查找节点
             const nodeMap = new Map<string, FileTreeNode>();
-            
+
             // 首先创建所有节点
             orgs.forEach((org) => {
               nodeMap.set(org.code, {
@@ -85,10 +84,10 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
                 sort_order: org.sort_order || 0,
               });
             });
-            
+
             // 构建父子关系
             const rootNodes: FileTreeNode[] = [];
-            
+
             // 遍历所有节点，建立父子关系
             orgs.forEach((org) => {
               const node = nodeMap.get(org.code);
@@ -112,7 +111,7 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
             // 对每个层级的节点进行排序
             const sortNodes = (nodes: FileTreeNode[]) => {
               nodes.sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-              nodes.forEach(node => {
+              nodes.forEach((node) => {
                 if (node.children.length > 0) {
                   sortNodes(node.children);
                 }
@@ -120,12 +119,11 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
             };
 
             sortNodes(rootNodes);
-            
+
             return rootNodes;
           };
 
           const tree = buildTree(response.data.organizations);
-          console.log("构建后的树:", tree);
           setOrganizations(tree);
         } else {
           setOrganizations([]);
@@ -358,7 +356,7 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
                   </div>
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Plus 
+                  <Plus
                     className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -377,8 +375,8 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
                         <Ellipsis className="w-4 h-4" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent 
-                      align="end" 
+                    <DropdownMenuContent
+                      align="end"
                       sideOffset={5}
                       className="min-w-[120px]"
                       onClick={(e) => e.stopPropagation()}

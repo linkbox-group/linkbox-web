@@ -58,6 +58,36 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [currentIndex, onSelectedCard]);
 
+  // 添加滚轮事件监听器
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      const topCard = CARD_DATA[currentIndex];
+      
+      // 如果当前是 AI 卡片，不处理滚轮事件，让消息可以滚动
+      if (topCard && topCard.type === "ai") {
+        return;
+      }
+
+      // 其他卡片处理滚轮切换
+      e.preventDefault();
+      if (e.deltaY > 0) {
+        // 向下滚动，显示下一张卡片
+        setCurrentIndex((prev) => (prev + 1) % CARD_DATA.length);
+      } else {
+        // 向上滚动，显示上一张卡片
+        setCurrentIndex((prev) => (prev - 1 + CARD_DATA.length) % CARD_DATA.length);
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+    };
+  }, [currentIndex]);
+
   const handleStart = (clientY: number) => {
     setIsDragging(true);
     setStartY(clientY);
@@ -110,18 +140,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     handleEnd();
   };
 
-  // 处理鼠标滚轮事件
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
-    if (e.deltaY > 0) {
-      // 向下滚动，显示下一张卡片
-      setCurrentIndex((prev) => (prev + 1) % CARD_DATA.length);
-    } else {
-      // 向上滚动，显示上一张卡片
-      setCurrentIndex((prev) => (prev - 1 + CARD_DATA.length) % CARD_DATA.length);
-    }
-  };
-
   const renderCard = (type: string) => {
     switch (type) {
       case "favorites":
@@ -163,7 +181,6 @@ const Sidebar: React.FC<SidebarProps> = ({
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
-          onWheel={handleWheel}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
