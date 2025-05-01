@@ -105,8 +105,8 @@ const Main: React.FC = () => {
         organization_id: organizationId,
         page: 1,
         page_size: pageSize,
-        sort_field: "created_at",
-        sort_direction: "desc",
+        sort_field: sortField,
+        sort_direction: sortDirection,
       });
 
       if (response.data?.items) {
@@ -514,12 +514,12 @@ const Main: React.FC = () => {
         <div className="flex-1 overflow-auto">
           <div className="p-4">
             <div className="flex items-center justify-end gap-4 mb-4">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 select-none">
                 <Archive className="w-5 h-5" />
                 <span>全部</span>
               </div>
               <div
-                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100"
+                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100 select-none"
                 onClick={handleModeChange}
               >
                 {mode === "all" ? (
@@ -529,9 +529,9 @@ const Main: React.FC = () => {
                 )}
                 <span>模式</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 select-none">
                 <Select onValueChange={handleSortChange}>
-                  <SelectTrigger className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border-0 bg-transparent p-0 h-auto cursor-pointer">
+                  <SelectTrigger className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border-0 bg-transparent p-0 h-auto cursor-pointer select-none">
                     <ArrowUpDown className="w-5 h-5" />
                     <span>排序</span>
                   </SelectTrigger>
