@@ -67,7 +67,7 @@ const Introduce = () => {
             </p>
           </div>
           <img
-            src="/intro1.jpg"
+            src="/intro1.png"
             alt="AI功能展示"
             className="w-full rounded-lg"
           />
@@ -90,7 +90,7 @@ const Introduce = () => {
             </p>
           </div>
           <img
-            src="/intro2.jpg"
+            src="/intro2.png"
             alt="智能归类展示"
             className="w-full rounded-lg"
           />
@@ -113,7 +113,7 @@ const Introduce = () => {
             </p>
           </div>
           <img
-            src="/intro3.jpg"
+            src="/intro3.png"
             alt="内容保鲜展示"
             className="w-full rounded-lg"
           />
