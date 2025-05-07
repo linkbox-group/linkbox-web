@@ -191,7 +191,7 @@ const AppBar: FC<AppBarProps> = ({
         className="hidden md:flex items-center h-full"
         onClick={handleSidebarToggle}
       >
-        <img className="w-16 h-12 mx-5" src="/logo.png" alt="Logo" />
+        <img className="w-22 h-15 mx-5" src="/logo.png" alt="Logo" />
         <div
           className="flex items-center text-lg"
           style={{

@@ -18,7 +18,7 @@ const Dock = () => {
           <div className="flex flex-col items-start gap-4">
             <div className="flex items-center gap-4 sm:gap-8">
               <img
-                src="/logo2.png"
+                src="/logo.png"
                 alt="云笺"
                 className="w-32 sm:w-44 h-auto"
               />

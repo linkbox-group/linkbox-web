@@ -17,7 +17,7 @@ const Introduce = () => {
       {/* 顶部导航栏 */}
       <div className="w-full h-12 bg-white/80 backdrop-blur-sm shadow-sm flex items-center justify-between px-4 fixed top-0 z-50">
         <div className="flex items-center gap-2">
-          <img src="/logo2.png" alt="logo" className="w-14 h-10" />
+          <img src="/logo.png" alt="logo" className="w-14 h-10" />
           <span className="text-blue-600 text-sm font-light">
             云笺-跨平台收藏工具
           </span>
