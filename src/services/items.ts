@@ -60,7 +60,7 @@ export interface UpdateItemRequest {
   description: string;
   thumbnail_url: string;
   tags: string[];
-  organization_ids: string[];
+  organization_id: string;
 }
 
 /**

@@ -102,7 +102,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
           description: content.description,
           thumbnail_url: content.thumbnail_url,
           tags: tags,
-          organization_ids: content.organization_ids || [],
+          organization_id: content.organization_id,
         });
       }
 
