@@ -28,9 +28,12 @@ export interface Item {
   url: string;
   description: string;
   thumbnail_url: string;
+  tag_names: string[] | null;
   tags: string[] | null;
-  organization_ids: string[] | null;
+  organization_path: string;
+  organization_id: string;
   note: string;
+  deleted_at: string;
   created_at: string;
   updated_at: string;
 }
@@ -45,6 +48,7 @@ export interface CreateItemRequest {
   title: string;
   description: string;
   note: string;
+  tags?: string[];
 }
 
 /**

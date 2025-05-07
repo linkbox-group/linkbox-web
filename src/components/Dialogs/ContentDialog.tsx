@@ -13,6 +13,7 @@ import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner"
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/store";
+import { X } from "lucide-react";
 
 interface ContentDialogProps {
   mode: "add" | "edit";
@@ -31,7 +32,8 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
 }) => {
   const [link, setLink] = useState("");
   const [title, setTitle] = useState("");
-  const [tags, setTags] = useState("");
+  const [tagInput, setTagInput] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const { user } = useUserStore();
   const { currentOrganizationId } = useAppStore();
@@ -41,14 +43,30 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
     if (mode === "edit" && content) {
       setLink(content.url);
       setTitle(content.title);
-      setTags(content.tags?.map(tag => tag.trim().replace(/[,，]/g, "")).filter(Boolean).join("，") || "");
+      setTags(content.tag_names?.map(tag => tag.trim().replace(/[,，]/g, "")).filter(Boolean) || []);
     } else {
       // 添加模式，重置表单
       setLink("");
       setTitle("");
-      setTags("");
+      setTags([]);
+      setTagInput("");
     }
   }, [mode, content, open]);
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && tagInput.trim()) {
+      e.preventDefault();
+      const newTag = tagInput.trim();
+      if (!tags.includes(newTag)) {
+        setTags([...tags, newTag]);
+      }
+      setTagInput("");
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
 
   const handleSubmit = async () => {
     if (!link) {
@@ -58,7 +76,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
 
     if (!user?.id) {
       toast.error("请先登录");
-      navigate("/auth");
+      navigate("/login");
       return;
     }
 
@@ -74,6 +92,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
           description: "",
           organization_id: currentOrganizationId || "0",
           note: "",
+          tags: tags,
         });
       } else if (mode === "edit" && content) {
         // 编辑模式
@@ -82,7 +101,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
           title: title,
           description: content.description,
           thumbnail_url: content.thumbnail_url,
-          tags: content.tags || [],
+          tags: tags,
           organization_ids: content.organization_ids || [],
         });
       }
@@ -148,15 +167,30 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
             <label htmlFor="tags" className="text-sm font-medium text-gray-900 dark:text-gray-100">
               标签
             </label>
-            <input
-              id="tags"
-              value={tags}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setTags(e.target.value)
-              }
-              placeholder="请输入标签，用逗号分隔（选填）"
-              className="flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            />
+            <div className="flex flex-wrap gap-2 p-2 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700">
+              {tags.map((tag, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 rounded-md text-sm"
+                >
+                  <span>{tag}</span>
+                  <button
+                    onClick={() => removeTag(tag)}
+                    className="hover:text-blue-600 dark:hover:text-blue-300"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              <input
+                id="tags"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={handleTagKeyDown}
+                placeholder="输入标签后按回车添加"
+                className="flex-1 min-w-[120px] h-8 bg-transparent border-none outline-none text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400"
+              />
+            </div>
           </div>
         </div>
 

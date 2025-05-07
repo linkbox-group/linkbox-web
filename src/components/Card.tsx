@@ -52,12 +52,12 @@ const Card: React.FC<CardProps> = ({
 
       {/* 标签 */}
       <div className="flex flex-wrap gap-2 mb-2 w-full">
-        {tags.map((tag, index) => (
+        {(tags || []).map((tag, index) => (
           <span
             key={index}
             className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-sm rounded-full break-words max-w-[200px] truncate"
           >
-            #{tag_names[index] || tag}
+            #{tag_names?.[index] || tag}
           </span>
         ))}
       </div>

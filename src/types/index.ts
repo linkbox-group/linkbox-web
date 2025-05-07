@@ -4,6 +4,7 @@ export interface CardItem extends WaterfallItem {
   title: string;
   favoriteTime: string;
   tags: string[];
+  tag_names: string[];
   folderPath: string;
   link: string;
 }

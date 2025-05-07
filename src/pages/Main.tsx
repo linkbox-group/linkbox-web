@@ -46,7 +46,9 @@ const Main: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  const [sortField, setSortField] = useState<"created_at" | "title">("created_at");
+  const [sortField, setSortField] = useState<"created_at" | "title">(
+    "created_at"
+  );
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [columns, setColumns] = useState(
     window.innerWidth < 640
@@ -86,7 +88,7 @@ const Main: React.FC = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [window.innerWidth]);
 
-  // 使用appStore中的items和generateMockItems
+  // 使用appStore
   const {
     items,
     setItems,
@@ -115,8 +117,10 @@ const Main: React.FC = () => {
           height: Math.floor(Math.random() * 200) + 300,
           title: item.title,
           favoriteTime: item.created_at,
-          tags: item.tags || [],
-          folderPath: item.organization_ids?.[0] || "未分类",
+          tags: item.tag_names || [],
+          tag_names: item.tag_names || [],
+          path: item.organization_path || "",
+          folderPath: item.organization_path || "未分类",
           link: item.url,
         }));
         setItems(items);
@@ -162,7 +166,8 @@ const Main: React.FC = () => {
           height: Math.floor(Math.random() * 200) + 300,
           title: item.title,
           favoriteTime: item.created_at,
-          tags: item.tags || [],
+          tags: item.tag_names || [],
+          tag_names: item.tag_names || [],
           folderPath: item.organization_ids?.[0] || "未分类",
           link: item.url,
         }));
@@ -231,7 +236,8 @@ const Main: React.FC = () => {
           height: Math.floor(Math.random() * 200) + 300,
           title: item.title,
           favoriteTime: item.created_at,
-          tags: item.tags || [],
+          tags: item.tag_names || [],
+          tag_names: item.tag_names || [],
           folderPath: item.organization_ids?.[0] || "未分类",
           link: item.url,
         }));
@@ -290,7 +296,7 @@ const Main: React.FC = () => {
         description: "",
         url: cardItem.link,
         thumbnail_url: "",
-        tags: cardItem.tags,
+        tag_names: cardItem.tags,
         organization_ids: [],
         note: "",
         created_at: cardItem.favoriteTime,
@@ -313,7 +319,7 @@ const Main: React.FC = () => {
         description: "",
         url: cardItem.link,
         thumbnail_url: "",
-        tags: cardItem.tags,
+        tag_names: cardItem.tags,
         organization_ids: [],
         note: "",
         created_at: cardItem.favoriteTime,
@@ -405,7 +411,7 @@ const Main: React.FC = () => {
       case "tag":
         return (
           <div className="w-full overflow-hidden">
-            <TagView tag="全部" items={items} />
+            <TagView items={items} />
           </div>
         );
       case "all":
@@ -514,7 +520,10 @@ const Main: React.FC = () => {
         <div className="flex-1 overflow-auto">
           <div className="p-4">
             <div className="flex items-center justify-end gap-4 mb-4">
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 select-none">
+              <div
+                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 select-none cursor-pointer hover:text-gray-800 dark:hover:text-gray-100"
+                onClick={() => fetchOrganizationItems("0")}
+              >
                 <Archive className="w-5 h-5" />
                 <span>全部</span>
               </div>
