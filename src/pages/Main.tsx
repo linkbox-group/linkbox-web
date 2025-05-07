@@ -168,7 +168,7 @@ const Main: React.FC = () => {
           favoriteTime: item.created_at,
           tags: item.tag_names || [],
           tag_names: item.tag_names || [],
-          folderPath: item.organization_ids?.[0] || "未分类",
+          folderPath: item.organization_path || "未分类",
           link: item.url,
         }));
         setItems(items);
@@ -238,7 +238,7 @@ const Main: React.FC = () => {
           favoriteTime: item.created_at,
           tags: item.tag_names || [],
           tag_names: item.tag_names || [],
-          folderPath: item.organization_ids?.[0] || "未分类",
+          folderPath: item.organization_path || "未分类",
           link: item.url,
         }));
         setItems(searchItems);
@@ -297,7 +297,10 @@ const Main: React.FC = () => {
         url: cardItem.link,
         thumbnail_url: "",
         tag_names: cardItem.tags,
-        organization_ids: [],
+        tags: cardItem.tags,
+        organization_id: "",
+        organization_path: "",
+        deleted_at: "1970-01-01T00:00:00Z",
         note: "",
         created_at: cardItem.favoriteTime,
         updated_at: cardItem.favoriteTime,
@@ -320,7 +323,10 @@ const Main: React.FC = () => {
         url: cardItem.link,
         thumbnail_url: "",
         tag_names: cardItem.tags,
-        organization_ids: [],
+        tags: cardItem.tags,
+        organization_id: "",
+        organization_path: "",
+        deleted_at: "1970-01-01T00:00:00Z",
         note: "",
         created_at: cardItem.favoriteTime,
         updated_at: cardItem.favoriteTime,
