@@ -121,7 +121,7 @@ const Introduce = () => {
         {/* 底部进入按钮 */}
         <div className="flex justify-center z-50">
           <button
-            className="bg-white text-blue-900 text-2xl px-8 py-6 shadow-lg hover:bg-gray-50 rounded-lg transition-colors duration-200"
+            className="bg-white text-blue-900 text-4xl w-1/4 px-8 py-6 shadow-lg hover:bg-gray-50 rounded-lg transition-colors duration-200"
             onClick={() => navigate("/register")}
           >
             点击进入

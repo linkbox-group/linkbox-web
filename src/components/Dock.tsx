@@ -15,33 +15,33 @@ const Dock = () => {
         {/* 主要内容区域 */}
         <div className="flex-1 flex flex-col sm:flex-row justify-between items-around gap-8">
           {/* 左侧：云笺信息组 */}
-          <div className="flex flex-col items-start gap-4">
-            <div className="flex items-center gap-4 sm:gap-8">
+          <div className="flex-1 flex flex-col items-start gap-6 max-w-[45%]">
+            <div className="flex items-center gap-6 sm:gap-10">
               <img
                 src="/logo.png"
                 alt="云笺"
-                className="w-32 sm:w-44 h-auto"
+                className="w-40 sm:w-52 h-auto"
               />
               <div className="flex flex-col">
-                <div className="text-[#2A6ADF] text-2xl sm:text-4xl font-normal">
+                <div className="text-[#2A6ADF] text-3xl sm:text-5xl font-normal">
                   云笺
                 </div>
-                <div className="text-[#6190EE] text-sm sm:text-base mt-1 sm:mt-2">
+                <div className="text-[#6190EE] text-base sm:text-lg mt-2 sm:mt-3">
                   云汇万象 笺载万连
                 </div>
               </div>
             </div>
-            <div className="flex items-center ml-10 gap-4">
+            <div className="flex items-center ml-12 gap-6">
               <div className="relative">
                 <div
-                  className="w-10 sm:w-[50px] h-10 sm:h-[50px] rounded-lg flex items-center justify-center cursor-pointer"
+                  className="w-12 sm:w-[60px] h-12 sm:h-[60px] rounded-lg flex items-center justify-center cursor-pointer"
                   onMouseOver={handleWechatHover}
                   onMouseOut={handleWechatLeave}
                 >
                   <img
                     src="/wechat.svg"
                     alt="微信"
-                    className="w-4 sm:w-15 h-4 sm:h-15"
+                    className="w-5 sm:w-6 h-5 sm:h-6"
                   />
                 </div>
                 {/* 微信二维码弹出框 */}
@@ -68,7 +68,7 @@ const Dock = () => {
                   </div>
                 </div>
               </div>
-              <div className="w-10 sm:w-[50px] h-10 sm:h-[50px] rounded-lg flex items-center justify-center">
+              <div className="w-12 sm:w-[60px] h-12 sm:h-[60px] rounded-lg flex items-center justify-center">
                 <img
                   onClick={() =>
                     window.open(
@@ -78,24 +78,24 @@ const Dock = () => {
                   }
                   src="/xhs.svg"
                   alt="小红书"
-                  className="w-4 sm:w-15 h-4 sm:h-15"
+                  className="w-5 sm:w-6 h-5 sm:h-6"
                 />
               </div>
-              <div className="text-[#6190EE] text-sm sm:text-base cursor-pointer hover:text-[#2A6ADF] transition-colors">
+              <div className="text-[#6190EE] text-base sm:text-lg cursor-pointer hover:text-[#2A6ADF] transition-colors">
                 跳转官号联系方式
               </div>
             </div>
           </div>
 
           {/* 右侧：功能链接和二维码组 */}
-          <div className="flex flex-col items-start justify-between gap-4">
-            <div className="flex flex-wrap justify-end gap-4 sm:gap-10">
-              <div className="text-[#4F89FD] text-base sm:text-xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
+          <div className="flex-1 flex flex-col items-start justify-between gap-6 max-w-[45%]">
+            <div className="flex flex-wrap gap-6 sm:gap-12">
+              <div className="text-[#4F89FD] text-lg sm:text-2xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
                 服务协议
               </div>
               <div className="relative">
                 <div 
-                  className="text-[#4F89FD] text-base sm:text-xl cursor-pointer hover:text-[#2A6ADF] transition-colors"
+                  className="text-[#4F89FD] text-lg sm:text-2xl cursor-pointer hover:text-[#2A6ADF] transition-colors"
                   onMouseOver={handleFeedbackHover}
                   onMouseOut={handleFeedbackLeave}
                 >
@@ -125,24 +125,24 @@ const Dock = () => {
                   </div>
                 </div>
               </div>
-              <div className="text-[#4F89FD] text-base sm:text-xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
+              <div className="text-[#4F89FD] text-lg sm:text-2xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
                 核心功能
               </div>
-              <div className="text-[#4F89FD] text-base sm:text-xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
+              <div className="text-[#4F89FD] text-lg sm:text-2xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
                 使用帮助
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-start gap-6">
               <img
                 src="/wxqr.png"
                 alt="微信二维码"
-                className="w-16 sm:w-24 h-16 sm:h-24"
+                className="w-20 sm:w-28 h-20 sm:h-28"
               />
               <div className="flex flex-col items-start">
-                <div className="text-[#4F89FD] text-lg sm:text-2xl">
+                <div className="text-[#4F89FD] text-xl sm:text-3xl">
                   微信扫码
                 </div>
-                <div className="text-[#81ABFF] text-xs sm:text-sm mt-1 sm:mt-2">
+                <div className="text-[#81ABFF] text-sm sm:text-base mt-2 sm:mt-3">
                   加入我们内测群，获得更多信息
                 </div>
               </div>
