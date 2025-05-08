@@ -1,31 +1,43 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-import tailwindcss from '@tailwindcss/vite'
-import { fileURLToPath } from 'url'
-import { dirname, resolve } from 'path'
-import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import tailwindcss from "@tailwindcss/vite";
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
+import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
 // https://vite.dev/config/
 
-const __filename = fileURLToPath(import.meta.url)
-const _dirname = dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const _dirname = dirname(__filename);
 
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), tailwindcss(), ViteImageOptimizer(IMAGE_OPTIMIZER_OPTIONS)],
+  plugins: [
+    react(),
+    tailwindcss(),
+    ViteImageOptimizer(IMAGE_OPTIMIZER_OPTIONS),
+  ],
   resolve: {
     alias: {
-      '@': resolve(_dirname, './src')
-    }
+      "@": resolve(_dirname, "./src"),
+    },
   },
   server: {
-    proxy: mode === 'development' ? {
-      '/api': {
-        target: 'http://linkbox.xyq777.com',
-        changeOrigin: true,
-        rewrite: (path) => path
-      }
-    } : undefined
-  }
-}))
+    proxy:
+      mode === "development"
+        ? {
+            "/api": {
+              target: "http://linkbox.xyq777.com",
+              changeOrigin: true,
+              rewrite: (path) => path,
+            },
+            "/meta": {
+              target: "https://linkbox.hakimyu.cn",
+              changeOrigin: true,
+              rewrite: (path) => path,
+            }
+          }
+        : undefined,
+  },
+}));
 const IMAGE_OPTIMIZER_OPTIONS = {
   test: /\.(jpe?g|png|gif|tiff|webp|svg|avif)$/i,
   exclude: undefined,
@@ -37,7 +49,7 @@ const IMAGE_OPTIMIZER_OPTIONS = {
     multipass: true,
     plugins: [
       {
-        name: 'preset-default',
+        name: "preset-default",
         params: {
           overrides: {
             cleanupNumericValues: false,
@@ -50,11 +62,11 @@ const IMAGE_OPTIMIZER_OPTIONS = {
           convertPathData: false,
         },
       },
-      'sortAttrs',
+      "sortAttrs",
       {
-        name: 'addAttributesToSVGElement',
+        name: "addAttributesToSVGElement",
         params: {
-          attributes: [{ xmlns: 'http://www.w3.org/2000/svg' }],
+          attributes: [{ xmlns: "http://www.w3.org/2000/svg" }],
         },
       },
     ],

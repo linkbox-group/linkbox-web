@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,10 +10,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { itemService, Item } from "@/services/items";
 import { useUserStore } from "@/store/userStore";
-import { toast } from "sonner"
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/store";
-import { X } from "lucide-react";
+import { X, RefreshCw } from "lucide-react";
+import debounce from "lodash/debounce";
 
 interface ContentDialogProps {
   mode: "add" | "edit";
@@ -35,15 +36,85 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isFetchingTitle, setIsFetchingTitle] = useState(false);
   const { user } = useUserStore();
   const { currentOrganizationId } = useAppStore();
   const navigate = useNavigate();
+
+  // 获取元信息的函数
+  const fetchMetaInfo = async (url: string) => {
+    // 如果已经有标题或正在获取，则不执行
+    if ((title || isFetchingTitle) && mode !== "edit") return;
+
+    try {
+      setIsFetchingTitle(true);
+      const maxRetries = 3;
+      let retryCount = 0;
+
+      const tryFetch = async (): Promise<any> => {
+        try {
+          const response = await fetch(`/meta?url=${encodeURIComponent(url)}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return await response.json();
+        } catch (error) {
+          if (retryCount < maxRetries) {
+            retryCount++;
+            console.log(`Retrying... (${retryCount}/${maxRetries})`);
+            await new Promise((resolve) =>
+              setTimeout(resolve, Math.pow(2, retryCount) * 1000)
+            );
+            return tryFetch();
+          }
+          throw error;
+        }
+      };
+
+      const data = await tryFetch();
+      if (data.title && !title) {
+        setTitle(data.title);
+      }
+      if (mode === "edit" && data.title) {
+        setTitle(data.title);
+      }
+    } catch (error) {
+      console.error("获取元信息失败:", error);
+      toast.error("获取元信息失败，请稍后重试");
+    } finally {
+      setIsFetchingTitle(false);
+    }
+  };
+
+  // 使用 useCallback 和 debounce 创建防抖函数
+  const debouncedFetchMeta = useCallback(
+    debounce((url: string) => {
+      if (url && url.startsWith("http")) {
+        fetchMetaInfo(url);
+      }
+    }, 1000),
+    []
+  );
+
+  // 处理链接输入变化
+  const handleLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newLink = e.target.value;
+    setLink(newLink);
+    if (mode === "add") {
+      debouncedFetchMeta(newLink);
+    }
+  };
+
   // 当对话框打开或内容变化时，更新表单
   useEffect(() => {
     if (mode === "edit" && content) {
       setLink(content.url);
       setTitle(content.title);
-      setTags(content.tag_names?.map(tag => tag.trim().replace(/[,，]/g, "")).filter(Boolean) || []);
+      setTags(
+        content.tag_names
+          ?.map((tag) => tag.trim().replace(/[,，]/g, ""))
+          .filter(Boolean) || []
+      );
     } else {
       // 添加模式，重置表单
       setLink("");
@@ -54,7 +125,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
   }, [mode, content, open]);
 
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && tagInput.trim()) {
+    if (e.key === "Enter" && tagInput.trim()) {
       e.preventDefault();
       const newTag = tagInput.trim();
       if (!tags.includes(newTag)) {
@@ -65,7 +136,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
   };
 
   const removeTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+    setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
   const handleSubmit = async () => {
@@ -132,15 +203,16 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <label htmlFor="link" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <label
+              htmlFor="link"
+              className="text-sm font-medium text-gray-900 dark:text-gray-100"
+            >
               链接地址 {mode === "add" ? "*" : ""}
             </label>
             <input
               id="link"
               value={link}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setLink(e.target.value)
-              }
+              onChange={handleLinkChange}
               placeholder="请输入链接地址"
               required={mode === "add"}
               disabled={mode === "edit"}
@@ -149,22 +221,49 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
           </div>
 
           <div className="grid gap-2">
-            <label htmlFor="title" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              标题
-            </label>
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="title"
+                className="text-sm font-medium text-gray-900 dark:text-gray-100"
+              >
+                标题
+              </label>
+              {mode === "edit" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => fetchMetaInfo(link)}
+                  disabled={isFetchingTitle || !link}
+                  className="h-8 px-2 text-xs"
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 mr-1 ${
+                      isFetchingTitle ? "animate-spin" : ""
+                    }`}
+                  />
+                  获取标题
+                </Button>
+              )}
+            </div>
             <input
               id="title"
               value={title}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setTitle(e.target.value)
               }
-              placeholder="请输入标题（选填）"
+              onFocus={() => setIsFetchingTitle(true)}
+              placeholder={
+                isFetchingTitle ? "正在获取标题..." : "请输入标题（选填）"
+              }
               className="flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:focus-visible:ring-blue-400 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             />
           </div>
 
           <div className="grid gap-2">
-            <label htmlFor="tags" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <label
+              htmlFor="tags"
+              className="text-sm font-medium text-gray-900 dark:text-gray-100"
+            >
               标签
             </label>
             <div className="flex flex-wrap gap-2 p-2 border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700">
@@ -195,21 +294,27 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
         </div>
 
         <DialogFooter>
-          <Button 
+          <Button
             variant="outline"
-            onClick={() => setOpen(false)} 
+            onClick={() => setOpen(false)}
             disabled={loading}
             className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600"
           >
             取消
           </Button>
-          <Button 
+          <Button
             variant="default"
-            onClick={handleSubmit} 
+            onClick={handleSubmit}
             disabled={loading}
             className="bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600"
           >
-            {loading ? (mode === "add" ? "添加中..." : "更新中...") : mode === "add" ? "添加" : "更新"}
+            {loading
+              ? mode === "add"
+                ? "添加中..."
+                : "更新中..."
+              : mode === "add"
+              ? "添加"
+              : "更新"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -217,4 +322,4 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
   );
 };
 
-export default ContentDialog; 
+export default ContentDialog;
