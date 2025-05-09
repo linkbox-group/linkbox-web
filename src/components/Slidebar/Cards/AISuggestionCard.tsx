@@ -19,8 +19,9 @@ const AISuggestionCard: React.FC = () => {
   const [messages, setMessages] = useState<ExtendedChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentAiMessage, setCurrentAiMessage] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<{ close: () => void } | null>(null);
+  const currentMessageContentRef = useRef<string>("");
 
   // 生成唯一 ID 的函数
   const generateUniqueId = () => {
@@ -58,8 +59,19 @@ const AISuggestionCard: React.FC = () => {
   }, []);
 
   // 滚动到底部
+  const scrollToBottom = () => {
+    if (messagesContainerRef.current) {
+      setTimeout(() => {
+        if (messagesContainerRef.current) {
+          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+        }
+      }, 10);
+    }
+  };
+
+  // 消息更新时滚动到底部
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    scrollToBottom();
   }, [messages, currentAiMessage]);
 
   const handleSend = () => {
@@ -73,51 +85,52 @@ const AISuggestionCard: React.FC = () => {
       sender_type: "SENDER_USER",
     };
 
-    // 添加新消息并保持排序
-    setMessages((prev) =>
-      [...prev, userMessage].sort(
-        (a, b) =>
-          new Date(a.send_time).getTime() - new Date(b.send_time).getTime()
-      )
-    );
+    // 重置状态
+    const userInput = input.trim();
     setInput("");
     setIsLoading(true);
     setCurrentAiMessage("");
+    currentMessageContentRef.current = "";
+    
+    // 添加用户消息
+    setMessages((prev) => [...prev, userMessage]);
 
     // 关闭之前的连接
-    eventSourceRef.current?.close();
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
 
     // 创建新的 SSE 连接
     eventSourceRef.current = aiService.sendMessage(
-      input,
+      userInput,
       undefined,
       (content) => {
-        setCurrentAiMessage((prev) => prev + content);
+        currentMessageContentRef.current += content;
+        setCurrentAiMessage(currentMessageContentRef.current);
       },
       (error) => {
         console.error("发送消息失败:", error);
         setIsLoading(false);
       },
       () => {
-        if (currentAiMessage) {
-          const aiMessage: ExtendedChatMessage = {
-            content: currentAiMessage,
-            id: generateUniqueId(),
-            user_id: "ai",
-            send_time: new Date().toISOString(),
-            sender_type: "SENDER_AI",
-          };
-          // 添加新消息并保持排序
-          setMessages((prev) =>
-            [...prev, aiMessage].sort(
-              (a, b) =>
-                new Date(a.send_time).getTime() -
-                new Date(b.send_time).getTime()
-            )
-          );
-          setCurrentAiMessage("");
-        }
+        const finalContent =
+          currentMessageContentRef.current || "抱歉，我无法回答这个问题。";
+        
+        const aiMessage: ExtendedChatMessage = {
+          content: finalContent,
+          id: generateUniqueId(),
+          user_id: "ai",
+          send_time: new Date().toISOString(),
+          sender_type: "SENDER_AI",
+        };
+        
         setIsLoading(false);
+        setCurrentAiMessage("");
+        currentMessageContentRef.current = "";
+        
+        // 在流结束时添加完整的AI消息
+        setMessages((prev) => [...prev, aiMessage]);
       }
     );
   };
@@ -132,12 +145,15 @@ const AISuggestionCard: React.FC = () => {
   // 组件卸载时关闭连接
   useEffect(() => {
     return () => {
-      eventSourceRef.current?.close();
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
     };
   }, []);
 
   return (
-    <div className="bg-gradient-to-b from-[#FFFFFF] to-[#B7DEFB] dark:from-[#2A3958] dark:to-[#3C567A] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300 flex flex-col">
+    <div className="w-full h-full bg-gradient-to-b from-white to-[#B7DEFB] dark:from-[#2A3958] dark:to-[#3C567A] p-4 select-none transition-colors duration-300 flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <span className="text-gray-700 dark:text-blue-400 font-medium">
@@ -146,7 +162,7 @@ const AISuggestionCard: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto mb-4 space-y-4">
+      <div ref={messagesContainerRef} className="w-full h-full overflow-y-auto mb-4 overflow-x-hidden">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -181,7 +197,6 @@ const AISuggestionCard: React.FC = () => {
             </div>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       <div className="flex items-center gap-2">

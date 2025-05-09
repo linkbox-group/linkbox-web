@@ -2,7 +2,7 @@ import React from 'react';
 
 const UtilsCard: React.FC = () => {
   return (
-    <div className="bg-gradient-to-b from-[#EEF4FF] to-[#4387C0] dark:from-[#3A4756] dark:to-[#5A7FA3] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300">
+    <div className="w-full h-full bg-gradient-to-b from-white to-[#4387C0] dark:from-[#3A4756] dark:to-[#5A7FA3] p-4 select-none transition-colors duration-300">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <span className="text-gray-700 dark:text-blue-400 font-medium">工具</span>

@@ -30,7 +30,7 @@ const TagsCard: React.FC = () => {
   }, [user?.id]);
 
   return (
-    <div className="bg-gradient-to-b from-[#EEF4FF] to-[#7CC6FF] dark:from-[#2D4661] dark:to-[#4C7A9D] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300 flex flex-col">
+    <div className="w-full h-full bg-gradient-to-b from-white to-[#7CC6FF] dark:from-[#2D4661] dark:to-[#4C7A9D] p-4 select-none transition-colors duration-300 flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Tag className="w-5 h-5 text-gray-700 dark:text-blue-400" />
@@ -38,7 +38,6 @@ const TagsCard: React.FC = () => {
             标签
           </span>
         </div>
-       
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -73,12 +72,6 @@ const TagsCard: React.FC = () => {
             ))}
           </div>
         )}
-         <button
-          onClick={() => setDialogOpen(true)}
-          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-        >
-          <Plus className="w-5 h-5 text-gray-700 dark:text-blue-400" />
-        </button>
       </div>
 
       <TagDialog

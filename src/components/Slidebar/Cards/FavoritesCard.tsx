@@ -258,7 +258,7 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
   };
 
   return (
-    <div className="bg-gradient-to-b from-[#EEF4FF] to-[#D7EEFF] dark:bg-gradient-to-b dark:from-[#1E2333] dark:to-[#27446F] rounded-lg shadow-sm p-4 select-none h-96 transition-colors duration-300">
+    <div className="w-full h-full bg-gradient-to-b from-[#EEF4FF] to-[#D7EEFF] dark:bg-gradient-to-b dark:from-[#1E2333] dark:to-[#27446F] rounded-lg shadow-sm p-4 select-none transition-colors duration-300">
       <div
         className={cn(
           "flex justify-between items-center mb-4 transition-all duration-300",
@@ -317,7 +317,7 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
         </div>
       </div>
 
-      <div className="space-y-2 max-h-[calc(100%-3rem)] overflow-y-auto">
+      <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="text-center text-gray-500 dark:text-gray-400">
             加载中...

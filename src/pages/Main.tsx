@@ -383,13 +383,13 @@ const Main: React.FC = () => {
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="flex justify-center items-center h-full">加载中...</div>
+        <div className="flex-1 flex justify-center items-center min-h-[70vh]">加载中...</div>
       );
     }
 
     if (!items || items.length === 0) {
       return (
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] text-gray-500 dark:text-gray-400">
+        <div className="flex-1 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 min-h-[70vh]">
           <Bookmark className="w-16 h-16 mb-4" />
           <p className="text-lg">还没有收藏哦</p>
         </div>
@@ -399,7 +399,7 @@ const Main: React.FC = () => {
     switch (mode) {
       case "line":
         return (
-          <div className="space-y-1">
+          <div className="flex-1 space-y-1 min-h-[70vh]">
             {items.map((item) => (
               <Line
                 key={item.id}
@@ -416,36 +416,160 @@ const Main: React.FC = () => {
         );
       case "tag":
         return (
-          <div className="w-full overflow-hidden">
+          <div className="flex-1 w-full overflow-hidden min-h-[70vh]">
             <TagView items={items} />
           </div>
         );
       case "all":
       default:
         return (
-          <WaterfallFlow
-            items={items}
-            columns={columns}
-            gap={16}
-            renderItem={(item) => (
-              <Card
-                title={item.title}
-                favoriteTime={item.favoriteTime}
-                tags={item.tags}
-                tag_names={item.tags}
-                folderPath={item.folderPath}
-                link={item.link}
-                onEdit={() => handleEdit(item.id)}
-                onDelete={() => handleDelete(item.id)}
-              />
-            )}
-          />
+          <div className="flex-1 min-h-[70vh]">
+            <WaterfallFlow
+              items={items}
+              columns={columns}
+              gap={16}
+              renderItem={(item) => (
+                <Card
+                  title={item.title}
+                  favoriteTime={item.favoriteTime}
+                  tags={item.tags}
+                  tag_names={item.tags}
+                  folderPath={item.folderPath}
+                  link={item.link}
+                  onEdit={() => handleEdit(item.id)}
+                  onDelete={() => handleDelete(item.id)}
+                />
+              )}
+            />
+          </div>
         );
     }
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white dark:bg-gray-900 overflow-hidden">
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
+      <AppBar
+        sidebarCollapsed={sidebarCollapsed}
+        onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onAdd={() => setAddDialogOpen(true)}
+        username={user?.username || ""}
+        onSearch={handleSearch}
+      />
+      <div className="flex flex-1 overflow-hidden">
+        <div
+          className={`flex-shrink-0 transition-all duration-300 ${
+            sidebarCollapsed ? "w-0" : "w-[280px]"
+          }`}
+        >
+          <Sidebar
+            collapsed={sidebarCollapsed}
+            onSelectedCard={setMode}
+            onOrganizationSelect={fetchOrganizationItems}
+            onAddOrganization={handleAddOrganization}
+            onDeleteOrganization={handleDeleteOrganization}
+            parentCode={currentOrganizationId}
+            setCurrentOrganizationId={setCurrentOrganizationId}
+          />
+        </div>
+        <div className="flex-1 flex flex-col overflow-hidden h-full">
+          <div className="flex-1 overflow-auto p-4 flex flex-col h-full">
+            <div className="flex items-center justify-end gap-4 mb-4">
+              <div
+                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 select-none cursor-pointer hover:text-gray-800 dark:hover:text-gray-100"
+                onClick={() => fetchOrganizationItems("0")}
+              >
+                <Archive className="w-5 h-5" />
+                <span>全部</span>
+              </div>
+              <div
+                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100 select-none"
+                onClick={handleModeChange}
+              >
+                {mode === "all" ? (
+                  <Grid className="w-5 h-5" />
+                ) : (
+                  <List className="w-5 h-5" />
+                )}
+                <span>模式</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 select-none">
+                <Select onValueChange={handleSortChange}>
+                  <SelectTrigger className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border-0 bg-transparent p-0 h-auto cursor-pointer select-none">
+                    <ArrowUpDown className="w-5 h-5" />
+                    <span>排序</span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="time">时间排序</SelectItem>
+                    <SelectItem value="title">标题排序</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex-1 flex flex-col min-h-[calc(100vh-12rem)]">
+              {renderContent()}
+              {/* 分页组件 */}
+              {items.length > 0 && (
+                <div className="mt-4 flex justify-center">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          className={`${
+                            currentPage === 1
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
+                        >
+                          上一页
+                        </PaginationPrevious>
+                      </PaginationItem>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (page) => (
+                          <PaginationItem key={page}>
+                            <PaginationLink
+                              onClick={() => handlePageChange(page)}
+                              isActive={currentPage === page}
+                              className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )
+                      )}
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          className={`${
+                            currentPage === totalPages
+                              ? "pointer-events-none opacity-50"
+                              : ""
+                          } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
+                        >
+                          下一页
+                        </PaginationNext>
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </div>
+            {/* 备案信息 */}
+            <div className="h-8 flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800 w-full mt-auto">
+              <div className="w-full text-center">
+                <a
+                  href="http://beian.miit.gov.cn/"
+                  target="_blank"
+                  rel="nofollow noopener"
+                  className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                >
+                  赣ICP备2022001931号
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <ContentDialog
         mode="add"
         open={addDialogOpen}
@@ -500,126 +624,6 @@ const Main: React.FC = () => {
         onConfirm={handleDeleteOrganizationConfirm}
         variant="destructive"
       />
-      <AppBar
-        sidebarCollapsed={sidebarCollapsed}
-        onSidebarToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-        onAdd={() => setAddDialogOpen(true)}
-        username={user?.username || ""}
-        onSearch={handleSearch}
-      />
-      <div className="flex flex-1 min-h-0">
-        <div
-          className={`flex-shrink-0 transition-all duration-300 ${
-            sidebarCollapsed ? "w-0" : "w-70"
-          }`}
-        >
-          <Sidebar
-            collapsed={sidebarCollapsed}
-            onSelectedCard={setMode}
-            onOrganizationSelect={fetchOrganizationItems}
-            onAddOrganization={handleAddOrganization}
-            onDeleteOrganization={handleDeleteOrganization}
-            parentCode={currentOrganizationId}
-            setCurrentOrganizationId={setCurrentOrganizationId}
-          />
-        </div>
-        <div className="flex-1 overflow-auto">
-          <div className="p-4">
-            <div className="flex items-center justify-end gap-4 mb-4">
-              <div
-                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 select-none cursor-pointer hover:text-gray-800 dark:hover:text-gray-100"
-                onClick={() => fetchOrganizationItems("0")}
-              >
-                <Archive className="w-5 h-5" />
-                <span>全部</span>
-              </div>
-              <div
-                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100 select-none"
-                onClick={handleModeChange}
-              >
-                {mode === "all" ? (
-                  <Grid className="w-5 h-5" />
-                ) : (
-                  <List className="w-5 h-5" />
-                )}
-                <span>模式</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 select-none">
-                <Select onValueChange={handleSortChange}>
-                  <SelectTrigger className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border-0 bg-transparent p-0 h-auto cursor-pointer select-none">
-                    <ArrowUpDown className="w-5 h-5" />
-                    <span>排序</span>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="time">时间排序</SelectItem>
-                    <SelectItem value="title">标题排序</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            {renderContent()}
-            {/* 分页组件 */}
-            {items.length > 0 && (
-              <div className="mt-4 flex justify-center">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        className={`${
-                          currentPage === 1
-                            ? "pointer-events-none opacity-50"
-                            : ""
-                        } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
-                      >
-                        上一页
-                      </PaginationPrevious>
-                    </PaginationItem>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (page) => (
-                        <PaginationItem key={page}>
-                          <PaginationLink
-                            onClick={() => handlePageChange(page)}
-                            isActive={currentPage === page}
-                            className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
-                          >
-                            {page}
-                          </PaginationLink>
-                        </PaginationItem>
-                      )
-                    )}
-                    <PaginationItem>
-                      <PaginationNext
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        className={`${
-                          currentPage === totalPages
-                            ? "pointer-events-none opacity-50"
-                            : ""
-                        } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
-                      >
-                        下一页
-                      </PaginationNext>
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      {/* 备案信息 */}
-      <div className="h-12 flex items-center justify-center text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800">
-        <span>
-          <a
-            href="http://beian.miit.gov.cn/"
-            target="_blank"
-            rel="nofollow noopener"
-            className="hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-          >
-            赣ICP备2022001931号
-          </a>
-        </span>
-      </div>
     </div>
   );
 };

@@ -128,8 +128,17 @@ const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <div className="w-[90%] sm:w-[400px] space-y-6 p-3 sm:p-8 bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-300">
+    <div 
+      className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300 relative"
+      style={{
+        backgroundImage: `url(/introbg.png)`,
+        backgroundSize: "100% auto",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center top",
+      }}
+    >
+      <div className="absolute inset-0 bg-black/50 dark:bg-black/70"></div>
+      <div className="w-[90%] sm:w-[400px] space-y-6 p-3 sm:p-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg shadow transition-colors duration-300 relative z-10">
         <div>
           <h2 className="mt-4 text-center text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
             {isLogin ? "登录 LinkBox" : "注册 LinkBox"}
