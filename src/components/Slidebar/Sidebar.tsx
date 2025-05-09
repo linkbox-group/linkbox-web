@@ -3,7 +3,7 @@ import FavoritesCard from "./Cards/FavoritesCard";
 import AISuggestionCard from "./Cards/AISuggestionCard";
 import AllFavoritesCard from "./Cards/TagsCard";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Star, MessageSquare, Tag, Trash2 } from "lucide-react";
+import { FolderClosed, Bot, Tag, Trash2 } from "lucide-react";
 
 // 导入 Swiper 样式
 // @ts-ignore
@@ -48,7 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     >
       <div className="h-full p-4">
         <div className="h-full w-full bg-white dark:bg-[#1E2333] rounded-lg shadow-[0px_4px_10.9px_rgba(0,0,0,0.16)] relative overflow-hidden">
-          <div className="h-full w-full pb-16">
+          <div className="h-full w-full">
             <Swiper
               ref={swiperRef}
               spaceBetween={0}
@@ -84,43 +84,30 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <AllFavoritesCard />
                 </div>
               </SwiperSlide>
-
-              <SwiperSlide className="!w-full !h-full">
-                <div className="h-full w-full overflow-auto flex items-center justify-center">
-                  <div className="text-gray-500 dark:text-gray-400 flex flex-col items-center">
-                    <Trash2 className="w-16 h-16 mb-4" />
-                    <p className="text-lg">回收站功能即将上线</p>
-                  </div>
-                </div>
-              </SwiperSlide>
             </Swiper>
           </div>
 
+          {/* 垃圾桶按钮固定在左下角 */}
+          <div className="absolute bottom-0 left-0 z-10 py-2 mr-2">
+            <TabButton icon={Trash2} active={activeTab === "trash"} />
+          </div>
+
           {/* 底部导航栏 */}
-          <div className="absolute bottom-0 left-0 right-0 flex justify-around items-center py-3 px-4 bg-white/90 dark:bg-[#1E2333]/90 backdrop-blur-sm z-10 border-t border-gray-100 dark:border-gray-800">
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex justify-around items-center py-2 px-4 z-10">
             <TabButton
-              icon={Star}
-              label="收藏"
+              icon={FolderClosed}
               active={activeTab === "favorites"}
               onClick={() => handleTabChange("favorites", 0)}
             />
             <TabButton
-              icon={MessageSquare}
-              label="AI助手"
+              icon={Bot}
               active={activeTab === "ai"}
               onClick={() => handleTabChange("ai", 1)}
             />
             <TabButton
               icon={Tag}
-              label="标签"
               active={activeTab === "tags"}
               onClick={() => handleTabChange("tags", 2)}
-            />
-            <TabButton
-              icon={Trash2}
-              label="回收站"
-              active={activeTab === "trash"}
-              onClick={() => handleTabChange("trash", 3)}
             />
           </div>
         </div>
@@ -132,28 +119,25 @@ const Sidebar: React.FC<SidebarProps> = ({
 // 标签按钮组件
 interface TabButtonProps {
   icon: React.ElementType;
-  label: string;
   active: boolean;
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 const TabButton: React.FC<TabButtonProps> = ({
   icon: Icon,
-  label,
   active,
   onClick,
 }) => {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-center justify-center p-2 transition-colors ${
+      className={`flex items-center justify-center p-2 mx-1 rounded-full transition-all duration-200 ${
         active
-          ? "text-[#355DA1] dark:text-blue-400"
-          : "text-gray-600 dark:text-gray-400 hover:text-[#355DA1] dark:hover:text-blue-400"
+          ? "text-[#355DA1] dark:text-blue-400 bg-gray-100 dark:bg-gray-800 scale-110"
+          : "text-gray-600 dark:text-gray-400 hover:text-[#355DA1] dark:hover:text-blue-400 hover:bg-gray-100/60 dark:hover:bg-gray-800/60 hover:scale-110"
       }`}
     >
       <Icon size={20} />
-      <span className="text-xs mt-1">{label}</span>
     </button>
   );
 };
