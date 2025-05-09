@@ -30,7 +30,7 @@ const TagsCard: React.FC = () => {
   }, [user?.id]);
 
   return (
-    <div className="w-full h-full bg-gradient-to-b from-white to-[#7CC6FF] dark:from-[#2D4661] dark:to-[#4C7A9D] p-4 pb-16 select-none flex flex-col">
+    <div className="w-full h-full bg-gradient-to-b from-[#EEF4FF] to-[#7CC6FF] dark:from-[#2D4661] dark:to-[#4C7A9D] p-4 pb-16 select-none flex flex-col relative">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Tag className="w-5 h-5 text-[#355DA1] dark:text-blue-400" />
@@ -72,7 +72,15 @@ const TagsCard: React.FC = () => {
             ))}
           </div>
         )}
+        
       </div>
+
+      <button
+        onClick={() => setDialogOpen(true)}
+        className="relative -left-[10px] bottom-0 w-8 h-8 rounded-full text-[#3061AF] flex items-center justify-center hover:bg-white/50 transition-colors duration-300"
+      >
+        <Plus className="w-5 h-5" />
+      </button>
 
       <TagDialog
         mode="add"
