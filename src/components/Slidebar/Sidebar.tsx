@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import FavoritesCard from "./Cards/FavoritesCard";
 import AISuggestionCard from "./Cards/AISuggestionCard";
 import AllFavoritesCard from "./Cards/TagsCard";
@@ -131,7 +131,7 @@ const TabButton: React.FC<TabButtonProps> = ({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center justify-center p-2 mx-1 rounded-full transition-all duration-200 ${
+      className={`flex items-center justify-center p-2 mx-1 rounded-full transition-[transform,scale] duration-200 ${
         active
           ? "text-[#355DA1] dark:text-blue-400 bg-gray-100 dark:bg-gray-800 scale-110"
           : "text-gray-600 dark:text-gray-400 hover:text-[#355DA1] dark:hover:text-blue-400 hover:bg-gray-100/60 dark:hover:bg-gray-800/60 hover:scale-110"

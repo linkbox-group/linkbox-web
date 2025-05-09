@@ -30,7 +30,7 @@ const TagsCard: React.FC = () => {
   }, [user?.id]);
 
   return (
-    <div className="w-full h-full bg-gradient-to-b from-white to-[#7CC6FF] dark:from-[#2D4661] dark:to-[#4C7A9D] p-4 pb-16 select-none transition-colors duration-300 flex flex-col">
+    <div className="w-full h-full bg-gradient-to-b from-white to-[#7CC6FF] dark:from-[#2D4661] dark:to-[#4C7A9D] p-4 pb-16 select-none flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <Tag className="w-5 h-5 text-[#355DA1] dark:text-blue-400" />
@@ -54,7 +54,7 @@ const TagsCard: React.FC = () => {
             {tags.map((tag) => (
               <div
                 key={tag.id}
-                className="flex items-center justify-between p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="flex items-center justify-between p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <div className="flex items-center gap-2">
                   <div

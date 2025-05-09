@@ -258,7 +258,7 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
   };
 
   return (
-    <div className="w-full h-full bg-gradient-to-b from-[#EEF4FF] to-[#D7EEFF] dark:bg-gradient-to-b dark:from-[#1E2333] dark:to-[#27446F] rounded-lg shadow-sm p-4 pb-16 select-none transition-colors duration-300">
+    <div className="w-full h-full bg-gradient-to-b from-[#EEF4FF] to-[#D7EEFF] dark:bg-gradient-to-b dark:from-[#1E2333] dark:to-[#27446F] rounded-lg shadow-sm p-4 pb-16 select-none">
       <div
         className={cn(
           "flex justify-between items-center mb-4",
