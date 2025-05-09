@@ -42,86 +42,86 @@ const Introduce = () => {
       <div className="pt-12">
         {/* 标题部分 */}
         <div className="max-w-4xl mx-auto px-4 py-20 text-center flex flex-col items-center justify-center">
-          <p className="text-xl text-blue-900 mb-8">
+          <p className="text-xl text-[#002DB5] mb-8">
             一站式链接收集与智能整理工具，让你的灵感、信息不再散落天涯
           </p>
-          <p className="text-2xl text-blue-900 mb-4">云汇万象，笺载万连</p>
-          <p className="text-xl text-blue-900">下一站</p>
-          <img src="/logo-write.svg" alt="next" className="w-50 mt-5" />
+          <p className="text-2xl text-[#002DB5] mb-4">云汇万象，笺载万连</p>
+          <p className="text-xl text-[#002DB5]">下一站</p>
+          <img src="/logo-write.svg" alt="next" className="w-55 mt-5" />
         </div>
 
         {/* AI 功能部分 */}
-        <div className="max-w-6xl mx-auto px-4 py-20">
+        <div className="max-w-6xl mx-auto px-4 py-20 flex flex-col items-center justify-center">
           <div className="space-y-6 mb-12 flex flex-col items-center justify-center">
-            <h2 className="text-4xl text-blue-900 text-center mb-8">
+            <h2 className="text-4xl text-[#002DB5] text-center mb-8">
               AI助力收藏无情儿
             </h2>
-            <p className="text-xl text-blue-900 text-center">
+            <p className="text-xl text-[#002DB5] text-center">
               AI智能推荐标签并分内别类
             </p>
-            <p className="text-xl text-blue-900 text-center">
+            <p className="text-xl text-[#002DB5] text-center">
               帮你快速建立清晰结构
             </p>
-            <p className="text-xl text-blue-900 text-center">
+            <p className="text-xl text-[#002DB5] text-center">
               收藏后还能通过对话式小助手，获得灵感总结与整理建议，让知识管理更高效
             </p>
           </div>
           <img
             src="/intro1.png"
-            alt="AI功能展示"
-            className="w-full rounded-lg"
+            alt="intro1"
+            className="rounded-lg w-10/12"
           />
         </div>
 
         {/* 智能归类部分 */}
-        <div className="max-w-6xl mx-auto px-4 py-20">
+        <div className="max-w-6xl mx-auto px-4 py-20 flex flex-col items-center justify-center">
           <div className="space-y-6 mb-12 flex flex-col items-center justify-center">
-            <h2 className="text-4xl text-blue-900 text-center mb-8">
+            <h2 className="text-4xl text-[#002DB5] text-center mb-8">
               智能归类 省心收藏
             </h2>
-            <p className="text-xl text-blue-900 text-center">
+            <p className="text-xl text-[#002DB5] text-center">
               支持以文件夹和标签两种方式整理内容
             </p>
-            <p className="text-xl text-blue-900 text-center">
+            <p className="text-xl text-[#002DB5] text-center">
               收藏时可一键归类，灵活清晰
             </p>
-            <p className="text-xl text-blue-900 text-center">
+            <p className="text-xl text-[#002DB5] text-center">
               多维视角管理信息，打造专属结构化知识空间
             </p>
           </div>
           <img
             src="/intro2.png"
             alt="智能归类展示"
-            className="w-full rounded-lg"
+            className="rounded-lg w-10/12"
           />
         </div>
 
         {/* 内容保鲜部分 */}
-        <div className="max-w-6xl mx-auto px-4 py-20">
+        <div className="max-w-6xl mx-auto px-4 py-20 flex flex-col items-center justify-center">
           <div className="space-y-6 mb-12 flex flex-col items-center justify-center">
-            <h2 className="text-4xl text-blue-900 text-center mb-8">
+            <h2 className="text-4xl text-[#002DB5] text-center mb-8">
               关效即检 内容保鲜
             </h2>
-            <p className="text-xl text-blue-900 text-center">
+            <p className="text-xl text-[#002DB5] text-center">
               系统每日自动检测已收藏链接有效性
             </p>
-            <p className="text-xl text-blue-900 text-center">
+            <p className="text-xl text-[#002DB5] text-center">
               发现失效自动标记提醒，避免内容积灰
             </p>
-            <p className="text-xl text-blue-900 text-center">
+            <p className="text-xl text-[#002DB5] text-center">
               让你的知识库始终保持新鲜、可用、高效
             </p>
           </div>
           <img
             src="/intro3.png"
             alt="内容保鲜展示"
-            className="w-full rounded-lg"
+            className="rounded-lg w-10/12"
           />
         </div>
         {/* 底部进入按钮 */}
         <div className="flex justify-center z-50">
           <button
-            className="bg-white text-blue-900 text-4xl w-1/4 px-8 py-6 shadow-lg hover:bg-gray-50 rounded-lg transition-colors duration-200"
+            className="bg-white text-[#002DB5] text-4xl w-1/4 px-8 py-6 shadow-lg hover:bg-gray-50 rounded-lg transition-colors duration-200"
             onClick={() => navigate("/register")}
           >
             点击进入
