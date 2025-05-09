@@ -42,11 +42,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div
       className={`h-full transition-all duration-300 ${
-        collapsed ? "w-0 opacity-0 overflow-hidden" : "opacity-100"
+        collapsed 
+          ? "w-0 opacity-0 overflow-hidden" 
+          : "w-64 sm:w-64 md:w-68 lg:w-72 opacity-100"
       }`}
       data-testid="sidebar"
     >
-      <div className="h-full p-4">
+      <div className="h-full p-2 sm:p-3 md:p-4">
         <div className="h-full w-full bg-white dark:bg-[#1E2333] rounded-lg shadow-[0px_4px_10.9px_rgba(0,0,0,0.16)] relative overflow-hidden">
           <div className="h-full w-full">
             <Swiper
@@ -88,7 +90,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {/* 垃圾桶按钮固定在左下角 */}
-          <div className="absolute bottom-0 left-0 z-10 py-2 mr-2">
+          <div className="absolute bottom-0 left-0 z-10 py-2 ml-2">
             <TabButton icon={Trash2} active={activeTab === "trash"} />
           </div>
 
@@ -131,13 +133,13 @@ const TabButton: React.FC<TabButtonProps> = ({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center justify-center p-2 mx-1 rounded-full transition-[transform,scale] duration-200 ${
+      className={`flex items-center justify-center p-1.5 sm:p-2 mx-1 rounded-full transition-[transform,scale] duration-200 ${
         active
           ? "text-[#355DA1] dark:text-blue-400 bg-gray-100 dark:bg-gray-800 scale-110"
           : "text-gray-600 dark:text-gray-400 hover:text-[#355DA1] dark:hover:text-blue-400 hover:bg-gray-100/60 dark:hover:bg-gray-800/60 hover:scale-110"
       }`}
     >
-      <Icon size={20} />
+      <Icon size={18} className="sm:w-5 sm:h-5" />
     </button>
   );
 };
