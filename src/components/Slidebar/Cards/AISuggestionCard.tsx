@@ -153,10 +153,10 @@ const AISuggestionCard: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full h-full bg-gradient-to-b from-white to-[#B7DEFB] dark:from-[#2A3958] dark:to-[#3C567A] p-4 select-none transition-colors duration-300 flex flex-col">
+    <div className="w-full h-full bg-gradient-to-b from-white to-[#B7DEFB] dark:from-[#2A3958] dark:to-[#3C567A] p-4 pb-16 select-none transition-colors duration-300 flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
-          <span className="text-gray-700 dark:text-blue-400 font-medium">
+          <span className="text-[#355DA1] dark:text-blue-400 font-bold">
             AI Suggestions
           </span>
         </div>
@@ -176,7 +176,7 @@ const AISuggestionCard: React.FC = () => {
               className={`max-w-[80%] p-3 rounded-lg ${
                 message.sender_type === "SENDER_USER"
                   ? "bg-blue-500 text-white rounded-br-none shadow-md"
-                  : "bg-white dark:bg-[#2a3349] text-gray-700 dark:text-blue-400 rounded-bl-none border border-gray-200 dark:border-gray-700"
+                  : "bg-white dark:bg-[#2a3349] text-[#355DA1] dark:text-blue-400 rounded-bl-none border border-gray-200 dark:border-gray-700"
               }`}
             >
               <div className="whitespace-pre-wrap">{message.content}</div>
@@ -185,14 +185,14 @@ const AISuggestionCard: React.FC = () => {
         ))}
         {currentAiMessage && (
           <div className="flex justify-start">
-            <div className="max-w-[80%] p-3 rounded-lg bg-white dark:bg-[#2a3349] text-gray-700 dark:text-blue-400 rounded-bl-none border border-gray-200 dark:border-gray-700">
+            <div className="max-w-[80%] p-3 rounded-lg bg-white dark:bg-[#2a3349] text-[#355DA1] dark:text-blue-400 rounded-bl-none border border-gray-200 dark:border-gray-700">
               <div className="whitespace-pre-wrap">{currentAiMessage}</div>
             </div>
           </div>
         )}
         {isLoading && !currentAiMessage && (
           <div className="flex justify-start">
-            <div className="max-w-[80%] p-3 rounded-lg bg-white dark:bg-[#2a3349] text-gray-700 dark:text-blue-400 rounded-bl-none border border-gray-200 dark:border-gray-700">
+            <div className="max-w-[80%] p-3 rounded-lg bg-white dark:bg-[#2a3349] text-[#355DA1] dark:text-blue-400 rounded-bl-none border border-gray-200 dark:border-gray-700">
               <div className="whitespace-pre-wrap">正在思考...</div>
             </div>
           </div>
@@ -206,7 +206,7 @@ const AISuggestionCard: React.FC = () => {
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={handleKeyPress}
           placeholder="输入你的问题..."
-          className="w-full h-10 px-4 rounded-lg bg-gray-100 dark:bg-[#2a3349] text-gray-700 dark:text-blue-400 placeholder:text-gray-500 dark:placeholder:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-300"
+          className="w-full h-10 px-4 rounded-lg bg-gray-100 dark:bg-[#2a3349] text-[#355DA1] dark:text-blue-400 placeholder:text-gray-500 dark:placeholder:text-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-colors duration-300"
         />
         <button
           onClick={handleSend}

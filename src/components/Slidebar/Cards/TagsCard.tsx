@@ -30,11 +30,11 @@ const TagsCard: React.FC = () => {
   }, [user?.id]);
 
   return (
-    <div className="w-full h-full bg-gradient-to-b from-white to-[#7CC6FF] dark:from-[#2D4661] dark:to-[#4C7A9D] p-4 select-none transition-colors duration-300 flex flex-col">
+    <div className="w-full h-full bg-gradient-to-b from-white to-[#7CC6FF] dark:from-[#2D4661] dark:to-[#4C7A9D] p-4 pb-16 select-none transition-colors duration-300 flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
-          <Tag className="w-5 h-5 text-gray-700 dark:text-blue-400" />
-          <span className="text-gray-700 dark:text-blue-400 font-medium">
+          <Tag className="w-5 h-5 text-[#355DA1] dark:text-blue-400" />
+          <span className="text-[#355DA1] dark:text-blue-400 font-bold">
             标签
           </span>
         </div>

@@ -3,7 +3,7 @@ import FavoritesCard from "./Cards/FavoritesCard";
 import AISuggestionCard from "./Cards/AISuggestionCard";
 import AllFavoritesCard from "./Cards/TagsCard";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { FolderClosed, Bot, Tag, Trash2 } from "lucide-react";
+import { Folder, Bot, Tag, Trash2 } from "lucide-react";
 
 // 导入 Swiper 样式
 // @ts-ignore
@@ -95,7 +95,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           {/* 底部导航栏 */}
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex justify-around items-center py-2 px-4 z-10">
             <TabButton
-              icon={FolderClosed}
+              icon={Folder}
               active={activeTab === "favorites"}
               onClick={() => handleTabChange("favorites", 0)}
             />

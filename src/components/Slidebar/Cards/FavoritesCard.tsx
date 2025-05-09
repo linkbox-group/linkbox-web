@@ -258,17 +258,17 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
   };
 
   return (
-    <div className="w-full h-full bg-gradient-to-b from-[#EEF4FF] to-[#D7EEFF] dark:bg-gradient-to-b dark:from-[#1E2333] dark:to-[#27446F] rounded-lg shadow-sm p-4 select-none transition-colors duration-300">
+    <div className="w-full h-full bg-gradient-to-b from-[#EEF4FF] to-[#D7EEFF] dark:bg-gradient-to-b dark:from-[#1E2333] dark:to-[#27446F] rounded-lg shadow-sm p-4 pb-16 select-none transition-colors duration-300">
       <div
         className={cn(
-          "flex justify-between items-center mb-4 transition-all duration-300",
-          isSearching && "opacity-0 h-0 mb-0 pointer-events-none"
+          "flex justify-between items-center mb-4",
+          isSearching && "hidden"
         )}
       >
         <div className="flex items-center gap-2">
-          <Folder className="w-5 h-5 text-gray-700 dark:text-blue-400" />
+          <Folder className="w-5 h-5 text-[#355DA1] dark:text-blue-400" />
           <span
-            className="text-gray-700 dark:text-blue-400 font-bold cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
+            className="text-[#355DA1] dark:text-blue-400 font-bold cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
             onClick={() => {
               setCurrentOrganizationId("0");
               onOrganizationSelect?.("0");
@@ -279,11 +279,11 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <Search
-            className="w-5 h-5 text-gray-700 dark:text-blue-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
+            className="w-5 h-5 text-[#355DA1] dark:text-blue-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
             onClick={() => setIsSearching(true)}
           />
           <Plus
-            className="w-5 h-5 text-gray-700 dark:text-blue-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
+            className="w-5 h-5 text-[#355DA1] dark:text-blue-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
             onClick={() => {
               setCurrentOrganizationId("0");
               setOrganizationDialogOpen(true);
