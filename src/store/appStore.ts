@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { AppState } from "./types";
-import { CardItem } from "../types";
+import { CardItem } from "@/types";
 import { itemService } from "@/services/items";
 
 // 生成随机ID
@@ -99,7 +99,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
   items: [],
 
   // 当前选中的组织ID
-  currentOrganizationId: "",
+  currentOrganizationId: "0",
 
   // 设置加载状态
   setLoading: (isLoading) =>

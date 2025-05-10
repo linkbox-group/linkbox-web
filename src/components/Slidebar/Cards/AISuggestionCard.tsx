@@ -63,7 +63,8 @@ const AISuggestionCard: React.FC = () => {
     if (messagesContainerRef.current) {
       setTimeout(() => {
         if (messagesContainerRef.current) {
-          messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+          messagesContainerRef.current.scrollTop =
+            messagesContainerRef.current.scrollHeight;
         }
       }, 10);
     }
@@ -91,7 +92,7 @@ const AISuggestionCard: React.FC = () => {
     setIsLoading(true);
     setCurrentAiMessage("");
     currentMessageContentRef.current = "";
-    
+
     // 添加用户消息
     setMessages((prev) => [...prev, userMessage]);
 
@@ -114,9 +115,16 @@ const AISuggestionCard: React.FC = () => {
         setIsLoading(false);
       },
       () => {
-        const finalContent =
-          currentMessageContentRef.current || "抱歉，我无法回答这个问题。";
-        
+        const finalContent = currentMessageContentRef.current;
+
+        // 如果消息内容为空，不添加新消息
+        if (!finalContent.trim()) {
+          setIsLoading(false);
+          setCurrentAiMessage("");
+          currentMessageContentRef.current = "";
+          return;
+        }
+
         const aiMessage: ExtendedChatMessage = {
           content: finalContent,
           id: generateUniqueId(),
@@ -124,11 +132,11 @@ const AISuggestionCard: React.FC = () => {
           send_time: new Date().toISOString(),
           sender_type: "SENDER_AI",
         };
-        
+
         setIsLoading(false);
         setCurrentAiMessage("");
         currentMessageContentRef.current = "";
-        
+
         // 在流结束时添加完整的AI消息
         setMessages((prev) => [...prev, aiMessage]);
       }
@@ -162,7 +170,10 @@ const AISuggestionCard: React.FC = () => {
         </div>
       </div>
 
-      <div ref={messagesContainerRef} className="w-full h-full overflow-y-auto mb-4 overflow-x-hidden">
+      <div
+        ref={messagesContainerRef}
+        className="w-full h-full overflow-y-auto mb-4 overflow-x-hidden"
+      >
         {messages.map((message) => (
           <div
             key={message.id}
@@ -183,7 +194,7 @@ const AISuggestionCard: React.FC = () => {
             </div>
           </div>
         ))}
-        {currentAiMessage && (
+        {currentAiMessage && currentAiMessage.trim() !== "" && (
           <div className="flex justify-start">
             <div className="max-w-[80%] p-3 rounded-lg bg-white dark:bg-[#2a3349] text-[#355DA1] dark:text-blue-400 rounded-bl-none border border-gray-200 dark:border-gray-700">
               <div className="whitespace-pre-wrap">{currentAiMessage}</div>
