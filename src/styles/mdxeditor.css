@@ -1,0 +1,240 @@
+/* MDXEditor自定义样式 */
+
+/* 编辑器容器 */
+.mdxeditor {
+  width: 100%;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+}
+
+/* 工具栏样式 */
+.mdxeditor-toolbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 50 !important;
+  background-color: white !important;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dark .mdxeditor-toolbar {
+  background-color: #1f2937 !important;
+  border-bottom-color: #374151;
+}
+
+.mdxeditor-toolbar button, 
+.mdxeditor-toolbar select {
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+}
+
+.mdxeditor-toolbar button:hover, 
+.mdxeditor-toolbar select:hover {
+  background-color: #f3f4f6;
+}
+
+.dark .mdxeditor-toolbar button:hover, 
+.dark .mdxeditor-toolbar select:hover {
+  background-color: #374151;
+}
+
+.mdxeditor-toolbar svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.mdxeditor-toolbar > div {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.mdxeditor-toolbar > div:not(:last-child) {
+  border-right: 1px solid #e5e7eb;
+  padding-right: 0.5rem;
+}
+
+.dark .mdxeditor-toolbar > div:not(:last-child) {
+  border-right-color: #374151;
+}
+
+/* 编辑区域样式 */
+.mdxeditor-content-editable {
+  min-height: 180px;
+  overflow-y: auto;
+  flex: 1;
+  padding: 1rem !important;
+}
+
+/* 对话框特定样式 */
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+}
+
+.dialog-content .mdxeditor {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100% !important;
+  min-height: 200px !important;
+}
+
+.dialog-content .mdxeditor-content-editable {
+  flex: 1;
+  overflow-y: auto;
+  max-height: none !important;
+}
+
+/* 响应式高度调整 */
+@media (max-height: 768px) {
+  .mdxeditor,
+  .dialog-content {
+    max-height: 300px;
+  }
+}
+
+@media (max-height: 640px) {
+  .mdxeditor,
+  .dialog-content {
+    max-height: 250px;
+  }
+}
+
+/* 编辑器容器布局 */
+.mdx-editor-container {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+
+/* 确保编辑器容器不超出对话框 */
+.DialogContent .mdx-editor-container {
+  max-height: 100% !important;
+}
+
+/* 处理对话框中的滚动 */
+.max-h-\[90vh\] .dialog-content {
+  max-height: 100% !important;
+}
+
+/* 暗色模式样式 */
+.dark .mdxeditor-content-editable {
+  color: #f3f4f6;
+  background-color: #1f2937;
+}
+
+/* Markdown样式增强 */
+.mdxeditor-content-editable h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  color: #111827;
+}
+
+.dark .mdxeditor-content-editable h1 {
+  color: #f3f4f6;
+}
+
+.mdxeditor-content-editable h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.75rem;
+  color: #111827;
+}
+
+.dark .mdxeditor-content-editable h2 {
+  color: #f3f4f6;
+}
+
+.mdxeditor-content-editable h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #111827;
+}
+
+.dark .mdxeditor-content-editable h3 {
+  color: #f3f4f6;
+}
+
+.mdxeditor-content-editable p {
+  margin-bottom: 0.75rem;
+}
+
+.mdxeditor-content-editable ul, 
+.mdxeditor-content-editable ol {
+  margin-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.mdxeditor-content-editable a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.dark .mdxeditor-content-editable a {
+  color: #60a5fa;
+}
+
+.mdxeditor-content-editable blockquote {
+  border-left: 4px solid #d1d5db;
+  padding-left: 1rem;
+  font-style: italic;
+  color: #4b5563;
+  margin: 1rem 0;
+}
+
+.dark .mdxeditor-content-editable blockquote {
+  border-left-color: #4b5563;
+  color: #9ca3af;
+}
+
+.mdxeditor-content-editable code {
+  background-color: #f3f4f6;
+  border-radius: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875em;
+}
+
+.dark .mdxeditor-content-editable code {
+  background-color: #374151;
+  color: #e5e7eb;
+}
+
+.mdxeditor-content-editable pre {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.dark .mdxeditor-content-editable pre {
+  background-color: #111827;
+}
+
+.mdxeditor-content-editable hr {
+  margin: 1.5rem 0;
+  border-color: #e5e7eb;
+}
+
+.dark .mdxeditor-content-editable hr {
+  border-color: #374151;
+}
+
+/* 占位符文本样式 */
+.mdxeditor-placeholder {
+  color: #9ca3af;
+}
+
+.dark .mdxeditor-placeholder {
+  color: #6b7280;
+} 

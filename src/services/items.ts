@@ -109,6 +109,13 @@ export interface PaginationResponse<T> {
 }
 
 /**
+ * 更新笔记内容请求参数
+ */
+export interface UpdateNoteContentRequest {
+  note: string;
+}
+
+/**
  * 内容项服务
  */
 export const itemService = {
@@ -131,6 +138,20 @@ export const itemService = {
    */
   update: async (id: string, data: UpdateItemRequest) => {
     return api.put<ApiResponse<Item>>(`/items/${id}`, data);
+  },
+
+  /**
+   * 更新笔记内容
+   */
+  updateNoteContent: async (id: string, data: UpdateNoteContentRequest) => {
+    return api.put<ApiResponse<Item>>(`/items/${id}`, {
+      ...data,
+      title: data.note.slice(0, 50), // 使用笔记内容的前50个字符作为标题
+      description: "",
+      thumbnail_url: "",
+      tags: [],
+      organization_id: ""
+    });
   },
 
   /**

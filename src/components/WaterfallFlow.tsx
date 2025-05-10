@@ -23,57 +23,100 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({
   const [columnItems, setColumnItems] = useState<WaterfallItem[][]>([]);
   const columnRefs = useRef<(HTMLDivElement | null)[]>([]);
   const itemRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
 
   // 初始化列项目
   useEffect(() => {
+    if (items.length === 0) {
+      setColumnItems([]);
+      setIsInitialized(false);
+      return;
+    }
+
     const cols: WaterfallItem[][] = Array(columns).fill(null).map(() => []);
     setColumnItems(cols);
     columnRefs.current = Array(columns).fill(null);
     itemRefs.current = {};
-  }, [columns]);
+    setIsInitialized(false);
+
+    // 使用 ResizeObserver 监听容器大小变化
+    if (containerRef.current) {
+      resizeObserverRef.current = new ResizeObserver(() => {
+        setIsInitialized(true);
+      });
+      resizeObserverRef.current.observe(containerRef.current);
+    }
+
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
+    };
+  }, [columns, items.length]);
 
   // 分配项目到列
   useEffect(() => {
-    if (items.length === 0) return;
+    if (items.length === 0 || !isInitialized) return;
 
-    const cols: WaterfallItem[][] = Array(columns).fill(null).map(() => []);
-    const heights: number[] = Array(columns).fill(0);
-
-    // 先按顺序分配项目
-    items.forEach((item) => {
-      const minHeightIndex = heights.indexOf(Math.min(...heights));
-      cols[minHeightIndex].push(item);
-      // 使用估计的高度
-      heights[minHeightIndex] += 200; // 估计的卡片高度
-    });
-
-    setColumnItems(cols);
-  }, [items, columns]);
-
-  // 更新实际高度
-  useEffect(() => {
-    const updateHeights = () => {
+    const updateLayout = () => {
       const heights: number[] = Array(columns).fill(0);
       const cols: WaterfallItem[][] = Array(columns).fill(null).map(() => []);
 
+      // 先按顺序分配项目
       items.forEach((item) => {
+        const minHeightIndex = heights.indexOf(Math.min(...heights));
+        cols[minHeightIndex].push(item);
+        // 使用实际高度或默认高度
         const itemElement = itemRefs.current[item.id];
-        if (itemElement) {
-          const minHeightIndex = heights.indexOf(Math.min(...heights));
-          cols[minHeightIndex].push(item);
-          heights[minHeightIndex] += itemElement.offsetHeight + gap;
-        }
+        heights[minHeightIndex] += (itemElement?.offsetHeight || 300) + gap;
       });
 
       setColumnItems(cols);
     };
 
     // 使用 requestAnimationFrame 确保在下一帧更新
-    requestAnimationFrame(updateHeights);
-  }, [items, columns, gap]);
+    requestAnimationFrame(updateLayout);
+  }, [items, columns, gap, isInitialized]);
+
+  // 监听窗口大小变化
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    const handleResize = () => {
+      requestAnimationFrame(() => {
+        const heights: number[] = Array(columns).fill(0);
+        const cols: WaterfallItem[][] = Array(columns).fill(null).map(() => []);
+
+        items.forEach((item) => {
+          const itemElement = itemRefs.current[item.id];
+          if (itemElement) {
+            const minHeightIndex = heights.indexOf(Math.min(...heights));
+            cols[minHeightIndex].push(item);
+            heights[minHeightIndex] += itemElement.offsetHeight + gap;
+          }
+        });
+
+        setColumnItems(cols);
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [items, columns, gap, isInitialized]);
+
+  // 如果没有项目，返回 null
+  if (items.length === 0) {
+    return null;
+  }
 
   return (
-    <div className={`flex ${className}`} style={{ gap: `${gap}px` }}>
+    <div 
+      ref={containerRef}
+      className={`flex w-full h-full ${className}`} 
+      style={{ gap: `${gap}px` }}
+    >
       {columnItems.map((column, columnIndex) => (
         <div
           key={columnIndex}
@@ -82,8 +125,13 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({
               columnRefs.current[columnIndex] = el;
             }
           }}
-          className="flex-1"
-          style={{ display: 'flex', flexDirection: 'column', gap: `${gap}px` }}
+          className="flex-1 min-w-0"
+          style={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            gap: `${gap}px`,
+            height: 'fit-content'
+          }}
         >
           {column.map((item) => (
             <div 
@@ -93,6 +141,7 @@ const WaterfallFlow: React.FC<WaterfallFlowProps> = ({
                   itemRefs.current[item.id] = el;
                 }
               }}
+              className="w-full"
             >
               {renderItem ? renderItem(item) : null}
             </div>

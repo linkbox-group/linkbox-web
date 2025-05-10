@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { organizationService, Organization } from "@/services/organization";
 import { useUserStore } from "@/store/userStore";
+import { useAppStore } from "@/store/appStore";
 import OrganizationDialog from "@/components/Dialogs/OrganizationDialog";
 import ConfirmDialog from "@/components/Dialogs/ConfirmDialog";
 import { cn } from "@/lib/utils";
@@ -34,23 +35,16 @@ interface FileTreeNode extends TreeNode {
 }
 
 interface FavoritesCardProps {
-  onOrganizationSelect?: (organizationId: string) => void;
-  onAddOrganization?: (parentCode: string) => void;
-  onDeleteOrganization?: (organization: FileTreeNode) => void;
   parentCode: string;
-  setCurrentOrganizationId: (code: string) => void;
 }
 
 const FavoritesCard: React.FC<FavoritesCardProps> = ({
-  onOrganizationSelect,
   parentCode,
-  setCurrentOrganizationId,
 }) => {
   const { user } = useUserStore();
+  const { selectOrganization, setCurrentOrganizationId } = useAppStore();
   const [organizations, setOrganizations] = useState<FileTreeNode[]>([]);
-  const [filteredOrganizations, setFilteredOrganizations] = useState<
-    FileTreeNode[]
-  >([]);
+  const [filteredOrganizations, setFilteredOrganizations] = useState<FileTreeNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -210,12 +204,6 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
     }
   };
 
-  const handleDeleteClick = (e: React.MouseEvent, node: FileTreeNode) => {
-    e.stopPropagation();
-    setNodeToDelete(node);
-    setDeleteDialogOpen(true);
-  };
-
   const handleDeleteConfirm = async () => {
     if (!nodeToDelete) return;
 
@@ -230,12 +218,6 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
       setDeleteDialogOpen(false);
       setNodeToDelete(null);
     }
-  };
-
-  const handleMoveClick = (e: React.MouseEvent, node: FileTreeNode) => {
-    e.stopPropagation();
-    setNodeToMove(node);
-    setMoveDialogOpen(true);
   };
 
   const handleMoveConfirm = async (targetId: string) => {
@@ -271,7 +253,7 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
             className="text-[#355DA1] dark:text-blue-400 font-bold cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
             onClick={() => {
               setCurrentOrganizationId("0");
-              onOrganizationSelect?.("0");
+              selectOrganization("0");
             }}
           >
             我的收藏集
@@ -336,26 +318,25 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
               const handleTouchStart = (e: React.TouchEvent) => {
                 e.preventDefault();
                 const longPressTimer = setTimeout(() => {
-                  // 模拟右键点击，触发上下文菜单
-                  const contextEvent = new MouseEvent('contextmenu', {
+                  const contextEvent = new MouseEvent("contextmenu", {
                     bubbles: true,
                     cancelable: true,
                     clientX: e.touches[0].clientX,
                     clientY: e.touches[0].clientY,
                   });
                   e.target.dispatchEvent(contextEvent);
-                }, 500); // 500ms 的长按时间
-                
+                }, 500);
+
                 const handleTouchEnd = () => {
                   clearTimeout(longPressTimer);
-                  document.removeEventListener('touchend', handleTouchEnd);
+                  document.removeEventListener("touchend", handleTouchEnd);
                 };
-                
-                document.addEventListener('touchend', handleTouchEnd);
+
+                document.addEventListener("touchend", handleTouchEnd);
               };
-              
+
               return (
-                <div 
+                <div
                   className="flex items-center justify-between w-full group"
                   onContextMenu={(e) => e.preventDefault()}
                 >
@@ -375,7 +356,8 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
                         <div
                           className="flex items-center gap-2 flex-1 cursor-pointer"
                           onClick={() => {
-                            onOrganizationSelect?.(node.id);
+                            setCurrentOrganizationId(node.id);
+                            selectOrganization(node.id);
                           }}
                           onTouchStart={handleTouchStart}
                         >

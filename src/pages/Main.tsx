@@ -14,7 +14,14 @@ import { organizationService } from "@/services/organization";
 import { useUserStore } from "@/store/userStore";
 import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
-import { Archive, Grid, ArrowUpDown, List, Bookmark, CheckIcon } from "lucide-react";
+import {
+  Archive,
+  Grid,
+  ArrowUpDown,
+  List,
+  Bookmark,
+  CheckIcon,
+} from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -67,12 +74,10 @@ const Main: React.FC = () => {
   const [organizationToDelete, setOrganizationToDelete] = useState<any>(null);
   const [deleteOrganizationDialogOpen, setDeleteOrganizationDialogOpen] =
     useState(false);
-  const [parentCode, setParentCode] = useState<string>("0");
 
   // 监听窗口大小变化
   useEffect(() => {
     const handleResize = () => {
-      console.log(window.innerWidth);
       setSidebarCollapsed(window.innerWidth < 768);
       setColumns(
         window.innerWidth < 640
@@ -95,52 +100,37 @@ const Main: React.FC = () => {
     deleteItem,
     currentOrganizationId,
     setCurrentOrganizationId,
+    selectOrganization,
   } = useAppStore();
   const { user } = useUserStore();
 
-  // 获取组织内容
-  const fetchOrganizationItems = async (organizationId: string) => {
-    try {
-      setLoading(true);
-      setCurrentOrganizationId(organizationId);
-      const response = await itemService.getOrganizationItems({
-        organization_id: organizationId,
-        page: 1,
-        page_size: pageSize,
-        sort_field: sortField,
-        sort_direction: sortDirection,
+  // 监听 items 变化
+  useEffect(() => {
+    if (items && items.length > 0) {
+      // 当 items 变化时，更新瀑布流布局
+      const observer = new ResizeObserver((entries) => {
+        const updatedItems = [...items];
+        entries.forEach((entry) => {
+          const card = entry.target;
+          const index = card.getAttribute("data-index");
+          if (index !== null) {
+            updatedItems[parseInt(index)].height = entry.contentRect.height;
+          }
+        });
+        setItems(updatedItems);
       });
 
-      if (response.data?.items) {
-        const items = response.data.items.map((item: Item) => ({
-          id: item.id,
-          height: Math.floor(Math.random() * 200) + 300,
-          title: item.title,
-          favoriteTime: item.created_at,
-          tags: item.tag_names || [],
-          tag_names: item.tag_names || [],
-          path: item.organization_path || "",
-          folderPath: item.organization_path || "未分类",
-          link: item.url,
-        }));
-        setItems(items);
-        setTotalPages(response.data.total_pages);
-        setCurrentPage(1);
-      } else {
-        setItems([]);
-        setTotalPages(1);
-        setCurrentPage(1);
-        toast.info("该组织暂无内容");
-      }
-    } catch (error) {
-      console.error("获取组织内容失败:", error);
-      toast.error("获取组织内容失败");
-      setItems([]);
-      setTotalPages(1);
-    } finally {
-      setLoading(false);
+      requestAnimationFrame(() => {
+        const cards = document.querySelectorAll(".card");
+        cards.forEach((card, index) => {
+          card.setAttribute("data-index", index.toString());
+          observer.observe(card);
+        });
+      });
+
+      return () => observer.disconnect();
     }
-  };
+  }, [items, setItems]);
 
   // 修改 fetchItems 函数
   const fetchItems = async (
@@ -161,17 +151,20 @@ const Main: React.FC = () => {
       });
 
       if (response.data?.items) {
-        const items = response.data.items.map((item: Item) => ({
+        const initialItems = response.data.items.map((item: Item) => ({
           id: item.id,
-          height: Math.floor(Math.random() * 200) + 300,
+          height: 300,
           title: item.title,
           favoriteTime: item.created_at,
           tags: item.tag_names || [],
           tag_names: item.tag_names || [],
           folderPath: item.organization_path || "未分类",
           link: item.url,
+          type: item.type,
+          note: item.note,
         }));
-        setItems(items);
+
+        setItems(initialItems);
         setTotalPages(response.data.total_pages);
         setCurrentPage(page);
       } else {
@@ -189,6 +182,35 @@ const Main: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // 组件加载时获取数据
+  useEffect(() => {
+    if (!fetchItemsRef.current) {
+      fetchItems();
+      fetchItemsRef.current = true;
+    }
+  }, []);
+
+  // 监听排序变化
+  useEffect(() => {
+    if (fetchItemsRef.current) {
+      fetchItems(currentPage, sortField, sortDirection);
+    }
+  }, [sortField, sortDirection]);
+
+  // 监听页码变化
+  useEffect(() => {
+    if (fetchItemsRef.current) {
+      fetchItems(currentPage, sortField, sortDirection);
+    }
+  }, [currentPage]);
+
+  // 监听组织变化
+  useEffect(() => {
+    if (fetchItemsRef.current) {
+      fetchItems(1, sortField, sortDirection);
+    }
+  }, [currentOrganizationId]);
 
   // 处理排序变化
   const handleSortChange = (value: string) => {
@@ -267,15 +289,6 @@ const Main: React.FC = () => {
     }
   };
 
-  // 组件加载时获取数据
-  useEffect(() => {
-    if (!fetchItemsRef.current) {
-      fetchItems();
-      // fetchItemsRef 跟踪是否已经获取过数据
-      fetchItemsRef.current = true;
-    }
-  }, []);
-
   const handleModeChange = () => {
     if (mode === "all") {
       setMode("line");
@@ -287,11 +300,10 @@ const Main: React.FC = () => {
   const handleEdit = (id: string | number) => {
     const cardItem = items.find((item) => item.id === id);
     if (cardItem) {
-      // 将CardItem转换为Item类型
       const item: Item = {
         id: cardItem.id.toString(),
         user_id: user?.id?.toString() || "",
-        type: "1",
+        type: cardItem.type || "1",
         title: cardItem.title,
         description: "",
         url: cardItem.link,
@@ -301,7 +313,7 @@ const Main: React.FC = () => {
         organization_id: "",
         organization_path: "",
         deleted_at: "1970-01-01T00:00:00Z",
-        note: "",
+        note: cardItem.note || "",
         created_at: cardItem.favoriteTime,
         updated_at: cardItem.favoriteTime,
       };
@@ -313,11 +325,10 @@ const Main: React.FC = () => {
   const handleDelete = async (id: string | number) => {
     const cardItem = items.find((item) => item.id === id);
     if (cardItem) {
-      // 将 CardItem 转换为 Item 类型
       const item: Item = {
         id: cardItem.id.toString(),
         user_id: user?.id?.toString() || "",
-        type: "1",
+        type: cardItem.type || "1",
         title: cardItem.title,
         description: "",
         url: cardItem.link,
@@ -327,7 +338,7 @@ const Main: React.FC = () => {
         organization_id: "",
         organization_path: "",
         deleted_at: "1970-01-01T00:00:00Z",
-        note: "",
+        note: cardItem.note || "",
         created_at: cardItem.favoriteTime,
         updated_at: cardItem.favoriteTime,
       };
@@ -383,7 +394,9 @@ const Main: React.FC = () => {
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="flex-1 flex justify-center items-center min-h-[70vh]">加载中...</div>
+        <div className="flex-1 flex justify-center items-center min-h-[70vh]">
+          <div className="text-gray-500 dark:text-gray-400">加载中...</div>
+        </div>
       );
     }
 
@@ -408,6 +421,8 @@ const Main: React.FC = () => {
                 tags={item.tags}
                 folderPath={item.folderPath}
                 link={item.link}
+                type={item.type}
+                note={item.note}
                 onEdit={() => handleEdit(item.id)}
                 onDelete={() => handleDelete(item.id)}
               />
@@ -424,26 +439,78 @@ const Main: React.FC = () => {
       default:
         return (
           <div className="flex-1 min-h-[70vh]">
-            <WaterfallFlow
-              items={items}
-              columns={columns}
-              gap={16}
-              renderItem={(item) => (
-                <Card
-                  title={item.title}
-                  favoriteTime={item.favoriteTime}
-                  tags={item.tags}
-                  tag_names={item.tags}
-                  folderPath={item.folderPath}
-                  link={item.link}
-                  onEdit={() => handleEdit(item.id)}
-                  onDelete={() => handleDelete(item.id)}
-                />
-              )}
-            />
+            {items.length > 0 && (
+              <WaterfallFlow
+                items={items}
+                columns={columns}
+                gap={16}
+                renderItem={(item) => (
+                  <Card
+                    key={item.id}
+                    title={item.title}
+                    favoriteTime={item.favoriteTime}
+                    tags={item.tags}
+                    tag_names={item.tags}
+                    folderPath={item.folderPath}
+                    link={item.link}
+                    type={item.type}
+                    note={item.note}
+                    onEdit={() => handleEdit(item.id)}
+                    onDelete={() => handleDelete(item.id)}
+                  />
+                )}
+              />
+            )}
           </div>
         );
     }
+  };
+
+  // 修改分页组件的渲染逻辑
+  const renderPagination = () => {
+    if (!items || items.length === 0) return null;
+
+    return (
+      <div className="mt-4 flex justify-center">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => handlePageChange(currentPage - 1)}
+                className={`${
+                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
+              >
+                上一页
+              </PaginationPrevious>
+            </PaginationItem>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  onClick={() => handlePageChange(page)}
+                  isActive={currentPage === page}
+                  className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => handlePageChange(currentPage + 1)}
+                className={`${
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : ""
+                } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
+              >
+                下一页
+              </PaginationNext>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+    );
   };
 
   return (
@@ -464,9 +531,6 @@ const Main: React.FC = () => {
           <Sidebar
             collapsed={sidebarCollapsed}
             onSelectedCard={setMode}
-            onOrganizationSelect={fetchOrganizationItems}
-            onAddOrganization={handleAddOrganization}
-            onDeleteOrganization={handleDeleteOrganization}
             parentCode={currentOrganizationId}
             setCurrentOrganizationId={setCurrentOrganizationId}
           />
@@ -476,7 +540,7 @@ const Main: React.FC = () => {
             <div className="flex items-center justify-end gap-4 mb-4">
               <div
                 className="flex items-center gap-2 text-gray-600 dark:text-gray-300 select-none cursor-pointer hover:text-gray-800 dark:hover:text-gray-100"
-                onClick={() => fetchOrganizationItems("0")}
+                onClick={() => fetchItems(1, sortField, sortDirection)}
               >
                 <Archive className="w-5 h-5" />
                 <span>全部</span>
@@ -500,11 +564,21 @@ const Main: React.FC = () => {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
                     <DropdownMenuItem onClick={() => handleSortChange("time")}>
-                      <CheckIcon className={`w-4 h-4 mr-2 ${sortField === "created_at" ? "opacity-100" : "opacity-0"}`} />
+                      <CheckIcon
+                        className={`w-4 h-4 mr-2 ${
+                          sortField === "created_at"
+                            ? "opacity-100"
+                            : "opacity-0"
+                        }`}
+                      />
                       时间排序
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleSortChange("title")}>
-                      <CheckIcon className={`w-4 h-4 mr-2 ${sortField === "title" ? "opacity-100" : "opacity-0"}`} />
+                      <CheckIcon
+                        className={`w-4 h-4 mr-2 ${
+                          sortField === "title" ? "opacity-100" : "opacity-0"
+                        }`}
+                      />
                       标题排序
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -513,52 +587,7 @@ const Main: React.FC = () => {
             </div>
             <div className="flex-1 flex flex-col min-h-[calc(100vh-12rem)]">
               {renderContent()}
-              {/* 分页组件 */}
-              {items.length > 0 && (
-                <div className="mt-4 flex justify-center">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          className={`${
-                            currentPage === 1
-                              ? "pointer-events-none opacity-50"
-                              : ""
-                          } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
-                        >
-                          上一页
-                        </PaginationPrevious>
-                      </PaginationItem>
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                        (page) => (
-                          <PaginationItem key={page}>
-                            <PaginationLink
-                              onClick={() => handlePageChange(page)}
-                              isActive={currentPage === page}
-                              className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
-                            >
-                              {page}
-                            </PaginationLink>
-                          </PaginationItem>
-                        )
-                      )}
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          className={`${
-                            currentPage === totalPages
-                              ? "pointer-events-none opacity-50"
-                              : ""
-                          } text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100`}
-                        >
-                          下一页
-                        </PaginationNext>
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
-              )}
+              {renderPagination()}
             </div>
             {/* 备案信息 */}
             <div className="h-8 flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800 w-full mt-auto">

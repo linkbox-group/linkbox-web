@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link, FileText } from 'lucide-react';
 
 interface LineProps {
   title: string;
@@ -6,6 +7,8 @@ interface LineProps {
   tags: string[];
   folderPath: string;
   link: string;
+  type?: "1" | "2"; // 1: 链接, 2: 笔记
+  note?: string;
   onEdit?: () => void;
   onDelete?: () => void;
 }
@@ -16,21 +19,36 @@ const Line: React.FC<LineProps> = ({
   tags,
   folderPath,
   link,
+  type = "1",
+  note,
   onEdit,
   onDelete,
 }) => {
+  const isNote = type === "2";
+
   return (
     <div className="flex items-center py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       {/* 标题 */}
-      <div className="flex-1 min-w-[200px]">
-        <a
-          href={link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline truncate block"
-        >
-          {title}
-        </a>
+      <div className="flex-1 min-w-[200px] flex items-center gap-2">
+        {isNote ? (
+          <FileText className="w-5 h-5 text-green-500 flex-shrink-0" />
+        ) : (
+          <Link className="w-5 h-5 text-blue-500 flex-shrink-0" />
+        )}
+        {isNote ? (
+          <span className="text-gray-900 dark:text-gray-100 truncate">
+            {title}
+          </span>
+        ) : (
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline truncate block"
+          >
+            {title}
+          </a>
+        )}
       </div>
 
       {/* 收藏时间 */}
@@ -56,7 +74,7 @@ const Line: React.FC<LineProps> = ({
       </div>
 
       {/* 操作按钮 */}
-      <div className="flex gap-2 ml-4">
+      <div className="flex items-center gap-2">
         <button
           onClick={onEdit}
           className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"

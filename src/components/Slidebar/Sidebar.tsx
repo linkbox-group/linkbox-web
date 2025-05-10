@@ -12,9 +12,6 @@ import "swiper/css";
 interface SidebarProps {
   collapsed: boolean;
   onSelectedCard: (mode: string) => void;
-  onOrganizationSelect?: (organizationId: string) => void;
-  onAddOrganization?: (parentCode: string) => void;
-  onDeleteOrganization?: (organization: any) => void;
   parentCode: string;
   setCurrentOrganizationId: (code: string) => void;
 }
@@ -22,9 +19,6 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({
   collapsed,
   onSelectedCard,
-  onOrganizationSelect,
-  onAddOrganization,
-  onDeleteOrganization,
   parentCode,
   setCurrentOrganizationId,
 }) => {
@@ -66,11 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <SwiperSlide className="!w-full !h-full">
                 <div className="h-full w-full overflow-auto">
                   <FavoritesCard
-                    onOrganizationSelect={onOrganizationSelect}
-                    onAddOrganization={onAddOrganization}
-                    onDeleteOrganization={onDeleteOrganization}
                     parentCode={parentCode}
-                    setCurrentOrganizationId={setCurrentOrganizationId}
                   />
                 </div>
               </SwiperSlide>

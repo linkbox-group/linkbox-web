@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { userService } from "@/services/user";
 import { useUserStore } from "@/store/userStore";
-import { PencilIcon } from "lucide-react";
+import { PencilIcon, ArrowLeft } from "lucide-react";
 import ChangePasswordDialog from "@/components/Dialogs/ChangePasswordDialog";
 import Dock from "@/components/Dock";
 
@@ -190,7 +190,7 @@ export default function User() {
 
   return (
     <div
-      className="min-h-screen"
+      className="min-h-screen relative"
       style={{
         backgroundImage: 'url("/user-bg.png")',
         backgroundSize: "cover",
@@ -198,6 +198,14 @@ export default function User() {
         backgroundRepeat: "no-repeat",
       }}
     >
+      {/* 返回按钮 */}
+      <button
+        onClick={() => navigate("/")}
+        className="absolute top-4 left-4 z-50 flex items-center justify-center w-10 h-10 bg-[#5A7BB9] rounded-full shadow-lg transition-all duration-200 hover:bg-[#4A6BA9] hover:scale-105 active:scale-95"
+      >
+        <ArrowLeft className="w-6 h-6 text-white" />
+      </button>
+
       {/* 顶部背景图片和用户信息 */}
       <div className="relative h-48 md:h-64">
         <div className="absolute inset-0 flex items-center justify-center">

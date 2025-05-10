@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { AppState } from "./types";
 import { CardItem } from "../types";
+import { itemService } from "@/services/items";
 
 // 生成随机ID
 const generateId = () => Math.random().toString(36).substring(2, 9);
@@ -83,9 +84,10 @@ interface AppStore {
   updateItem: (id: string | number, item: CardItem) => void;
   deleteItem: (id: string | number) => void;
   setCurrentOrganizationId: (id: string) => void;
+  selectOrganization: (organizationId: string) => Promise<void>;
 }
 
-export const useAppStore = create<AppStore>((set) => ({
+export const useAppStore = create<AppStore>((set, get) => ({
   // 应用状态初始状态
   app: {
     isLoading: false,
@@ -147,11 +149,52 @@ export const useAppStore = create<AppStore>((set) => ({
       items: state.items.filter((item) => item.id !== id),
     })),
 
-  // 生成模拟数据
-
   // 设置当前组织ID
   setCurrentOrganizationId: (id) =>
     set(() => ({
       currentOrganizationId: id,
     })),
+
+  // 选择组织并加载数据
+  selectOrganization: async (organizationId: string) => {
+    try {
+      set((state) => ({
+        app: { ...state.app, isLoading: true },
+        currentOrganizationId: organizationId,
+      }));
+
+      const response = await itemService.getOrganizationItems({
+        organization_id: organizationId,
+        page: 1,
+        page_size: 10,
+        sort_field: "created_at",
+        sort_direction: "desc",
+      });
+
+      if (response.data?.items) {
+        const items = response.data.items.map((item: any) => ({
+          id: item.id,
+          height: 300,
+          title: item.title,
+          favoriteTime: item.created_at,
+          tags: item.tag_names || [],
+          tag_names: item.tag_names || [],
+          folderPath: item.organization_path || "未分类",
+          link: item.url,
+          type: item.type,
+          note: item.note,
+        }));
+        set({ items });
+      } else {
+        set({ items: [] });
+      }
+    } catch (error) {
+      console.error("获取组织内容失败:", error);
+      set({ items: [] });
+    } finally {
+      set((state) => ({
+        app: { ...state.app, isLoading: false },
+      }));
+    }
+  },
 }));
