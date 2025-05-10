@@ -1,4 +1,4 @@
-import { WaterfallItem } from "@/components/Slidebar/WaterfallFlow";
+import { WaterfallItem } from "@/components/WaterfallFlow";
 
 export interface CardItem extends WaterfallItem {
   title: string;

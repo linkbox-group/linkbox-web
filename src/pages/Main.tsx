@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Slidebar/Sidebar";
 import AppBar from "../components/AppBar";
 import Card from "../components/Card";
-import WaterfallFlow from "../components/Slidebar/WaterfallFlow";
+import WaterfallFlow from "../components/WaterfallFlow";
 import TagView from "../components/TagView";
 import Line from "../components/Line";
 import ContentDialog from "../components/Dialogs/ContentDialog";

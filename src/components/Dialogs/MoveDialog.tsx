@@ -134,16 +134,16 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
         <DialogHeader>
-          <DialogTitle>移动到</DialogTitle>
+          <DialogTitle className="text-gray-900 dark:text-gray-100">移动到</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="h-[300px] overflow-y-auto border rounded-md p-2">
+          <div className="h-[300px] overflow-y-auto border border-gray-200 dark:border-gray-600 rounded-md p-2 bg-white/50 dark:bg-gray-700/50">
             {loading ? (
-              <div className="text-center text-gray-500">加载中...</div>
+              <div className="text-center text-gray-500 dark:text-gray-400">加载中...</div>
             ) : organizations.length === 0 ? (
-              <div className="text-center text-gray-500">暂无收藏集</div>
+              <div className="text-center text-gray-500 dark:text-gray-400">暂无收藏集</div>
             ) : (
               <TreeView
                 data={organizations}
@@ -170,7 +170,7 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
                       )}
                     >
                       <Folder className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm">{node.name}</span>
+                      <span className="text-sm text-gray-900 dark:text-gray-100">{node.name}</span>
                     </div>
                   </div>
                 )}
@@ -178,12 +178,17 @@ const MoveDialog: React.FC<MoveDialogProps> = ({
             )}
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button 
+              variant="outline"
+              onClick={() => setOpen(false)}
+              className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600"
+            >
               取消
             </Button>
             <Button
               onClick={handleConfirm}
               disabled={!selectedNode || selectedNode.id === currentId}
+              className="bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600"
             >
               确定
             </Button>

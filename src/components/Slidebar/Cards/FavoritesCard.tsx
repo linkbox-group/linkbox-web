@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
-  Folder,
+  FolderClosed,
   Plus,
   ChevronRight,
   Ellipsis,
@@ -16,11 +16,11 @@ import ConfirmDialog from "@/components/Dialogs/ConfirmDialog";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import TreeView, { TreeNode } from "../TreeView";
 import MoveDialog from "@/components/Dialogs/MoveDialog";
 
@@ -266,7 +266,7 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
         )}
       >
         <div className="flex items-center gap-2">
-          <Folder className="w-5 h-5 text-[#355DA1] dark:text-blue-400" />
+          <FolderClosed className="w-5 h-5 text-[#355DA1] dark:text-blue-400" />
           <span
             className="text-[#355DA1] dark:text-blue-400 font-bold cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
             onClick={() => {
@@ -332,79 +332,92 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
             onNodeClick={handleNodeClick}
             expandedNodes={expandedNodes}
             onToggleNode={toggleNode}
-            renderNode={(node: TreeNode) => (
-              <div className="flex items-center justify-between w-full group">
-                <div className="flex items-center gap-2 flex-1">
-                  <ChevronRight
-                    className={cn(
-                      "w-4 h-4 text-gray-500 cursor-pointer transition-transform",
-                      expandedNodes.has(node.id) && "transform rotate-90"
-                    )}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleNode(node.id);
-                    }}
-                  />
-                  <div
-                    className="flex items-center gap-2 flex-1 cursor-pointer"
-                    onClick={() => {
-                      onOrganizationSelect?.(node.id);
-                    }}
-                  >
-                    <Folder className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm">{node.name}</span>
+            renderNode={(node: TreeNode) => {
+              const handleTouchStart = (e: React.TouchEvent) => {
+                e.preventDefault();
+                const longPressTimer = setTimeout(() => {
+                  // 模拟右键点击，触发上下文菜单
+                  const contextEvent = new MouseEvent('contextmenu', {
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: e.touches[0].clientX,
+                    clientY: e.touches[0].clientY,
+                  });
+                  e.target.dispatchEvent(contextEvent);
+                }, 500); // 500ms 的长按时间
+                
+                const handleTouchEnd = () => {
+                  clearTimeout(longPressTimer);
+                  document.removeEventListener('touchend', handleTouchEnd);
+                };
+                
+                document.addEventListener('touchend', handleTouchEnd);
+              };
+              
+              return (
+                <div 
+                  className="flex items-center justify-between w-full group"
+                  onContextMenu={(e) => e.preventDefault()}
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    <ChevronRight
+                      className={cn(
+                        "w-4 h-4 text-gray-500 cursor-pointer transition-transform",
+                        expandedNodes.has(node.id) && "transform rotate-90"
+                      )}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleNode(node.id);
+                      }}
+                    />
+                    <ContextMenu>
+                      <ContextMenuTrigger asChild>
+                        <div
+                          className="flex items-center gap-2 flex-1 cursor-pointer"
+                          onClick={() => {
+                            onOrganizationSelect?.(node.id);
+                          }}
+                          onTouchStart={handleTouchStart}
+                        >
+                          <FolderClosed className="w-4 h-4 text-blue-500" />
+                          <span className="text-sm">{node.name}</span>
+                        </div>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent className="min-w-[120px]">
+                        <ContextMenuItem
+                          onClick={() => {
+                            setNodeToMove(node as FileTreeNode);
+                            setMoveDialogOpen(true);
+                          }}
+                        >
+                          <Move className="w-4 h-4 mr-2" />
+                          移动
+                        </ContextMenuItem>
+                        <ContextMenuItem
+                          onClick={() => {
+                            setNodeToDelete(node as FileTreeNode);
+                            setDeleteDialogOpen(true);
+                          }}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          删除
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
+                  </div>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Plus
+                      className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCreateClick("organization", node.id);
+                      }}
+                    />
                   </div>
                 </div>
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Plus
-                    className="w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCreateClick("organization", node.id);
-                    }}
-                  />
-                  <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        className="p-0 w-4 h-4 text-gray-500 hover:text-blue-500 cursor-pointer focus:outline-none flex items-center justify-center"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                        }}
-                      >
-                        <Ellipsis className="w-4 h-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      sideOffset={5}
-                      className="min-w-[120px]"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMoveClick(e, node as FileTreeNode);
-                        }}
-                      >
-                        <Move className="w-4 h-4 mr-2" />
-                        移动
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteClick(e, node as FileTreeNode);
-                        }}
-                        className="text-red-600 focus:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        删除
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-            )}
+              );
+            }}
             className="py-2"
           />
         )}
