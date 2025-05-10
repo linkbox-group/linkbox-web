@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
 import { ViteImageOptimizer } from "vite-plugin-image-optimizer";
+import { VitePWA } from "vite-plugin-pwa";
 // https://vite.dev/config/
 
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +15,12 @@ export default defineConfig(({ mode }) => ({
     react(),
     tailwindcss(),
     ViteImageOptimizer(IMAGE_OPTIMIZER_OPTIONS),
+    VitePWA({
+      registerType: "autoUpdate",
+      devOptions: {
+        enabled: true,
+      },
+    }),
   ],
   resolve: {
     alias: {
@@ -33,7 +40,7 @@ export default defineConfig(({ mode }) => ({
               target: "https://linkbox.hakimyu.cn",
               changeOrigin: true,
               rewrite: (path) => path,
-            }
+            },
           }
         : undefined,
   },

@@ -28,3 +28,6 @@ dist-ssr
 .idea
 .history
 .cursorrules
+
+# PWA
+dev-dist
