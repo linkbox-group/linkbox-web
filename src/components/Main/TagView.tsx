@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Card from "./Card";
+import Card from "@/components/Main/Card";
 import { tagService, Tag } from "@/services/tags";
 import { useUserStore } from "@/store/userStore";
 

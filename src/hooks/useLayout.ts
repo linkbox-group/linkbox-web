@@ -33,7 +33,6 @@ export const useLayout = () => {
   }, []);
 
   const handleModeChange = (modeString?: string) => {
-    console.log(modeString);
     if (modeString) {
       setMode(modeString);
     } else {

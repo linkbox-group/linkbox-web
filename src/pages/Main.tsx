@@ -1,14 +1,14 @@
 import React, { useEffect } from "react";
 import Sidebar from "../components/Slidebar/Sidebar";
-import AppBar from "../components/AppBar";
+import AppBar from "../components/Main/AppBar";
 import ContentDialog from "../components/Dialogs/ContentDialog";
 import ConfirmDialog from "../components/Dialogs/ConfirmDialog";
 import OrganizationDialog from "../components/Dialogs/OrganizationDialog";
 import { useUserStore } from "@/store/userStore";
 import { useAppStore } from "@/store/appStore";
-import MainContent from "@/components/MainContent";
-import MainHeader from "@/components/MainHeader";
-import MainPagination from "@/components/MainPagination";
+import MainContent from "@/components/Main/MainContent";
+import MainHeader from "@/components/Main/MainHeader";
+import MainPagination from "@/components/Main/MainPagination";
 import { useLayout } from "@/hooks/useLayout";
 import { useItemManagement } from "@/hooks/useItemManagement";
 import { useContentDialogs } from "@/hooks/useContentDialogs";

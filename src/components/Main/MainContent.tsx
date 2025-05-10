@@ -1,8 +1,8 @@
 import React from 'react';
 import { CardItem } from '@/types';
-import Card from '@/components/Card';
-import Line from '@/components/Line';
-import TagView from '@/components/TagView';
+import Card from '@/components/Main/Card';
+import Line from '@/components/Main/Line';
+import TagView from '@/components/Main/TagView';
 import WaterfallFlow from '@/components/WaterfallFlow';
 import { Bookmark } from 'lucide-react';
 
