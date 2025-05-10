@@ -1,9 +1,38 @@
 import React, { useState, useEffect } from "react";
-import { Tag, Plus } from "lucide-react";
+import { Tag as TagIcon, Plus } from "lucide-react";
 import { tagService, Tag as TagType } from "@/services/tags";
 import { useUserStore } from "@/store/userStore";
 import TagDialog from "@/components/Dialogs/TagDialog";
 import { toast } from "sonner";
+import { 
+  Bookmark, Star, Heart, File, Folder,
+  Link, Image, Video, Music, Book,
+  Calendar, Clock, Mail, MessageSquare, Phone,
+  Home, Settings, User, StickyNote
+} from "lucide-react";
+
+const ICON_MAP = {
+  Bookmark,
+  Star,
+  Heart,
+  File,
+  Folder,
+  Link,
+  Image,
+  Video,
+  Music,
+  Book,
+  Calendar,
+  Clock,
+  Mail,
+  Message: MessageSquare,
+  Phone,
+  Home,
+  Settings,
+  User,
+  Tag: TagIcon,
+  Note: StickyNote
+};
 
 const TagsCard: React.FC = () => {
   const [tags, setTags] = useState<TagType[]>([]);
@@ -33,11 +62,17 @@ const TagsCard: React.FC = () => {
     <div className="w-full h-full bg-gradient-to-b from-[#EEF4FF] to-[#7CC6FF] dark:from-[#2D4661] dark:to-[#4C7A9D] p-4 pb-16 select-none flex flex-col relative">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
-          <Tag className="w-5 h-5 text-[#355DA1] dark:text-blue-400" />
+          <TagIcon className="w-5 h-5 text-[#355DA1] dark:text-blue-400" />
           <span className="text-[#355DA1] dark:text-blue-400 font-bold">
             标签
           </span>
         </div>
+        <button
+        onClick={() => setDialogOpen(true)}
+        className="w-8 h-8 rounded-full text-[#3061AF] flex items-center justify-center hover:bg-white/50 transition-colors duration-300"
+      >
+        <Plus className="w-5 h-5" />
+      </button>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -51,36 +86,31 @@ const TagsCard: React.FC = () => {
           </div>
         ) : (
           <div className="space-y-2">
-            {tags.map((tag) => (
-              <div
-                key={tag.id}
-                className="flex items-center justify-between p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: tag.color || "#7CC6FF" }}
-                  />
-                  <span className="text-gray-700 dark:text-gray-300">
-                    {tag.name}
+            {tags.map((tag) => {
+              const IconComponent = ICON_MAP[tag.color as keyof typeof ICON_MAP] || ICON_MAP.Tag;
+              return (
+                <div
+                  key={tag.id}
+                  className="flex items-center justify-between p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <div className="flex items-center gap-2">
+                    <IconComponent className="w-4 h-4 text-[#355DA1] dark:text-blue-400" />
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {tag.name}
+                    </span>
+                  </div>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    {tag.item_count}
                   </span>
                 </div>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {tag.item_count}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
         
       </div>
 
-      <button
-        onClick={() => setDialogOpen(true)}
-        className="relative -left-[10px] bottom-0 w-8 h-8 rounded-full text-[#3061AF] flex items-center justify-center hover:bg-white/50 transition-colors duration-300"
-      >
-        <Plus className="w-5 h-5" />
-      </button>
+     
 
       <TagDialog
         mode="add"

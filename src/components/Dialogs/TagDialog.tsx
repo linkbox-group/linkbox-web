@@ -8,17 +8,64 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { tagService, Tag } from "@/services/tags";
+import { tagService, Tag as TagType } from "@/services/tags";
 import { useUserStore } from "@/store/userStore";
 import { toast } from "sonner";
+import {
+  Bookmark,
+  Star,
+  Heart,
+  File,
+  Folder,
+  Link,
+  Image,
+  Video,
+  Music,
+  Book,
+  Calendar,
+  Clock,
+  Mail,
+  MessageSquare,
+  Phone,
+  Home,
+  Settings,
+  User,
+  Tag as TagIcon,
+  StickyNote,
+} from "lucide-react";
 
 interface TagDialogProps {
   mode: "add" | "edit";
-  tag?: Tag;
+  tag?: TagType;
   open: boolean;
   setOpen: (open: boolean) => void;
   onSuccess: () => void;
 }
+
+const ICON_MAP = {
+  Bookmark,
+  Star,
+  Heart,
+  File,
+  Folder,
+  Link,
+  Image,
+  Video,
+  Music,
+  Book,
+  Calendar,
+  Clock,
+  Mail,
+  Message: MessageSquare,
+  Phone,
+  Home,
+  Settings,
+  User,
+  Tag: TagIcon,
+  Note: StickyNote,
+};
+
+const ICON_OPTIONS = Object.keys(ICON_MAP);
 
 const TagDialog: React.FC<TagDialogProps> = ({
   mode,
@@ -29,7 +76,7 @@ const TagDialog: React.FC<TagDialogProps> = ({
 }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [color, setColor] = useState("#7CC6FF");
+  const [selectedIcon, setSelectedIcon] = useState("Tag");
   const [loading, setLoading] = useState(false);
   const { user } = useUserStore();
 
@@ -37,11 +84,11 @@ const TagDialog: React.FC<TagDialogProps> = ({
     if (mode === "edit" && tag) {
       setName(tag.name);
       setDescription(tag.description || "");
-      setColor(tag.color || "#7CC6FF");
+      setSelectedIcon(tag.color || "Tag");
     } else {
       setName("");
       setDescription("");
-      setColor("#7CC6FF");
+      setSelectedIcon("Tag");
     }
   }, [mode, tag, open]);
 
@@ -64,14 +111,14 @@ const TagDialog: React.FC<TagDialogProps> = ({
           user_id: user.id,
           name,
           description,
-          color,
+          color: selectedIcon,
         });
       } else if (mode === "edit" && tag) {
         await tagService.updateTag(tag.id, {
           user_id: user.id,
           name,
           description,
-          color,
+          color: selectedIcon,
         });
       }
 
@@ -98,7 +145,10 @@ const TagDialog: React.FC<TagDialogProps> = ({
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <label htmlFor="name" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <label
+              htmlFor="name"
+              className="text-sm font-medium text-gray-900 dark:text-gray-100"
+            >
               标签名称 *
             </label>
             <input
@@ -112,7 +162,10 @@ const TagDialog: React.FC<TagDialogProps> = ({
           </div>
 
           <div className="grid gap-2">
-            <label htmlFor="description" className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <label
+              htmlFor="description"
+              className="text-sm font-medium text-gray-900 dark:text-gray-100"
+            >
               描述
             </label>
             <textarea
@@ -125,38 +178,53 @@ const TagDialog: React.FC<TagDialogProps> = ({
           </div>
 
           <div className="grid gap-2">
-            <label htmlFor="color" className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              颜色
+            <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              图标
             </label>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                id="color"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className="h-8 w-8 rounded-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 cursor-pointer p-0"
-              />
-              <span className="text-sm text-gray-500 dark:text-gray-400">{color}</span>
+            <div className="grid grid-cols-10 gap-2 p-2 border rounded-md border-gray-200 dark:border-gray-600">
+              {ICON_OPTIONS.map((iconName) => {
+                const IconComponent =
+                  ICON_MAP[iconName as keyof typeof ICON_MAP];
+                return (
+                  <button
+                    key={iconName}
+                    onClick={() => setSelectedIcon(iconName)}
+                    className={`p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                      selectedIcon === iconName
+                        ? "bg-blue-100 dark:bg-blue-900"
+                        : ""
+                    }`}
+                  >
+                    <IconComponent className="w-4 h-4" />
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
         <DialogFooter>
-          <Button 
+          <Button
             variant="outline"
-            onClick={() => setOpen(false)} 
+            onClick={() => setOpen(false)}
             disabled={loading}
             className="bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-600"
           >
             取消
           </Button>
-          <Button 
+          <Button
             variant="default"
-            onClick={handleSubmit} 
+            onClick={handleSubmit}
             disabled={loading}
             className="bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600"
           >
-            {loading ? (mode === "add" ? "创建中..." : "更新中...") : mode === "add" ? "创建" : "更新"}
+            {loading
+              ? mode === "add"
+                ? "创建中..."
+                : "更新中..."
+              : mode === "add"
+              ? "创建"
+              : "更新"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -164,4 +232,4 @@ const TagDialog: React.FC<TagDialogProps> = ({
   );
 };
 
-export default TagDialog; 
+export default TagDialog;
