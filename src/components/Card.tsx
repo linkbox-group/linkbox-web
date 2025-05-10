@@ -9,7 +9,7 @@ interface CardProps {
   tag_names: string[];
   folderPath: string;
   link: string;
-  type?: "1" | "2"; // 1: 链接, 2: 笔记
+  type?: "LINK" | "NOTE";
   note?: string;
   onEdit?: () => void;
   onDelete?: () => void;

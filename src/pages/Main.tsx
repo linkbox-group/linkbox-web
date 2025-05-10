@@ -21,6 +21,9 @@ import {
   List,
   Bookmark,
   CheckIcon,
+  LayoutGrid,
+  LayoutList,
+  Tags,
 } from "lucide-react";
 import {
   Pagination,
@@ -38,7 +41,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Main: React.FC = () => {
-  const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     window.innerWidth < 768
   );
@@ -429,7 +431,7 @@ const Main: React.FC = () => {
             ))}
           </div>
         );
-      case "tag":
+      case "ai":
         return (
           <div className="flex-1 w-full overflow-hidden min-h-[70vh]">
             <TagView items={items} />
@@ -549,10 +551,12 @@ const Main: React.FC = () => {
                 className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100 select-none"
                 onClick={() => handleModeChange()}
               >
-                {mode === "waterfall" ? (
-                  <Grid className="w-5 h-5" />
+                {mode === "all" ? (
+                  <LayoutList className="w-5 h-5" />
+                ) : mode === "line" ? (
+                  <LayoutGrid className="w-5 h-5" />
                 ) : (
-                  <List className="w-5 h-5" />
+                  <Tags className="w-5 h-5" />
                 )}
                 <span>模式</span>
               </div>

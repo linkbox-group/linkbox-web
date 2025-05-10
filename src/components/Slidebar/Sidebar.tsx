@@ -20,7 +20,6 @@ const Sidebar: React.FC<SidebarProps> = ({
   collapsed,
   onSelectedCard,
   parentCode,
-  setCurrentOrganizationId,
 }) => {
   const [activeTab, setActiveTab] = useState("favorites");
   const swiperRef = useRef<any>(null);
@@ -51,9 +50,9 @@ const Sidebar: React.FC<SidebarProps> = ({
               slidesPerView={1}
               initialSlide={0}
               onSlideChange={(swiper) => {
-                const types = ["favorites", "ai", "tags", "trash"];
-                setActiveTab(types[swiper.activeIndex]);
-                onSelectedCard(types[swiper.activeIndex]);
+                const types = ["favorites", "ai", "tags"];
+                const currentType = types[swiper.activeIndex];
+                handleTabChange(currentType, swiper.activeIndex);
               }}
               className="!h-full !w-full"
             >

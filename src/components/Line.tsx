@@ -7,7 +7,7 @@ interface LineProps {
   tags: string[];
   folderPath: string;
   link: string;
-  type?: "1" | "2"; // 1: 链接, 2: 笔记
+  type?: "LINK" | "NOTE"; // 修改类型定义与 Card 保持一致
   note?: string;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -19,12 +19,12 @@ const Line: React.FC<LineProps> = ({
   tags,
   folderPath,
   link,
-  type = "1",
+  type = "LINK",
   note,
   onEdit,
   onDelete,
 }) => {
-  const isNote = type === "2";
+  const isNote = type === "NOTE";
 
   return (
     <div className="flex items-center py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-200 dark:border-gray-700">

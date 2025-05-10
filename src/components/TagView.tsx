@@ -11,6 +11,8 @@ interface CardItem {
   tag_names: string[];
   folderPath: string;
   link: string;
+  type?: "LINK" | "NOTE";
+  note?: string;
 }
 
 interface TagViewProps {
@@ -53,6 +55,8 @@ const TagView: React.FC<TagViewProps> = ({ items }) => {
                 tag_names={item.tag_names}
                 folderPath={item.folderPath}
                 link={item.link}
+                type={item.type}
+                note={item.note}
               />
             ))}
           </div>
@@ -91,6 +95,8 @@ const TagView: React.FC<TagViewProps> = ({ items }) => {
                     tag_names={item.tag_names}
                     folderPath={item.folderPath}
                     link={item.link}
+                    type={item.type}
+                    note={item.note}
                   />
                 ))}
               </div>
