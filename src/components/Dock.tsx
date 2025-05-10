@@ -58,9 +58,9 @@ const Dock = () => {
                   }}
                 >
                   <div className="relative">
-                    <img 
-                      src="/linkbox-helper.png" 
-                      alt="微信二维码" 
+                    <img
+                      src="/linkbox-helper.png"
+                      alt="微信二维码"
                       className="max-w-none w-40 sm:w-50 object-contain rounded-lg"
                     />
                     {/* 小三角形指示器 */}
@@ -94,7 +94,7 @@ const Dock = () => {
                 服务协议
               </div>
               <div className="relative">
-                <div 
+                <div
                   className="text-[#4F89FD] text-base sm:text-lg md:text-2xl cursor-pointer hover:text-[#2A6ADF] transition-colors"
                   onMouseOver={handleFeedbackHover}
                   onMouseOut={handleFeedbackLeave}
@@ -115,9 +115,9 @@ const Dock = () => {
                   }}
                 >
                   <div className="relative">
-                    <img 
-                      src="/group.png" 
-                      alt="反馈群二维码" 
+                    <img
+                      src="/group.png"
+                      alt="反馈群二维码"
                       className="max-w-none w-40 sm:w-50 object-contain rounded-lg"
                     />
                     {/* 小三角形指示器 */}
@@ -146,7 +146,17 @@ const Dock = () => {
                   加入我们内测群，获得更多信息
                 </div>
               </div>
+
+            
             </div>
+            <a
+                href="http://beian.miit.gov.cn/"
+                target="_blank"
+                rel="nofollow noopener"
+                className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              >
+                赣ICP备2022001931号
+              </a>
           </div>
         </div>
       </div>
@@ -154,4 +164,4 @@ const Dock = () => {
   );
 };
 
-export default Dock; 
+export default Dock;
