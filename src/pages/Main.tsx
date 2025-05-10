@@ -14,7 +14,7 @@ import { organizationService } from "@/services/organization";
 import { useUserStore } from "@/store/userStore";
 import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
-import { Archive, Grid, ArrowUpDown, List, Bookmark } from "lucide-react";
+import { Archive, Grid, ArrowUpDown, List, Bookmark, CheckIcon } from "lucide-react";
 import {
   Pagination,
   PaginationContent,
@@ -24,11 +24,11 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
@@ -483,9 +483,9 @@ const Main: React.FC = () => {
               </div>
               <div
                 className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100 select-none"
-                onClick={handleModeChange}
+                onClick={() => handleModeChange()}
               >
-                {mode === "all" ? (
+                {mode === "waterfall" ? (
                   <Grid className="w-5 h-5" />
                 ) : (
                   <List className="w-5 h-5" />
@@ -493,16 +493,22 @@ const Main: React.FC = () => {
                 <span>模式</span>
               </div>
               <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 select-none">
-                <Select onValueChange={handleSortChange}>
-                  <SelectTrigger className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 border-0 bg-transparent p-0 h-auto cursor-pointer select-none">
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 cursor-pointer select-none">
                     <ArrowUpDown className="w-5 h-5" />
                     <span>排序</span>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="time">时间排序</SelectItem>
-                    <SelectItem value="title">标题排序</SelectItem>
-                  </SelectContent>
-                </Select>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => handleSortChange("time")}>
+                      <CheckIcon className={`w-4 h-4 mr-2 ${sortField === "created_at" ? "opacity-100" : "opacity-0"}`} />
+                      时间排序
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleSortChange("title")}>
+                      <CheckIcon className={`w-4 h-4 mr-2 ${sortField === "title" ? "opacity-100" : "opacity-0"}`} />
+                      标题排序
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
             <div className="flex-1 flex flex-col min-h-[calc(100vh-12rem)]">
