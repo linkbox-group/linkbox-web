@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { CardItem } from "@/types";
 import Card from "@/components/Main/Card";
 import Line from "@/components/Main/Line";
