@@ -4,6 +4,7 @@ import AISuggestionCard from "./Cards/AISuggestionCard";
 import AllFavoritesCard from "./Cards/TagsCard";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { FolderClosed, Bot, Tag, Trash2 } from "lucide-react";
+import { useItemManagement } from "@/hooks/useItemManagement";
 
 // 导入 Swiper 样式
 // @ts-ignore
@@ -11,22 +12,22 @@ import "swiper/css";
 
 interface SidebarProps {
   collapsed: boolean;
-  onSelectedCard: (mode: string) => void;
   parentCode: string;
-  setCurrentOrganizationId: (code: string) => void;
 }
+
+type TabType = "line" | "tag" | "all";
 
 const Sidebar: React.FC<SidebarProps> = ({
   collapsed,
-  onSelectedCard,
   parentCode,
 }) => {
   const [activeTab, setActiveTab] = useState("favorites");
   const swiperRef = useRef<any>(null);
+  const { handleViewModeChange, handlePageModeChange } = useItemManagement();
 
   const handleTabChange = (tabType: string, index: number) => {
     setActiveTab(tabType);
-    onSelectedCard(tabType);
+    handleViewModeChange(tabType as TabType);
     if (swiperRef.current && swiperRef.current.swiper) {
       swiperRef.current.swiper.slideTo(index);
     }
@@ -35,8 +36,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div
       className={`h-full transition-all duration-300 ${
-        collapsed 
-          ? "w-0 opacity-0 overflow-hidden" 
+        collapsed
+          ? "w-0 opacity-0 overflow-hidden"
           : "w-64 sm:w-64 md:w-68 lg:w-72 opacity-100"
       }`}
       data-testid="sidebar"
@@ -50,7 +51,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               slidesPerView={1}
               initialSlide={0}
               onSlideChange={(swiper) => {
-                const types = ["favorites", "ai", "tags"];
+                const types = ["favorites", "ai", "tags", "trash"];
                 const currentType = types[swiper.activeIndex];
                 handleTabChange(currentType, swiper.activeIndex);
               }}
@@ -58,9 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             >
               <SwiperSlide className="!w-full !h-full">
                 <div className="h-full w-full overflow-auto">
-                  <FavoritesCard
-                    parentCode={parentCode}
-                  />
+                  <FavoritesCard parentCode={parentCode} />
                 </div>
               </SwiperSlide>
 
@@ -75,12 +74,22 @@ const Sidebar: React.FC<SidebarProps> = ({
                   <AllFavoritesCard />
                 </div>
               </SwiperSlide>
+
+              <SwiperSlide className="!w-full !h-full">
+                <div className="h-full w-full overflow-auto">
+                  {/* 回收站内容将在 Main 组件中显示 */}
+                </div>
+              </SwiperSlide>
             </Swiper>
           </div>
 
           {/* 垃圾桶按钮固定在左下角 */}
           <div className="absolute bottom-0 left-0 z-10 py-2 ml-2">
-            <TabButton icon={Trash2} active={activeTab === "trash"} />
+            <TabButton
+              icon={Trash2}
+              active={false}
+              onClick={() => handlePageModeChange("trash")}
+            />
           </div>
 
           {/* 底部导航栏 */}

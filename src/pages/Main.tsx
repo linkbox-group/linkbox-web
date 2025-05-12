@@ -13,13 +13,19 @@ import { useLayout } from "@/hooks/useLayout";
 import { useItemManagement } from "@/hooks/useItemManagement";
 import { useContentDialogs } from "@/hooks/useContentDialogs";
 import { useOrganizationDialogs } from "@/hooks/useOrganizationDialogs";
+import { useTrashManagement } from "@/hooks/useTrashManagement";
+
+type ViewMode = "line" | "tag" | "all";
 
 const Main: React.FC = () => {
   const { user } = useUserStore();
-  const { currentOrganizationId, setCurrentOrganizationId } = useAppStore();
+  const { currentOrganizationId } = useAppStore();
 
-  const { sidebarCollapsed, setSidebarCollapsed, columns, mode, handleModeChange } = useLayout();
+  const { sidebarCollapsed, setSidebarCollapsed, columns } = useLayout();
   const {
+    viewMode,
+    handleViewModeChange,
+    pageMode,
     loading,
     items,
     currentPage,
@@ -27,11 +33,19 @@ const Main: React.FC = () => {
     sortField,
     isSearching,
     searchKeyword,
-    fetchItemsRef,
     fetchItems,
     handleSearch,
     handleSortChange,
   } = useItemManagement();
+
+  // 回收站管理相关
+  const {
+    trashItems,
+    loading: trashLoading,
+    fetchTrashItems,
+    handleRecover,
+    handlePermanentDelete,
+  } = useTrashManagement();
 
   // 内容对话框相关
   const {
@@ -58,20 +72,12 @@ const Main: React.FC = () => {
     handleDeleteOrganizationConfirm,
   } = useOrganizationDialogs();
 
-  // 组件加载时获取数据
+  // 监听模式变化，如果是回收站模式则获取回收站数据
   useEffect(() => {
-    if (!fetchItemsRef.current) {
-      fetchItems();
-      fetchItemsRef.current = true;
+    if (pageMode === "trash") {
+      fetchTrashItems();
     }
-  }, []);
-
-  // 监听组织变化
-  useEffect(() => {
-    if (fetchItemsRef.current) {
-      fetchItems(1);
-    }
-  }, [currentOrganizationId]);
+  }, [pageMode]);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -100,33 +106,33 @@ const Main: React.FC = () => {
         >
           <Sidebar
             collapsed={sidebarCollapsed}
-            onSelectedCard={handleModeChange}
             parentCode={currentOrganizationId}
-            setCurrentOrganizationId={setCurrentOrganizationId}
           />
         </div>
         <div className="flex-1 flex flex-col overflow-hidden h-full">
           <div className="flex-1 overflow-auto p-4 flex flex-col h-full">
             <MainHeader
-              mode={mode}
-              onModeChange={handleModeChange}
+              mode={viewMode}
+              onModeChange={(mode: ViewMode) => handleViewModeChange(mode)}
               onSortChange={handleSortChange}
-              onRefresh={() => fetchItems(1)}
+              onRefresh={() => pageMode === "trash" ? fetchTrashItems() : fetchItems(1)}
               sortField={sortField}
             />
             <MainContent
-              mode={mode}
-              loading={loading}
+              loading={pageMode === "trash" ? trashLoading : loading}
               items={items}
+              trashItems={trashItems}
               columns={columns}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onRecover={handleRecover}
+              onPermanentDelete={handlePermanentDelete}
             />
             <MainPagination
               currentPage={currentPage}
               totalPages={totalPages}
               onPageChange={handlePageChange}
-              showPagination={!loading && items.length > 0}
+              showPagination={!loading && items.length > 0 && pageMode !== "trash"}
             />
             {/* 备案信息 */}
             <div className="h-8 flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-800 w-full mt-auto">

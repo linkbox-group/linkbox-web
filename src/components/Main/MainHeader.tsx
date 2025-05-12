@@ -14,9 +14,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+type ViewMode = "line" | "tag" | "all";
+
 interface MainHeaderProps {
-  mode: string;
-  onModeChange: () => void;
+  mode: ViewMode;
+  onModeChange: (mode: ViewMode) => void;
   onSortChange: (value: string) => void;
   onRefresh: () => void;
   sortField: "created_at" | "title";
@@ -29,6 +31,17 @@ const MainHeader: React.FC<MainHeaderProps> = ({
   onRefresh,
   sortField,
 }) => {
+  const nextMode = (): ViewMode => {
+    switch (mode) {
+      case "all":
+        return "line";
+      case "line":
+        return "tag";
+      default:
+        return "all";
+    }
+  };
+
   return (
     <div className="flex items-center justify-end gap-4 mb-4">
       <div
@@ -40,7 +53,7 @@ const MainHeader: React.FC<MainHeaderProps> = ({
       </div>
       <div
         className="flex items-center gap-2 text-gray-600 dark:text-gray-300 cursor-pointer hover:text-gray-800 dark:hover:text-gray-100 select-none"
-        onClick={() => onModeChange()}
+        onClick={() => onModeChange(nextMode())}
       >
         {mode === "all" ? (
           <LayoutGrid className="w-5 h-5" />

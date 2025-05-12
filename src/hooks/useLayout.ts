@@ -4,7 +4,6 @@ export const useLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     window.innerWidth < 768
   );
-  const [mode, setMode] = useState<string>("all");
   const [columns, setColumns] = useState(
     window.innerWidth < 640
       ? 1
@@ -32,19 +31,9 @@ export const useLayout = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleModeChange = (modeString?: string) => {
-    if (modeString) {
-      setMode(modeString);
-    } else {
-      setMode(mode === "all" ? "line" : "all");
-    }
-  };
-
   return {
     sidebarCollapsed,
     setSidebarCollapsed,
     columns,
-    mode,
-    handleModeChange,
   };
 };

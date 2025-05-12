@@ -12,7 +12,7 @@ const Introduce = () => {
   const handleEnterClick = () => {
     setIsTransitioning(true);
     setOverlayOpacity(0);
-    
+
     // 等待动画完成后再移除遮罩层
     setTimeout(() => {
       setShowOverlay(false);
@@ -32,9 +32,9 @@ const Introduce = () => {
     >
       {/* 遮罩层 */}
       {showOverlay && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] flex items-center justify-center transition-all duration-800 ease-in-out"
-          style={{ 
+          style={{
             opacity: overlayOpacity,
             transform: `scale(${overlayOpacity === 0 ? 1.05 : 1})`,
           }}
@@ -42,7 +42,9 @@ const Introduce = () => {
           {/* 背景图像 */}
           <div
             className="absolute inset-0"
-            style={{ backgroundImage: `url(/introbg.png)`, backgroundSize: "100% auto",
+            style={{
+              backgroundImage: `url(/introbg.png)`,
+              backgroundSize: "100% auto",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center top",
             }}
@@ -87,17 +89,177 @@ const Introduce = () => {
               <p className="text-xl text-[#002DB5]">下一站</p>
               <img src="/logo-write.svg" alt="next" className="w-55 mt-5" />
             </div>
-            <div className="absolute bottom-[123px] w-full flex justify-center cursor-pointer hover:scale-[1.03] transition-transform duration-300" onClick={handleEnterClick}>
-              <img src="/chair-enter.svg" alt="enter" className="w-full sm:w-2/5" />
-            </div>
             {/* 底部蓝色长条 */}
             <div className="absolute h-[123px] bg-[#3C76C7]/60 left-0 bottom-0 w-full" />
+            {/* SVG 容器 */}
+            <div className="absolute w-full flex justify-center" style={{ bottom: '123px' }}>
+              <svg
+                width="416"
+                height="284"
+                viewBox="0 0 416 284"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="relative translate-y-[2px] sm:translate-y-[0px]"
+              >
+                <rect
+                  width="6"
+                  height="142"
+                  transform="matrix(-1 0 0 1 319 112)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="4"
+                  height="145"
+                  transform="matrix(-1 0 0 1 306 112)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="69"
+                  height="2"
+                  transform="matrix(-1 0 0 1 323 149)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="3"
+                  height="152"
+                  transform="matrix(-1 0 0 1 312 102)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <ellipse
+                  cx="20"
+                  cy="19"
+                  rx="20"
+                  ry="19"
+                  transform="matrix(-1 0 0 1 330 70)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="160"
+                  height="5"
+                  rx="1"
+                  transform="matrix(-1 0 0 1 290 231)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="160"
+                  height="5"
+                  rx="1"
+                  transform="matrix(-1 0 0 1 290 237)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="3"
+                  height="19"
+                  transform="matrix(-1 0 0 1 273 235)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="3"
+                  height="19"
+                  transform="matrix(-1 0 0 1 152 235)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="3"
+                  height="26"
+                  transform="matrix(-1 0 0 1 266 208)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="3"
+                  height="28"
+                  transform="matrix(-1 0 0 1 160 206)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="143"
+                  height="5"
+                  rx="1"
+                  transform="matrix(-1 0 0 1 283 216)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="143"
+                  height="5"
+                  rx="1"
+                  transform="matrix(-1 0 0 1 283 222)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="143"
+                  height="5"
+                  rx="1"
+                  transform="matrix(-1 0 0 1 283 210)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <rect
+                  width="143"
+                  height="5"
+                  rx="1"
+                  transform="matrix(-1 0 0 1 283 204)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <g 
+                  onClick={handleEnterClick}
+                  className="cursor-pointer transition-all duration-300 hover:opacity-80"
+                  style={{ transform: "translate(127px, 113px)" }}
+                >
+                  <rect
+                    width="166"
+                    height="41"
+                    rx="3"
+                    fill="#3C76C7"
+                    fillOpacity="0.66"
+                    className="transition-all duration-300 hover:fill-[#2A6ADF]"
+                  />
+                  <text
+                    x="83"
+                    y="23"
+                    fill="white"
+                    fontSize="20"
+                    fontFamily="Inter"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    className="select-none font-medium"
+                  >
+                    点击进入
+                  </text>
+                </g>
+                <rect
+                  width="69"
+                  height="2"
+                  transform="matrix(-1 0 0 1 323 116)"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+                <path
+                  d="M87 254C65.4 254 58.6667 274 58 284H378C378 260.8 358.667 254.333 349 254H87Z"
+                  fill="#3C76C7"
+                  fill-opacity="0.66"
+                />
+              </svg>
+            </div>
           </div>
         </div>
       )}
 
       {/* 主内容，添加入场动画 */}
-      <div className={`${isTransitioning ? 'animate-fadeIn' : ''}`}>
+      <div className={`${isTransitioning ? "animate-fadeIn" : ""}`}>
         {/* 顶部导航栏 */}
         <div className="w-full h-12 bg-white shadow-sm flex items-center justify-between px-4 fixed top-0 z-50">
           <div className="flex items-center gap-2">
@@ -150,7 +312,11 @@ const Introduce = () => {
                 收藏后还能通过对话式小助手，获得灵感总结与整理建议，让知识管理更高效
               </p>
             </div>
-            <img src="/intro1.png" alt="intro1" className="rounded-lg w-10/12" />
+            <img
+              src="/intro1.png"
+              alt="intro1"
+              className="rounded-lg w-10/12"
+            />
           </div>
 
           {/* 智能归类部分 */}
@@ -213,8 +379,9 @@ const Introduce = () => {
       </div>
 
       {/* 添加动画样式 */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
           @keyframes fadeIn {
             from {
               opacity: 0;
@@ -237,8 +404,9 @@ const Introduce = () => {
           .duration-800 {
             transition-duration: 800ms;
           }
-        `
-      }} />
+        `,
+        }}
+      />
     </div>
   );
 };

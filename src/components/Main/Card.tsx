@@ -49,7 +49,7 @@ const Card: React.FC<CardProps> = ({
           ) : (
             <Link className="w-5 h-5 text-blue-500 flex-shrink-0" />
           )}
-          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 break-words flex-1 min-h-0 h-auto whitespace-normal overflow-hidden max-w-[calc(100%-4rem)]">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 break-all flex-1 min-h-0 h-auto whitespace-normal overflow-hidden max-w-[calc(100%-4rem)]">
             {title}
           </h3>
         </div>

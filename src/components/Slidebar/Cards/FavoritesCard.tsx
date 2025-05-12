@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FolderClosed,
   Plus,
   ChevronRight,
-  Ellipsis,
   Trash2,
   Search,
   X,
@@ -12,6 +11,7 @@ import {
 import { organizationService, Organization } from "@/services/organization";
 import { useUserStore } from "@/store/userStore";
 import { useAppStore } from "@/store/appStore";
+import { useItemManagement } from "@/hooks/useItemManagement";
 import OrganizationDialog from "@/components/Dialogs/OrganizationDialog";
 import ConfirmDialog from "@/components/Dialogs/ConfirmDialog";
 import { cn } from "@/lib/utils";
@@ -38,13 +38,14 @@ interface FavoritesCardProps {
   parentCode: string;
 }
 
-const FavoritesCard: React.FC<FavoritesCardProps> = ({
-  parentCode,
-}) => {
+const FavoritesCard: React.FC<FavoritesCardProps> = ({ parentCode }) => {
   const { user } = useUserStore();
   const { selectOrganization, setCurrentOrganizationId } = useAppStore();
+  const {  handlePageModeChange } = useItemManagement();
   const [organizations, setOrganizations] = useState<FileTreeNode[]>([]);
-  const [filteredOrganizations, setFilteredOrganizations] = useState<FileTreeNode[]>([]);
+  const [filteredOrganizations, setFilteredOrganizations] = useState<
+    FileTreeNode[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -251,9 +252,11 @@ const FavoritesCard: React.FC<FavoritesCardProps> = ({
           <FolderClosed className="w-5 h-5 text-[#355DA1] dark:text-blue-400" />
           <span
             className="text-[#355DA1] dark:text-blue-400 font-bold cursor-pointer hover:text-blue-600 dark:hover:text-blue-300"
-            onClick={() => {
+            onClick={async () => {
               setCurrentOrganizationId("0");
-              selectOrganization("0");
+              await selectOrganization("0");
+              fetchOrganizations();
+              handlePageModeChange("normal");
             }}
           >
             我的收藏集

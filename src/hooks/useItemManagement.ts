@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { itemService, Item } from "@/services/items";
 import { useAppStore } from "@/store/appStore";
 import { toast } from "sonner";
@@ -7,16 +7,41 @@ export const useItemManagement = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [sortField, setSortField] = useState<"created_at" | "title">(
-    "created_at"
-  );
+  const [sortField, setSortField] = useState<"created_at" | "title">("created_at");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const pageSize = 10;
   const fetchItemsRef = useRef(false);
+  const prevOrganizationIdRef = useRef<string | null>(null);
 
-  const { items, setItems, deleteItem, currentOrganizationId } = useAppStore();
+  const { 
+    items, 
+    setItems, 
+    deleteItem, 
+    currentOrganizationId,
+    viewMode,
+    pageMode,
+    setViewMode,
+    setPageMode
+  } = useAppStore();
+
+  // 监听组织变化和初始化
+  useEffect(() => {
+    // 如果是第一次加载
+    if (!fetchItemsRef.current) {
+      fetchItems();
+      fetchItemsRef.current = true;
+      prevOrganizationIdRef.current = currentOrganizationId;
+      return;
+    }
+
+    // 如果组织ID发生变化
+    if (prevOrganizationIdRef.current !== currentOrganizationId) {
+      prevOrganizationIdRef.current = currentOrganizationId;
+      fetchItems(1);
+    }
+  }, [currentOrganizationId]);
 
   const fetchItems = async (
     page: number = 1,
@@ -150,6 +175,14 @@ export const useItemManagement = () => {
     fetchItems(1, newSortField, newSortDirection);
   };
 
+  const handleViewModeChange = (mode: "line" | "tag" | "all") => {
+    setViewMode(mode);
+  };
+
+  const handlePageModeChange = (mode: "normal" | "trash") => {
+    setPageMode(mode);
+  };
+
   return {
     loading,
     items,
@@ -165,5 +198,9 @@ export const useItemManagement = () => {
     handleSortChange,
     setCurrentPage,
     deleteItem,
+    viewMode,
+    pageMode,
+    handleViewModeChange,
+    handlePageModeChange,
   };
 };

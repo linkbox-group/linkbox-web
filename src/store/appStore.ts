@@ -3,6 +3,9 @@ import { AppState } from "./types";
 import { CardItem } from "@/types";
 import { itemService } from "@/services/items";
 
+type ViewMode = "line" | "tag" | "all";
+type PageMode = "normal" | "trash";
+
 // 生成随机ID
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -76,6 +79,8 @@ interface AppStore {
   app: AppState;
   items: CardItem[];
   currentOrganizationId: string;
+  viewMode: ViewMode;
+  pageMode: PageMode;
   setLoading: (isLoading: boolean) => void;
   toggleSidebar: () => void;
   setIsMobile: (isMobile: boolean) => void;
@@ -85,6 +90,8 @@ interface AppStore {
   deleteItem: (id: string | number) => void;
   setCurrentOrganizationId: (id: string) => void;
   selectOrganization: (organizationId: string) => Promise<void>;
+  setViewMode: (mode: ViewMode) => void;
+  setPageMode: (mode: PageMode) => void;
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -100,6 +107,10 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   // 当前选中的组织ID
   currentOrganizationId: "0",
+
+  // 视图模式
+  viewMode: "all",
+  pageMode: "normal",
 
   // 设置加载状态
   setLoading: (isLoading) =>
@@ -162,39 +173,18 @@ export const useAppStore = create<AppStore>((set, get) => ({
         app: { ...state.app, isLoading: true },
         currentOrganizationId: organizationId,
       }));
-
-      const response = await itemService.getOrganizationItems({
-        organization_id: organizationId,
-        page: 1,
-        page_size: 10,
-        sort_field: "created_at",
-        sort_direction: "desc",
-      });
-
-      if (response.data?.items) {
-        const items = response.data.items.map((item: any) => ({
-          id: item.id,
-          height: 300,
-          title: item.title,
-          favoriteTime: item.created_at,
-          tags: item.tag_names || [],
-          tag_names: item.tag_names || [],
-          folderPath: item.organization_path || "未分类",
-          link: item.url,
-          type: item.type,
-          note: item.note,
-        }));
-        set({ items });
-      } else {
-        set({ items: [] });
-      }
     } catch (error) {
-      console.error("获取组织内容失败:", error);
-      set({ items: [] });
+      console.error("选择组织失败:", error);
     } finally {
       set((state) => ({
         app: { ...state.app, isLoading: false },
       }));
     }
   },
+
+  // 设置视图模式
+  setViewMode: (mode) => set({ viewMode: mode }),
+
+  // 设置页面模式
+  setPageMode: (mode) => set({ pageMode: mode }),
 }));

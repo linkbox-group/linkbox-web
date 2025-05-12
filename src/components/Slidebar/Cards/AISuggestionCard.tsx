@@ -22,6 +22,7 @@ const AISuggestionCard: React.FC = () => {
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<{ close: () => void } | null>(null);
   const currentMessageContentRef = useRef<string>("");
+  const hasInitializedRef = useRef(false);
 
   // 生成唯一 ID 的函数
   const generateUniqueId = () => {
@@ -31,6 +32,9 @@ const AISuggestionCard: React.FC = () => {
   // 获取历史消息
   useEffect(() => {
     const fetchMessages = async () => {
+      if (hasInitializedRef.current) return;
+      hasInitializedRef.current = true;
+      
       try {
         const response = await aiService.getChatList();
         if (response.code === 20000) {
