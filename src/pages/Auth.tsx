@@ -129,18 +129,23 @@ const Auth: React.FC = () => {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-300 relative"
-      style={{
-        backgroundImage: `url(/introbg.png)`,
-        backgroundSize: "100% auto",
-        backgroundRepeat: "no-repeat",
-        backgroundPosition: "center top",
-      }}
+      className="min-h-screen flex items-center justify-center relative"
     >
-      <div className="absolute inset-0 bg-black/50 dark:bg-black/70"></div>
-      <div className="w-[90%] sm:w-[400px] space-y-6 p-3 sm:p-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg shadow transition-colors duration-300 relative z-10">
+      {/* 模糊背景层 */}
+      <div 
+        className="absolute inset-0 bg-gray-50 dark:bg-gray-900"
+        style={{
+          backgroundImage: `url(/authbg.png)`,
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
+          filter: "blur(4px)",
+        }}
+      />
+      {/* 内容层 */}
+      <div className="w-[90%] sm:w-[400px] space-y-6 p-3 sm:p-8 bg-[#7A9ECC]/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg shadow transition-colors duration-300 relative z-10">
         <div>
-          <h2 className="mt-4 text-center text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+          <h2 className="mt-4 text-center text-2xl sm:text-3xl font-extrabold text-white dark:text-gray-100">
             {isLogin ? "登录 LinkBox" : "注册 LinkBox"}
           </h2>
         </div>
@@ -155,7 +160,7 @@ const Auth: React.FC = () => {
                 name="email"
                 type="email"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-white dark:bg-gray-700 transition-colors duration-300"
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-white/70 dark:placeholder-white/50 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-[#B1C4E2] dark:bg-gray-700 transition-colors duration-300"
                 placeholder="邮箱"
                 value={formData.email}
                 onChange={handleChange}
@@ -172,7 +177,7 @@ const Auth: React.FC = () => {
                     name="code"
                     type="text"
                     required
-                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-white dark:bg-gray-700 transition-colors duration-300"
+                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-white/70 dark:placeholder-white/50 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-[#B1C4E2] dark:bg-gray-700 transition-colors duration-300"
                     placeholder="验证码"
                     value={formData.code}
                     onChange={handleChange}
@@ -182,7 +187,7 @@ const Auth: React.FC = () => {
                   type="button"
                   onClick={handleSendCode}
                   disabled={sendingCode || countdown > 0}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 transition-colors duration-300"
+                  className="px-4 py-2 text-sm font-medium text-gray-800 bg-[#EEF8FF] hover:bg-[#E0F0FF] dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 transition-colors duration-300"
                 >
                   {sendingCode ? (
                     <Loader2 className="animate-spin h-5 w-5" />
@@ -203,7 +208,7 @@ const Auth: React.FC = () => {
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-white dark:bg-gray-700 transition-colors duration-300"
+                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-white/70 dark:placeholder-white/50 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-[#B1C4E2] dark:bg-gray-700 transition-colors duration-300"
                 placeholder="密码"
                 value={formData.password}
                 onChange={handleChange}
@@ -219,7 +224,7 @@ const Auth: React.FC = () => {
                   name="confirm_password"
                   type="password"
                   required
-                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-white dark:bg-gray-700 transition-colors duration-300"
+                  className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-white/70 dark:placeholder-white/50 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 focus:z-10 sm:text-sm bg-[#B1C4E2] dark:bg-gray-700 transition-colors duration-300"
                   placeholder="确认密码"
                   value={formData.confirm_password}
                   onChange={handleChange}
@@ -232,7 +237,7 @@ const Auth: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 transition-colors duration-300"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-gray-800 bg-[#EEF8FF] hover:bg-[#E0F0FF] dark:bg-blue-500 dark:hover:bg-blue-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 disabled:opacity-50 transition-colors duration-300"
             >
               {loading ? (
                 <span className="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -246,7 +251,7 @@ const Auth: React.FC = () => {
           <div className="text-center">
             <button
               type="button"
-              className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-300"
+              className="text-sm text-white hover:text-[#EEF8FF] dark:text-gray-200 dark:hover:text-white transition-colors duration-300"
               onClick={toggleMode}
             >
               {isLogin ? "没有账户？注册" : "已有账户？登录"}
