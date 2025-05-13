@@ -41,7 +41,7 @@ const Dock = () => {
                   <img
                     src="/wechat.svg"
                     alt="微信"
-                    className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6"
+                    className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10"
                   />
                 </div>
                 {/* 微信二维码弹出框 */}
@@ -78,7 +78,7 @@ const Dock = () => {
                   }
                   src="/xhs.svg"
                   alt="小红书"
-                  className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6"
+                  className="w-6 sm:w-8 md:w-10 h-6 sm:h-8 md:h-10"
                 />
               </div>
               <div className="text-[#6190EE] text-xs sm:text-sm md:text-base lg:text-lg cursor-pointer hover:text-[#2A6ADF] transition-colors whitespace-nowrap">

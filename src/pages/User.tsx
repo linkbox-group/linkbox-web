@@ -157,30 +157,6 @@ export default function User() {
     [hoverTimeout]
   );
 
-  const handleWechatLeave = useCallback(() => {
-    if (hoverTimeout) {
-      clearTimeout(hoverTimeout);
-    }
-
-    const timeout = setTimeout(() => {
-      setShowWechatPopup(false);
-    }, 100);
-
-    setHoverTimeout(timeout);
-  }, [hoverTimeout]);
-
-  const handleFeedbackLeave = useCallback(() => {
-    if (hoverTimeout) {
-      clearTimeout(hoverTimeout);
-    }
-
-    const timeout = setTimeout(() => {
-      setShowFeedbackPopup(false);
-    }, 100);
-
-    setHoverTimeout(timeout);
-  }, [hoverTimeout]);
-
   if (!user?.isLoggedIn) {
     return (
       <div className="flex justify-center items-center h-screen">加载中...</div>
@@ -237,271 +213,128 @@ export default function User() {
 
       {/* 功能按钮组 */}
       <div className="flex justify-center">
-        <div className="relative flex flex-col bg-white/50 sm:w-[70%] w-[90%] items-start px-4 py-10 sm:px-8 md:px-16 lg:px-24 mt-4  shadow-md space-y-4">
-          <button
-            className="relative w-full text-start sm:w-48 h-18 transition-all duration-200 hover:opacity-80"
-            style={{
-              color: "#5A7BB9",
-              fontSize: "32px",
-              fontFamily: "Inter",
-              fontWeight: "normal",
-              wordWrap: "break-word",
-            }}
-          >
-            基本信息
-          </button>
-
-          {/* 基本信息编辑区域 */}
-          <div className="relative w-full sm:ml-[13.75rem] md:ml-[17.75rem] lg:ml-[19.75rem] sm:w-64 p-4">
-            <div className="space-y-6">
-              {/* 用户名称 */}
-              <div className="space-y-2">
-                <div className="text-[#78A7FF]">用户名称：</div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {isEditingUsername ? (
-                    <>
-                      <input
-                        type="text"
-                        value={newUsername}
-                        onChange={(e) => setNewUsername(e.target.value)}
-                        className="w-full sm:w-[200px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5A7BB9]"
-                        autoFocus
-                      />
-                      <div className="flex gap-2 mt-2 sm:mt-0">
-                        <button
-                          onClick={handleSaveUsername}
-                          className="relative transition-all duration-200 flex-shrink-0"
-                          style={{
-                            minWidth: "81px",
-                            width: "81px",
-                            height: "27px",
-                            position: "relative",
-                            overflow: "hidden",
-                            borderRadius: "144px",
-                            outline:
-                              "1px rgba(90.13, 123.29, 184.88, 0.70) solid",
-                            outlineOffset: "-1px",
-                            color: "#5A7BB9",
-                            fontSize: "15px",
-                            fontFamily: "Inter",
-                            fontWeight: "100",
-                            wordWrap: "break-word",
-                          }}
-                        >
-                          保存
-                        </button>
-                        <button
-                          onClick={handleCancelEdit}
-                          className="relative transition-all duration-200 flex-shrink-0"
-                          style={{
-                            minWidth: "81px",
-                            width: "81px",
-                            height: "27px",
-                            position: "relative",
-                            overflow: "hidden",
-                            borderRadius: "144px",
-                            outline:
-                              "1px rgba(90.13, 123.29, 184.88, 0.70) solid",
-                            outlineOffset: "-1px",
-                            color: "#5A7BB9",
-                            fontSize: "15px",
-                            fontFamily: "Inter",
-                            fontWeight: "100",
-                            wordWrap: "break-word",
-                          }}
-                        >
-                          取消
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <input
-                        type="text"
-                        value={user.username}
-                        className="w-full sm:w-[200px] px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#5A7BB9]"
-                        readOnly
-                      />
-                      <button
-                        onClick={handleEditUsername}
-                        className="relative transition-all duration-200 flex-shrink-0 mt-2 sm:mt-0"
-                        style={{
-                          minWidth: "81px",
-                          width: "81px",
-                          height: "27px",
-                          position: "relative",
-                          overflow: "hidden",
-                          borderRadius: "144px",
-                          outline:
-                            "1px rgba(90.13, 123.29, 184.88, 0.70) solid",
-                          outlineOffset: "-1px",
-                          color: "#5A7BB9",
-                          fontSize: "15px",
-                          fontFamily: "Inter",
-                          fontWeight: "100",
-                          wordWrap: "break-word",
-                        }}
-                      >
-                        设置
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
+        <div className="relative flex flex-col bg-white/50 w-full sm:w-[926px] items-start px-4 sm:px-8 py-6 mt-4 shadow-md rounded-[6px]">
+          {/* 基本信息和账号安全的容器 */}
+          <div className="w-full flex flex-col sm:flex-row sm:gap-8">
+            {/* 基本信息 */}
+            <div className="w-full sm:w-1/2 mb-8 sm:mb-0">
+              <div className="text-[25px] text-[#888888] mb-6">基本信息</div>
 
               {/* 用户头像 */}
-              <div className="space-y-2">
-                <div className="text-[#78A7FF]">用户头像：</div>
-                <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center mb-6">
+                <span className="text-[25px] text-[#5A7BB9] font-normal ">
+                  用户头像：
+                </span>
+                <div className="w-[53px] h-[53px] bg-[#78A7FF] rounded-full overflow-hidden">
                   <img
-                    src={user.avatar || "https://via.placeholder.com/80"}
+                    src={user.avatar || "https://via.placeholder.com/53"}
                     alt="用户头像"
-                    className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-[#5A7BB9]"
+                    className="w-full h-full object-cover"
                   />
-                  <button
-                    className="relative transition-all duration-200 flex-shrink-0"
-                    style={{
-                      minWidth: "81px",
-                      width: "81px",
-                      height: "27px",
-                      position: "relative",
-                      overflow: "hidden",
-                      borderRadius: "144px",
-                      outline: "1px rgba(90.13, 123.29, 184.88, 0.70) solid",
-                      outlineOffset: "-1px",
-                      color: "#5A7BB9",
-                      fontSize: "15px",
-                      fontFamily: "Inter",
-                      fontWeight: "100",
-                      wordWrap: "break-word",
-                    }}
-                  >
-                    设置
-                  </button>
                 </div>
+                <button className="ml-4 w-[93px] h-[28px] rounded-[144px] border border-[#5A7BB9] text-[#5A7BB9] text-[16px] font-normal transition-all duration-200 hover:bg-[#5A7BB9] hover:text-white hover:scale-105">
+                  上传头像
+                </button>
+              </div>
+
+              {/* 用户名称 */}
+              <div className="flex items-center flex-wrap">
+                <span className="text-[25px] text-[#5A7BB9] font-normal ">
+                  用户名称：
+                </span>
+                {isEditingUsername ? (
+                  <>
+                    <input
+                      type="text"
+                      value={newUsername}
+                      onChange={(e) => setNewUsername(e.target.value)}
+                      className="w-[192px] h-[31px] bg-white rounded-[15.5px] border border-[#9DB0D4] px-4 text-[16px]"
+                      placeholder="用户名"
+                      autoFocus
+                    />
+                    <div className="flex gap-2 ml-4 mt-2 sm:mt-0">
+                      <button
+                        onClick={handleSaveUsername}
+                        className="w-[76px] h-[29px] rounded-[144px] border border-[#5A7BB9] text-[#5A7BB9] text-[15px] font-normal transition-all duration-200 hover:bg-[#5A7BB9] hover:text-white hover:scale-105"
+                      >
+                        保存
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="w-[76px] h-[29px] rounded-[144px] border border-[#5A7BB9] text-[#5A7BB9] text-[15px] font-normal transition-all duration-200 hover:bg-[#5A7BB9] hover:text-white hover:scale-105"
+                      >
+                        取消
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={user.username}
+                      className="w-[192px] h-[31px] bg-white rounded-[15.5px] border border-[#9DB0D4] px-4 text-[16px] text-[#BABABA]"
+                      readOnly
+                    />
+                    <button
+                      onClick={handleEditUsername}
+                      className="ml-4 w-[76px] h-[29px] rounded-[144px] border border-[#5A7BB9] text-[#5A7BB9] text-[15px] font-normal transition-all duration-200 hover:bg-[#5A7BB9] hover:text-white hover:scale-105"
+                    >
+                      设置
+                    </button>
+                  </>
+                )}
               </div>
             </div>
-          </div>
 
-          <button
-            className="relative w-full text-start sm:w-48 h-18 transition-all duration-200 hover:opacity-80"
-            style={{
-              color: "#5A7BB9",
-              fontSize: "32px",
-              fontFamily: "Inter",
-              fontWeight: "normal",
-              wordWrap: "break-word",
-            }}
-          >
-            账号与安全
-          </button>
+            {/* 账号与安全 */}
+            <div className="w-full sm:w-1/2">
+              <div className="text-[25px] text-[#888888] mb-6">账号与安全</div>
 
-          {/* 安全选项区域 */}
-          <div className="relative w-full sm:ml-[13.75rem] sm:ml-[15.75rem] md:ml-[17.75rem] lg:ml-[19.75rem] sm:w-64 p-4">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <span className="text-[#78A7FF]">修改密码</span>
+              {/* 绑定账号 */}
+              <div className="flex items-center mb-6">
+                <span className="text-[25px] text-[#5A7BB9] font-normal ">
+                  绑定账号：
+                </span>
+                <button className="w-[76px] h-[29px] rounded-[144px] border border-[#5A7BB9] text-[#5A7BB9] text-[15px] font-normal transition-all duration-200 hover:bg-[#5A7BB9] hover:text-white hover:scale-105">
+                  设置
+                </button>
+              </div>
+
+              {/* 修改密码 */}
+              <div className="flex items-center flex-wrap">
+                <span className="text-[25px] text-[#5A7BB9] font-normal ">
+                  修改密码：
+                </span>
+
                 <button
                   onClick={() => setIsChangePasswordOpen(true)}
-                  className="relative transition-all duration-200 flex-shrink-0"
-                  style={{
-                    minWidth: "81px",
-                    width: "81px",
-                    height: "27px",
-                    position: "relative",
-                    overflow: "hidden",
-                    borderRadius: "144px",
-                    outline: "1px rgba(90.13, 123.29, 184.88, 0.70) solid",
-                    outlineOffset: "-1px",
-                    color: "#5A7BB9",
-                    fontSize: "15px",
-                    fontFamily: "Inter",
-                    fontWeight: "100",
-                    wordWrap: "break-word",
-                  }}
+                  className="ml-4 w-[76px] h-[29px] rounded-[144px] border border-[#5A7BB9] text-[#5A7BB9] text-[15px] font-normal transition-all duration-200 hover:bg-[#5A7BB9] hover:text-white hover:scale-105"
                 >
                   修改
                 </button>
               </div>
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <span className="text-[#78A7FF]">绑定邮箱</span>
-                <button
-                  className="relative transition-all duration-200 flex-shrink-0"
-                  style={{
-                    minWidth: "81px",
-                    width: "81px",
-                    height: "27px",
-                    position: "relative",
-                    overflow: "hidden",
-                    borderRadius: "144px",
-                    outline: "1px rgba(90.13, 123.29, 184.88, 0.70) solid",
-                    outlineOffset: "-1px",
-                    color: "#5A7BB9",
-                    fontSize: "15px",
-                    fontFamily: "Inter",
-                    fontWeight: "100",
-                    wordWrap: "break-word",
-                  }}
-                >
-                  绑定
-                </button>
-              </div>
             </div>
           </div>
 
-          <button
-            className="relative w-full text-start sm:w-48 h-18 transition-all duration-200 hover:opacity-80"
-            style={{
-              color: "#5A7BB9",
-              fontSize: "32px",
-              fontFamily: "Inter",
-              fontWeight: "normal",
-              wordWrap: "break-word",
-            }}
-          >
-            升级Pro会员
-          </button>
+          {/* 退出登录按钮 */}
+          <div className="w-full flex justify-center mt-8">
+            <button
+              onClick={handleLogout}
+              className="w-[93px] h-[33px] rounded-[144px] border border-[#5A7BB9] text-[#5A7BB9] text-[16px] font-normal transition-all duration-200 hover:bg-[#5A7BB9] hover:text-white hover:scale-105"
+            >
+              退出登录
+            </button>
+          </div>
 
-          <button
-            className="relative w-full text-start sm:w-48 h-18 transition-all duration-200 hover:opacity-80"
-            style={{
-              color: "#5A7BB9",
-              fontSize: "32px",
-              fontFamily: "Inter",
-              fontWeight: "normal",
-              wordWrap: "break-word",
-            }}
-          >
-            反馈中心
-          </button>
-
-          <button
-            onClick={handleDeleteAccount}
-            className="relative w-full text-start sm:w-48 h-18 transition-all duration-200 hover:opacity-80"
-            style={{
-              color: "#5A7BB9",
-              fontSize: "32px",
-              fontFamily: "Inter",
-              fontWeight: "normal",
-              wordWrap: "break-word",
-            }}
-          >
-            账号注销
-          </button>
-
-          <button
-            onClick={handleLogout}
-            className="relative w-full text-start sm:w-48 h-18 transition-all duration-200 hover:opacity-80"
-            style={{
-              color: "#5A7BB9",
-              fontSize: "32px",
-              fontFamily: "Inter",
-              fontWeight: "normal",
-              wordWrap: "break-word",
-            }}
-          >
-            退出登录
-          </button>
+          {/* 账号注销 */}
+          <div className="absolute right-4 bottom-4">
+            <button
+              onClick={handleDeleteAccount}
+              className="text-[16px] text-[#98A3BC] hover:text-[#5A7BB9] transition-colors duration-200"
+            >
+              账号注销
+            </button>
+          </div>
         </div>
       </div>
       {/* 渐变分割线 */}
