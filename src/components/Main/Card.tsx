@@ -79,7 +79,7 @@ const Card: React.FC<CardProps> = ({
       {/* 笔记内容预览 */}
       {isNote && note && (
         <div className="text-sm text-gray-600 dark:text-gray-300 mb-2 break-words w-full max-w-full line-clamp-3">
-          {note.replace(/[#*`_~]/g, '')}
+          {note.replace(/[#*`_~]/g, "")}
         </div>
       )}
 

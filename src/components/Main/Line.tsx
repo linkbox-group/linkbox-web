@@ -11,6 +11,7 @@ interface LineProps {
   note?: string;
   onEdit?: () => void;
   onDelete?: () => void;
+  onTagClick?: (tag: string) => void;
 }
 
 const Line: React.FC<LineProps> = ({
@@ -20,9 +21,9 @@ const Line: React.FC<LineProps> = ({
   folderPath,
   link,
   type = "LINK",
-  note,
   onEdit,
   onDelete,
+  onTagClick,
 }) => {
   const isNote = type === "NOTE";
 
@@ -61,7 +62,11 @@ const Line: React.FC<LineProps> = ({
         {tags.map((tag, index) => (
           <span
             key={index}
-            className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full"
+            className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-800"
+            onClick={(e) => {
+              e.stopPropagation();
+              onTagClick?.(tag);
+            }}
           >
             #{tag}
           </span>

@@ -17,17 +17,18 @@ interface SidebarProps {
 
 type TabType = "line" | "tag" | "all";
 
-const Sidebar: React.FC<SidebarProps> = ({
-  collapsed,
-  parentCode,
-}) => {
+const Sidebar: React.FC<SidebarProps> = ({ collapsed, parentCode }) => {
   const [activeTab, setActiveTab] = useState("favorites");
   const swiperRef = useRef<any>(null);
   const { handleViewModeChange, handlePageModeChange } = useItemManagement();
 
   const handleTabChange = (tabType: string, index: number) => {
     setActiveTab(tabType);
-    handleViewModeChange(tabType as TabType);
+    if (tabType === "ai") {
+      handleViewModeChange("tag");
+    } else {
+      handleViewModeChange("all");
+    }
     if (swiperRef.current && swiperRef.current.swiper) {
       swiperRef.current.swiper.slideTo(index);
     }
@@ -72,12 +73,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               <SwiperSlide className="!w-full !h-full">
                 <div className="h-full w-full overflow-auto">
                   <AllFavoritesCard />
-                </div>
-              </SwiperSlide>
-
-              <SwiperSlide className="!w-full !h-full">
-                <div className="h-full w-full overflow-auto">
-                  {/* 回收站内容将在 Main 组件中显示 */}
                 </div>
               </SwiperSlide>
             </Swiper>

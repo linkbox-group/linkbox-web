@@ -6,6 +6,7 @@ import ConfirmDialog from "../components/Dialogs/ConfirmDialog";
 import OrganizationDialog from "../components/Dialogs/OrganizationDialog";
 import { useUserStore } from "@/store/userStore";
 import { useAppStore } from "@/store/appStore";
+import { useTagStore } from "@/store/tagStore";
 import MainContent from "@/components/Main/MainContent";
 import MainHeader from "@/components/Main/MainHeader";
 import MainPagination from "@/components/Main/MainPagination";
@@ -20,6 +21,7 @@ type ViewMode = "line" | "tag" | "all";
 const Main: React.FC = () => {
   const { user } = useUserStore();
   const { currentOrganizationId } = useAppStore();
+  const { setShouldRefreshTags } = useTagStore();
 
   const { sidebarCollapsed, setSidebarCollapsed, columns } = useLayout();
   const {
@@ -157,6 +159,7 @@ const Main: React.FC = () => {
         onSuccess={() => {
           setAddDialogOpen(false);
           fetchItems();
+          setShouldRefreshTags(true);
         }}
       />
       <ContentDialog
@@ -167,6 +170,7 @@ const Main: React.FC = () => {
         onSuccess={() => {
           setEditDialogOpen(false);
           fetchItems();
+          setShouldRefreshTags(true);
         }}
       />
       <ConfirmDialog

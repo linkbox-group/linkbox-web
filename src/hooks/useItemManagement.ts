@@ -7,7 +7,9 @@ export const useItemManagement = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [sortField, setSortField] = useState<"created_at" | "title">("created_at");
+  const [sortField, setSortField] = useState<"created_at" | "title">(
+    "created_at"
+  );
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
   const [searchKeyword, setSearchKeyword] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -15,15 +17,16 @@ export const useItemManagement = () => {
   const fetchItemsRef = useRef(false);
   const prevOrganizationIdRef = useRef<string | null>(null);
 
-  const { 
-    items, 
-    setItems, 
-    deleteItem, 
+  const {
+    items,
+    setItems,
+    deleteItem,
     currentOrganizationId,
     viewMode,
     pageMode,
     setViewMode,
-    setPageMode
+    setPageMode,
+    setFilterTag,
   } = useAppStore();
 
   // 监听组织变化和初始化
@@ -177,10 +180,66 @@ export const useItemManagement = () => {
 
   const handleViewModeChange = (mode: "line" | "tag" | "all") => {
     setViewMode(mode);
+    if (mode !== "tag") {
+      setFilterTag(null);
+    }
   };
 
   const handlePageModeChange = (mode: "normal" | "trash") => {
     setPageMode(mode);
+  };
+
+  const handleTagClick = async (tag: string) => {
+    try {
+      setLoading(true);
+      setViewMode("tag");
+      setFilterTag(tag);
+
+      const response = await itemService.getByTags({
+        tags: [tag],
+        pagination: {
+          page: 1,
+          page_size: pageSize,
+        },
+      });
+
+      if (response.data?.items) {
+        const tagItems = response.data.items.map((item: Item) => ({
+          id: item.id,
+          height: 300,
+          title: item.title,
+          favoriteTime: item.created_at,
+          tags: item.tag_names || [],
+          tag_names: item.tag_names || [],
+          folderPath: item.organization_path || "未分类",
+          link: item.url,
+          type: item.type || "LINK",
+          note: item.note,
+          user_id: item.user_id,
+          description: item.description,
+          url: item.url,
+          thumbnail_url: item.thumbnail_url,
+          organization_id: item.organization_id,
+          organization_path: item.organization_path,
+          deleted_at: item.deleted_at,
+          created_at: item.created_at,
+          updated_at: item.updated_at,
+        }));
+
+        setItems(tagItems);
+        setTotalPages(response.data.total_pages);
+        setCurrentPage(1);
+      } else {
+        setItems([]);
+        setTotalPages(1);
+        toast.info("该标签下暂无内容");
+      }
+    } catch (error) {
+      console.error("获取标签内容失败:", error);
+      toast.error("获取标签内容失败");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return {
@@ -202,5 +261,6 @@ export const useItemManagement = () => {
     pageMode,
     handleViewModeChange,
     handlePageModeChange,
+    handleTagClick,
   };
 };

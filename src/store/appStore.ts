@@ -81,6 +81,7 @@ interface AppStore {
   currentOrganizationId: string;
   viewMode: ViewMode;
   pageMode: PageMode;
+  filterTag: string | null;
   setLoading: (isLoading: boolean) => void;
   toggleSidebar: () => void;
   setIsMobile: (isMobile: boolean) => void;
@@ -92,6 +93,7 @@ interface AppStore {
   selectOrganization: (organizationId: string) => Promise<void>;
   setViewMode: (mode: ViewMode) => void;
   setPageMode: (mode: PageMode) => void;
+  setFilterTag: (tag: string | null) => void;
 }
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -111,6 +113,9 @@ export const useAppStore = create<AppStore>((set, get) => ({
   // 视图模式
   viewMode: "all",
   pageMode: "normal",
+  
+  // 筛选标签
+  filterTag: null,
 
   // 设置加载状态
   setLoading: (isLoading) =>
@@ -187,4 +192,7 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
   // 设置页面模式
   setPageMode: (mode) => set({ pageMode: mode }),
+
+  // 设置筛选标签
+  setFilterTag: (tag) => set({ filterTag: tag }),
 }));

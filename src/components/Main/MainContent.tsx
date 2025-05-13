@@ -18,6 +18,7 @@ interface MainContentProps {
   onDelete: (id: string | number) => void;
   onRecover?: (id: string) => void;
   onPermanentDelete?: (id: string) => void;
+  onTagClick?: (tag: string) => void;
 }
 
 const MainContent: React.FC<MainContentProps> = ({
@@ -29,8 +30,9 @@ const MainContent: React.FC<MainContentProps> = ({
   onDelete,
   onRecover,
   onPermanentDelete,
+  onTagClick,
 }) => {
-  const { viewMode, pageMode } = useAppStore();
+  const { viewMode, pageMode, filterTag } = useAppStore();
 
   if (loading) {
     return (
@@ -86,8 +88,86 @@ const MainContent: React.FC<MainContentProps> = ({
       );
     case "tag":
       return (
-        <div className="flex-1 w-full overflow-hidden min-h-[70vh]">
-          <TagView items={items} />
+        <div className="flex-1 w-full overflow-y-scroll min-h-[70vh]">
+          <div className="flex flex-col gap-8">
+            {filterTag ? (
+              <div className="flex flex-col gap-4">
+                {/* 标签显示区域 */}
+                <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 pt-2 pb-1">
+                  <div className="inline-flex w-fit bg-[#F0F0F0] dark:bg-[#2a3349] overflow-hidden rounded-[10px] m-2 p-2 outline outline-[#3D87C2] dark:outline-[#1e2538] transition-colors duration-300">
+                    <div className="text-[#3C89C4] dark:text-blue-400 text-base font-['Inter'] transition-colors duration-300">
+                      #{filterTag}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 横向滚动列表 */}
+                <div className="overflow-x-auto max-w-full">
+                  <div className="flex gap-4 pb-4">
+                    {items.map((item) => (
+                      <Card
+                        key={item.id}
+                        title={item.title}
+                        favoriteTime={item.favoriteTime}
+                        tags={item.tags}
+                        tag_names={item.tag_names}
+                        folderPath={item.folderPath}
+                        link={item.link}
+                        type={item.type}
+                        note={item.note}
+                        onEdit={() => onEdit(item.id)}
+                        onDelete={() => onDelete(item.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              Array.from(new Set(items.flatMap((item) => item.tags || []))).map(
+                (tag) => {
+                  // 获取包含当前标签的内容
+                  const tagItems = items.filter((item) =>
+                    item.tags?.includes(tag)
+                  );
+
+                  return (
+                    <div key={tag} className="flex flex-col gap-4">
+                      {/* 标签显示区域 */}
+                      <div
+                        className="inline-flex w-fit bg-[#F0F0F0] dark:bg-[#2a3349] overflow-hidden rounded-[10px] m-2 p-2 outline outline-[#3D87C2] dark:outline-[#1e2538] transition-colors duration-300 cursor-pointer hover:bg-[#E0E0E0] dark:hover:bg-[#3a4359]"
+                        onClick={() => onTagClick?.(tag)}
+                      >
+                        <div className="text-[#3C89C4] dark:text-blue-400 text-base font-['Inter'] transition-colors duration-300">
+                          #{tag}
+                        </div>
+                      </div>
+
+                      {/* 横向滚动列表 */}
+                      <div className="overflow-x-auto max-w-full">
+                        <div className="flex gap-4 pb-4">
+                          {tagItems.map((item) => (
+                            <Card
+                              key={item.id}
+                              title={item.title}
+                              favoriteTime={item.favoriteTime}
+                              tags={item.tags}
+                              tag_names={item.tag_names}
+                              folderPath={item.folderPath}
+                              link={item.link}
+                              type={item.type}
+                              note={item.note}
+                              onEdit={() => onEdit(item.id)}
+                              onDelete={() => onDelete(item.id)}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+              )
+            )}
+          </div>
         </div>
       );
     case "all":

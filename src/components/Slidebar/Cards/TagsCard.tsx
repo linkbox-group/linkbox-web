@@ -2,13 +2,30 @@ import React, { useState, useEffect } from "react";
 import { Tag as TagIcon, Plus } from "lucide-react";
 import { tagService, Tag as TagType } from "@/services/tags";
 import { useUserStore } from "@/store/userStore";
+import { useTagStore } from "@/store/tagStore";
+import { useItemManagement } from "@/hooks/useItemManagement";
 import TagDialog from "@/components/Dialogs/TagDialog";
 import { toast } from "sonner";
-import { 
-  Bookmark, Star, Heart, File, Folder,
-  Link, Image, Video, Music, Book,
-  Calendar, Clock, Mail, MessageSquare, Phone,
-  Home, Settings, User, StickyNote
+import {
+  Bookmark,
+  Star,
+  Heart,
+  File,
+  Folder,
+  Link,
+  Image,
+  Video,
+  Music,
+  Book,
+  Calendar,
+  Clock,
+  Mail,
+  MessageSquare,
+  Phone,
+  Home,
+  Settings,
+  User,
+  StickyNote,
 } from "lucide-react";
 
 const ICON_MAP = {
@@ -31,7 +48,7 @@ const ICON_MAP = {
   Settings,
   User,
   Tag: TagIcon,
-  Note: StickyNote
+  Note: StickyNote,
 };
 
 const TagsCard: React.FC = () => {
@@ -39,6 +56,8 @@ const TagsCard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { user } = useUserStore();
+  const { shouldRefreshTags, setShouldRefreshTags } = useTagStore();
+  const { handleTagClick } = useItemManagement();
 
   const fetchTags = async () => {
     if (!user?.id) return;
@@ -58,6 +77,13 @@ const TagsCard: React.FC = () => {
     fetchTags();
   }, [user?.id]);
 
+  useEffect(() => {
+    if (shouldRefreshTags) {
+      fetchTags();
+      setShouldRefreshTags(false);
+    }
+  }, [shouldRefreshTags]);
+
   return (
     <div className="w-full h-full bg-gradient-to-b from-[#EEF4FF] to-[#7CC6FF] dark:from-[#2D4661] dark:to-[#4C7A9D] p-4 pb-16 select-none flex flex-col relative">
       <div className="flex justify-between items-center mb-4">
@@ -68,11 +94,11 @@ const TagsCard: React.FC = () => {
           </span>
         </div>
         <button
-        onClick={() => setDialogOpen(true)}
-        className="w-8 h-8 rounded-full text-[#3061AF] flex items-center justify-center hover:bg-white/50 transition-colors duration-300"
-      >
-        <Plus className="w-5 h-5" />
-      </button>
+          onClick={() => setDialogOpen(true)}
+          className="w-8 h-8 rounded-full text-[#3061AF] flex items-center justify-center hover:bg-white/50 transition-colors duration-300"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -87,11 +113,13 @@ const TagsCard: React.FC = () => {
         ) : (
           <div className="space-y-2">
             {tags.map((tag) => {
-              const IconComponent = ICON_MAP[tag.color as keyof typeof ICON_MAP] || ICON_MAP.Tag;
+              const IconComponent =
+                ICON_MAP[tag.color as keyof typeof ICON_MAP] || ICON_MAP.Tag;
               return (
                 <div
                   key={tag.id}
-                  className="flex items-center justify-between p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="flex items-center justify-between p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                  onClick={() => handleTagClick(tag.name)}
                 >
                   <div className="flex items-center gap-2">
                     <IconComponent className="w-4 h-4 text-[#355DA1] dark:text-blue-400" />
@@ -107,10 +135,7 @@ const TagsCard: React.FC = () => {
             })}
           </div>
         )}
-        
       </div>
-
-     
 
       <TagDialog
         mode="add"
