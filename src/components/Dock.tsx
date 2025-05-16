@@ -125,10 +125,10 @@ const Dock = () => {
                   </div>
                 </div>
               </div>
-              <div className="text-[#4F89FD] text-base sm:text-lg md:text-2xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
+              <div onClick={() => window.open("https://docs.linkbox.hakimyu.cn/", "_blank")} className="text-[#4F89FD] text-base sm:text-lg md:text-2xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
                 核心功能
               </div>
-              <div className="text-[#4F89FD] text-base sm:text-lg md:text-2xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
+              <div onClick={() => window.open("https://docs.linkbox.hakimyu.cn/", "_blank")} className="text-[#4F89FD] text-base sm:text-lg md:text-2xl cursor-pointer hover:text-[#2A6ADF] transition-colors">
                 使用帮助
               </div>
             </div>

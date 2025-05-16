@@ -77,7 +77,23 @@ const Auth: React.FC = () => {
 
         if (response.code === 20000) {
           toast.success("注册成功");
-          TokenManager.setAccessToken(response.data?.access_token || "");
+          console.log(response.data);
+          login(
+            {
+              code: response.code,
+              msg: response.msg,
+              data: {
+                user_id: response.data.user_id || "",
+                username: response.data.username || "",
+                email: response.data.email || "",
+                avatar: response.data.avatar,
+                bio: response.data.bio,
+                theme: response.data.theme,
+                access_token: response.data.access_token || "",
+                refresh_token: response.data.refresh_token || ""
+              }
+            }
+          )
           navigate("/");
         } else {
           toast.error(response.msg);
