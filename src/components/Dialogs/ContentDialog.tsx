@@ -15,8 +15,8 @@ import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/store";
 import { X, RefreshCw, ChevronDown, Link, FileText } from "lucide-react";
 import debounce from "lodash/debounce";
-import { MdEditor } from 'md-editor-rt';
-import 'md-editor-rt/lib/style.css';
+import { MdEditor } from "md-editor-rt";
+import "md-editor-rt/lib/style.css";
 
 interface ContentDialogProps {
   mode: "add" | "edit";
@@ -24,7 +24,6 @@ interface ContentDialogProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   onSuccess: () => void;
-  contentType?: 1 | 2; // 1: 链接, 2: 笔记
 }
 
 const ContentTypeSelector = ({
@@ -147,7 +146,6 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
   open,
   setOpen,
   onSuccess,
-  contentType: initialContentType = 1,
 }) => {
   const [link, setLink] = useState("");
   const [title, setTitle] = useState("");
@@ -156,7 +154,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [isFetchingTitle, setIsFetchingTitle] = useState(false);
   const [noteContent, setNoteContent] = useState("");
-  const [contentType, setContentType] = useState<1 | 2>(initialContentType);
+  const [contentType, setContentType] = useState<1 | 2>(1);
   const { user } = useUserStore();
   const { currentOrganizationId } = useAppStore();
   const navigate = useNavigate();
@@ -236,7 +234,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
       );
       setNoteContent(content.note || "");
       // 根据内容类型设置 contentType
-      setContentType(content.type === "1" ? 1 : 2);
+      setContentType(content.type === "LINK" ? 1 : 2);
     } else {
       // 添加模式，重置表单
       setLink("");
@@ -244,9 +242,9 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
       setTags([]);
       setTagInput("");
       setNoteContent("");
-      setContentType(initialContentType);
+      setContentType(content?.type === "LINK" ? 1 : 2);
     }
-  }, [mode, content, open, initialContentType]);
+  }, [mode, content, open]);
 
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && tagInput.trim()) {
@@ -444,7 +442,7 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
                 笔记内容
               </label>
               <div className="border border-gray-200 dark:border-gray-600 rounded-md w-full overflow-hidden">
-                <MdEditor 
+                <MdEditor
                   modelValue={noteContent}
                   onChange={setNoteContent}
                   language="zh-CN"
@@ -452,41 +450,45 @@ const ContentDialog: React.FC<ContentDialogProps> = ({
                   previewTheme="github"
                   className="!border-none"
                   toolbars={[
-                    'bold',
-                    'underline',
-                    'italic',
-                    '-',
-                    'title',
-                    'strikeThrough',
-                    'sub',
-                    'sup',
-                    'quote',
-                    'unorderedList',
-                    'orderedList',
-                    'task',
-                    '-',
-                    'codeRow',
-                    'code',
-                    'link',
-                    'image',
-                    'table',
-                    'mermaid',
-                    'katex',
-                    '-',
-                    'revoke',
-                    'next',
-                    'save',
-                    '=',
-                    'pageFullscreen',
-                    'fullscreen',
-                    'preview',
-                    'htmlPreview',
-                    'catalog'
+                    "bold",
+                    "underline",
+                    "italic",
+                    "-",
+                    "title",
+                    "strikeThrough",
+                    "sub",
+                    "sup",
+                    "quote",
+                    "unorderedList",
+                    "orderedList",
+                    "task",
+                    "-",
+                    "codeRow",
+                    "code",
+                    "link",
+                    "image",
+                    "table",
+                    "mermaid",
+                    "katex",
+                    "-",
+                    "revoke",
+                    "next",
+                    "save",
+                    "=",
+                    "pageFullscreen",
+                    "fullscreen",
+                    "preview",
+                    "htmlPreview",
+                    "catalog",
                   ]}
                   style={{
-                    height: '400px'
+                    height: "400px",
                   }}
-                  theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
+                  theme={
+                    document.documentElement.classList.contains("dark")
+                      ? "dark"
+                      : "light"
+                  }
                   onSave={() => {
                     handleSubmit();
                   }}
