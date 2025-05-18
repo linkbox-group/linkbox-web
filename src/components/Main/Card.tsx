@@ -36,7 +36,13 @@ const Card: React.FC<CardProps> = ({
 
   return (
     <div
-      onClick={() => !isNote && window.open(link, "_blank")}
+      onClick={(e) => {
+        if (isNote) {
+          handleButtonClick(e, onEdit);
+        } else {
+          window.open(link, "_blank");
+        }
+      }}
       className={`bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow w-full max-w-[20rem] ${
         isNote ? "cursor-default" : "cursor-pointer"
       }`}
